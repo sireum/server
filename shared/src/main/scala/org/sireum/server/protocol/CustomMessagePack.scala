@@ -178,34 +178,45 @@ object CustomMessagePack {
     }
   }
 
-  def fromRequest(o: Request): ISZ[U8] = {
+  def fromRequest(o: Request): String = {
     val writer = Writer(MessagePack.Writer.Impl(T, MS.create(1024, u8"0"), 0))
     writer.writeRequest(o)
     val r = writer.result
-    return r
+    return conversions.String.toBase64(r)
   }
 
-  def toRequest(data: ISZ[U8]): Request = {
-    val reader = Reader(MessagePack.Reader.Impl(data, 0))
-    reader.init()
-    val r = reader.readRequest()
-    assert(reader.reader.errorOpt.isEmpty)
-    return r
+  def toRequest(base64: String): Either[Request, String] = {
+    conversions.String.fromBase64(base64) match {
+      case Either.Left(data) =>
+        val reader = Reader(MessagePack.Reader.Impl(data, 0))
+        reader.init()
+        val r = reader.readRequest()
+        reader.reader.errorOpt match {
+          case Some(err) => return Either.Right(err.message)
+          case _ => return Either.Left(r)
+        }
+      case Either.Right(msg) => return Either.Right(msg)
+    }
   }
 
-
-  def fromResponse(o: Response): ISZ[U8] = {
+  def fromResponse(o: Response): String = {
     val writer = Writer(MessagePack.Writer.Impl(T, MS.create(1024, u8"0"), 0))
     writer.writeResponse(o)
     val r = writer.result
-    return r
+    return conversions.String.toBase64(r)
   }
 
-  def toResponse(data: ISZ[U8]): Response = {
-    val reader = Reader(MessagePack.Reader.Impl(data, 0))
-    reader.init()
-    val r = reader.readResponse()
-    assert(reader.reader.errorOpt.isEmpty)
-    return r
+  def toResponse(base64: String): Either[Response, String] = {
+    conversions.String.fromBase64(base64) match {
+      case Either.Left(data) =>
+        val reader = Reader(MessagePack.Reader.Impl(data, 0))
+        reader.init()
+        val r = reader.readResponse()
+        reader.reader.errorOpt match {
+          case Some(err) => return Either.Right(err.message)
+          case _ => return Either.Left(r)
+        }
+      case Either.Right(msg) => return Either.Right(msg)
+    }
   }
 }

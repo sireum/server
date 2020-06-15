@@ -32,24 +32,30 @@ import org.sireum.message.Message
 
 @datatype trait Request
 
+@datatype class Terminate extends Request
+
 @datatype trait Response
+
+@datatype class Report(val message: Message) extends Response
 
 @datatype trait RequestId extends Request {
   def id: String
 }
 
+@datatype class Cancel(val id: String) extends RequestId
+
 @datatype trait ResponseId extends Response {
   def id: String
 }
 
-import org.sireum.server.protocol.{Request => SPRequest, RequestId => SPRequestId, Response => SPResponse, ResponseId => SPResponseId}
+@datatype class ReportId(val id: String, val message: Message) extends ResponseId
 
 
 object Version {
 
-  @datatype class Request extends SPRequest
+  @datatype class Request extends org.sireum.server.protocol.Request
 
-  @datatype class Response(val version: String) extends SPResponse
+  @datatype class Response(val version: String) extends org.sireum.server.protocol.Response
 
 }
 
@@ -60,15 +66,11 @@ object Slang {
 
     object Script {
 
-      @datatype class Start(val id: String, val uriOpt: Option[String], val content: String) extends SPRequestId
+      @datatype class Start(val id: String, val uriOpt: Option[String], val content: String) extends RequestId
 
     }
 
-    @datatype class Cancel(val id: String) extends SPRequestId
-
-    @datatype class End(val id: String) extends SPResponseId
-
-    @datatype class Report(val id: String, val message: Message) extends SPResponseId
+    @datatype class End(val id: String) extends ResponseId
 
   }
 
@@ -78,11 +80,11 @@ object Logika {
 
   object Verify {
 
-    @datatype class Config(val config: logika.Config) extends SPRequest
+    @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
 
-    @datatype class State(val id: String, val pos: Position, val state: logika.State) extends SPResponseId
+    @datatype class State(val id: String, val pos: Position, val state: logika.State) extends ResponseId
 
-    @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends SPResponseId
+    @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
     val defaultConfig: Config = Config(logika.Config(
       defaultLoopBound = 3,
