@@ -28,24 +28,36 @@ package org.sireum.server
 
 import org.sireum._
 import org.sireum.server.protocol.CustomMessagePack
+import org.sireum.server.service.Service
 
 object Server {
 
+  val services: MSZ[Service] = MSZ()
+
   def run(): Unit = {
-    while (request()) {}
+    for (i <- services.indices) {
+      services(i).init()
+    }
+    while (serve()) {}
+    for (i <- services.indices) {
+      services(i).finalise()
+    }
   }
 
-  def request(): B = {
-    val req: protocol.Request = getRequest() match {
+  def serve(): B = {
+    val req: protocol.Request = retrieveRequest() match {
       case Some(r) => r
       case _ => return T
     }
     req match {
       case _: protocol.Terminate => return F
       case _: protocol.Version.Request => handleVersion()
-      case req: protocol.Cancel => halt("TODO")
-      case req: protocol.Slang.Check.Script.Start => halt("TODO")
-      case req: protocol.Logika.Verify.Config => halt("TODO")
+      case _ =>
+        var found = F
+        for (service <- services if !found && service.canHandle(req)) {
+          found = T
+          service.handle(req)
+        }
     }
     return T
   }
@@ -55,7 +67,7 @@ object Server {
     Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
   }
 
-  def getRequest(): Option[protocol.Request] = {
+  def retrieveRequest(): Option[protocol.Request] = {
     CustomMessagePack.toRequest(Ext.readInput()) match {
       case Either.Left(r) => return Some(r)
       case Either.Right(err) =>

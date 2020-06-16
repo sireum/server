@@ -1,3 +1,4 @@
+// #Sireum
 /*
  Copyright (c) 2020, Robby, Kansas State University
  All rights reserved.
@@ -22,16 +23,15 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.sireum.server
+package org.sireum.server.service
 
 import org.sireum._
-import org.sireum.server.service.Service
+import org.sireum.server.protocol
 
-object ServerExt {
-  def readInput(): String = Console.in.readLine()
-  def writeOutput(s: String): Unit = println(s)
-  def version: String = $internal.Macro.version
-  def register(service: Service): Unit = {
-
-  }
+@msig trait Service {
+  def id: String
+  def init(): Unit
+  def canHandle(request: protocol.Request): B
+  def handle(request: protocol.Request): Unit
+  def finalise(): Unit
 }

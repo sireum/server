@@ -86,7 +86,7 @@ object Logika {
 
     @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
-    val defaultConfig: Config = Config(logika.Config(
+    val defaultConfig: logika.Config = logika.Config(
       defaultLoopBound = 3,
       loopBounds = HashMap.empty,
       smt2TimeoutInSeconds = 2,
@@ -96,7 +96,7 @@ object Logika {
       logPc = F,
       logRawPc = F,
       logVc = F,
-    ))
+    )
 
   }
 
