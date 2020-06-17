@@ -25,6 +25,7 @@
 package org.sireum.server.service
 
 import org.sireum._
+import org.sireum.logika.{Smt2Query, State}
 import org.sireum.message._
 import org.sireum.server.protocol._
 
@@ -45,8 +46,9 @@ object LogikaService {
     }
   }
 
-  class ReporterImpl(id: String, r: Reporter) extends Reporter {
+  class ReporterImpl(id: String, var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
+    var _ignore: B = F
 
     override def $owned: Boolean = _owned
 
@@ -56,77 +58,37 @@ object LogikaService {
     }
 
     override def $clone: ReporterImpl = {
-      return new ReporterImpl(id, r.$clone.asInstanceOf[Reporter])
+      return new ReporterImpl(id, _messages)
     }
 
     override def string: String = {
-      return r.string
+      return "ReporterImpl"
     }
 
-    def messages: ISZ[Message] = {
-      return r.messages
-    }
-    def hasInternalError: B = {
-      return r.hasInternalError
-    }
-    def hasError: B = {
-      return r.hasError
-    }
-    def hasWarning: B = {
-      return r.hasWarning
-    }
-    def hasIssue: B = {
-      return r.hasIssue
-    }
-    def hasInfo: B = {
-      return r.hasInfo
-    }
-    def hasMessage: B = {
-      return r.hasMessage
-    }
-    def internalErrors: ISZ[Message] = {
-      return r.internalErrors
-    }
-    def errors: ISZ[Message] = {
-      return r.errors
-    }
-    def warnings: ISZ[Message] = {
-      return r.warnings
-    }
-    def issues: ISZ[Message] = {
-      return r.issues
-    }
-    def infos: ISZ[Message] = {
-      return r.infos
-    }
-    def report(m: Message): Unit = {
-      val resp = ReportId(id, m)
+    override def state(posOpt: Option[Position], s: State): Unit = {
+      val resp = Logika.Verify.State(id, posOpt, s)
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
-      r.report(m)
     }
-    def messagesByFileUri: HashSMap[Option[String], ISZ[Message]] = {
-      return r.messagesByFileUri
+
+    override def query(pos: Position, r: Smt2Query.Result): Unit = {
+      val resp = Logika.Verify.Smt2QueryResult(id, pos, r)
+      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
     }
-    def printMessages(): Unit = {
-      r.printMessages()
+
+    override def messages: ISZ[Message] = {
+      return _messages
     }
-    def internalError(posOpt: Option[Position], kind: String, message: String): Unit = {
-      r.internalError(posOpt, kind, message)
+
+    override def ignore: B = {
+      return _ignore
     }
-    def error(posOpt: Option[Position], kind: String, message: String): Unit = {
-      r.error(posOpt, kind, message)
+
+    override def setIgnore(newIgnore: B): Unit = {
+      _ignore = newIgnore
     }
-    def warn(posOpt: Option[Position], kind: String, message: String): Unit = {
-      r.warn(posOpt, kind, message)
-    }
-    def info(posOpt: Option[Position], kind: String, message: String): Unit = {
-      r.info(posOpt, kind, message)
-    }
-    def reports(ms: ISZ[Message]): Unit = {
-      r.reports(ms)
-    }
-    def setIgnore(newIgnore: B): Unit = {
-      r.setIgnore(newIgnore)
+
+    override def setMessages(newMessages: ISZ[Message]): Unit = {
+      _messages = newMessages
     }
   }
 
@@ -181,7 +143,7 @@ object LogikaService {
   }
 
   def checkScript(req: Slang.Check.Script.Start): Unit = {
-    val reporter = Reporter.create
+    val reporter = new LogikaService.ReporterImpl(req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(z3Exe, logika.Smt2Impl.z3ArgF _, th, config.charBitWidth, config.intBitWidth), reporter)

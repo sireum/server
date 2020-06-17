@@ -294,7 +294,7 @@ object MsgPack {
     def writeLogikaVerifyState(o: Logika.Verify.State): Unit = {
       writer.writeZ(Constants.LogikaVerifyState)
       writer.writeString(o.id)
-      writer.writePosition(o.pos)
+      writer.writeOption(o.posOpt, writer.writePosition _)
       writeorgsireumlogikaState(o.state)
     }
 
@@ -1146,9 +1146,9 @@ object MsgPack {
         reader.expectZ(Constants.LogikaVerifyState)
       }
       val id = reader.readString()
-      val pos = reader.readPosition()
+      val posOpt = reader.readOption(reader.readPosition _)
       val state = readorgsireumlogikaState()
-      return Logika.Verify.State(id, pos, state)
+      return Logika.Verify.State(id, posOpt, state)
     }
 
     def readLogikaVerifySmt2QueryResult(): Logika.Verify.Smt2QueryResult = {

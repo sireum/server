@@ -82,7 +82,7 @@ object Logika {
 
     @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
 
-    @datatype class State(val id: String, val pos: Position, val state: logika.State) extends ResponseId
+    @datatype class State(val id: String, val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
     @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
