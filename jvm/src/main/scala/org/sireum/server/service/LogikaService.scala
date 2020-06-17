@@ -32,6 +32,7 @@ object LogikaService {
   class Thread(terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
       while (!terminated.get()) {
+        _root_.java.lang.Thread.interrupted()
         val req = checkQueue.poll()
         try {
           idMap.put(req.id, this)
@@ -43,6 +44,44 @@ object LogikaService {
     }
   }
 
+  val z3Exe: String = {
+    val platform: String = Os.kind match {
+      case Os.Kind.Win => "win"
+      case Os.Kind.Linux => "linux"
+      case Os.Kind.Mac => "mac"
+      case Os.Kind.Unsupported => "unsupported"
+    }
+    def z3Path(home: String): Option[Os.Path] = {
+      val r = (Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3"))
+      if (r.exists) {
+        return Some(r)
+      }
+      return None()
+    }
+    def h(): String = {
+      if (Os.kind == Os.Kind.Unsupported) {
+        return "z3"
+      }
+      Os.env("SIREUM_HOME") match {
+        case Some(home) =>
+          z3Path(home) match {
+            case Some(p) => return p.string
+            case _ =>
+          }
+        case _ =>
+      }
+      _root_.java.lang.System.getProperty("org.sireum.home") match {
+        case home if home != null =>
+          z3Path(home) match {
+            case Some(p) => return p.string
+            case _ =>
+          }
+        case _ =>
+      }
+      return "z3"
+    }
+    h()
+  }
   val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check.Script.Start]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[String, Thread]()
 
@@ -56,7 +95,10 @@ object LogikaService {
   }
 
   def checkScript(req: Slang.Check.Script.Start): Unit = {
-    halt("TODO")
+    val reporter = message.Reporter.create
+    val config = defaultConfig
+    logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
+      logika.Smt2Impl(z3Exe, logika.Smt2Impl.z3ArgF _, th, config.charBitWidth, config.intBitWidth), reporter)
   }
 }
 
@@ -86,10 +128,8 @@ class LogikaService(numOfThreads: Z) extends Service {
 
   def canHandle(req: Request): B = {
     req match {
-      case req: Cancel => LogikaService.idMap.containsKey(req.id)
-      case req: Logika.Verify.Config =>
-        LogikaService.defaultConfig = req.config
-        return T
+      case req: Cancel => return LogikaService.idMap.containsKey(req.id)
+      case _: Logika.Verify.Config => return T
       case req: Slang.Check.Script.Start =>
         val it = req.content.value.linesIterator
         if (!it.hasNext) {
@@ -101,7 +141,16 @@ class LogikaService(numOfThreads: Z) extends Service {
   }
 
   def handle(req: Request): Unit = {
-    halt("TODO")
+    req match {
+      case req: Cancel =>
+        LogikaService.idMap.remove(req.id) match {
+          case t if t != null => t.interrupt()
+          case _ =>
+        }
+      case req: Logika.Verify.Config => LogikaService.defaultConfig = req.config
+      case req: Slang.Check.Script.Start => LogikaService.checkQueue.add(req)
+      case _ => halt(s"Infeasible: $req")
+    }
   }
 
   def finalise(): Unit = {
