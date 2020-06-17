@@ -25,6 +25,7 @@
 package org.sireum.server.service
 
 import org.sireum._
+import org.sireum.message._
 import org.sireum.server.protocol._
 
 object LogikaService {
@@ -41,6 +42,91 @@ object LogikaService {
           idMap.remove(req.id)
         }
       }
+    }
+  }
+
+  class ReporterImpl(id: String, r: Reporter) extends Reporter {
+    var _owned: Boolean = false
+
+    override def $owned: Boolean = _owned
+
+    override def $owned_=(b: Boolean): ReporterImpl = {
+      _owned = b
+      this
+    }
+
+    override def $clone: ReporterImpl = {
+      return new ReporterImpl(id, r.$clone.asInstanceOf[Reporter])
+    }
+
+    override def string: String = {
+      return r.string
+    }
+
+    def messages: ISZ[Message] = {
+      return r.messages
+    }
+    def hasInternalError: B = {
+      return r.hasInternalError
+    }
+    def hasError: B = {
+      return r.hasError
+    }
+    def hasWarning: B = {
+      return r.hasWarning
+    }
+    def hasIssue: B = {
+      return r.hasIssue
+    }
+    def hasInfo: B = {
+      return r.hasInfo
+    }
+    def hasMessage: B = {
+      return r.hasMessage
+    }
+    def internalErrors: ISZ[Message] = {
+      return r.internalErrors
+    }
+    def errors: ISZ[Message] = {
+      return r.errors
+    }
+    def warnings: ISZ[Message] = {
+      return r.warnings
+    }
+    def issues: ISZ[Message] = {
+      return r.issues
+    }
+    def infos: ISZ[Message] = {
+      return r.infos
+    }
+    def report(m: Message): Unit = {
+      val resp = ReportId(id, m)
+      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+      r.report(m)
+    }
+    def messagesByFileUri: HashSMap[Option[String], ISZ[Message]] = {
+      return r.messagesByFileUri
+    }
+    def printMessages(): Unit = {
+      r.printMessages()
+    }
+    def internalError(posOpt: Option[Position], kind: String, message: String): Unit = {
+      r.internalError(posOpt, kind, message)
+    }
+    def error(posOpt: Option[Position], kind: String, message: String): Unit = {
+      r.error(posOpt, kind, message)
+    }
+    def warn(posOpt: Option[Position], kind: String, message: String): Unit = {
+      r.warn(posOpt, kind, message)
+    }
+    def info(posOpt: Option[Position], kind: String, message: String): Unit = {
+      r.info(posOpt, kind, message)
+    }
+    def reports(ms: ISZ[Message]): Unit = {
+      r.reports(ms)
+    }
+    def setIgnore(newIgnore: B): Unit = {
+      r.setIgnore(newIgnore)
     }
   }
 
@@ -95,7 +181,7 @@ object LogikaService {
   }
 
   def checkScript(req: Slang.Check.Script.Start): Unit = {
-    val reporter = message.Reporter.create
+    val reporter = Reporter.create
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(z3Exe, logika.Smt2Impl.z3ArgF _, th, config.charBitWidth, config.intBitWidth), reporter)
