@@ -1,3 +1,4 @@
+// #Sireum
 /*
  Copyright (c) 2020, Robby, Kansas State University
  All rights reserved.
@@ -22,14 +23,25 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.service.Service
+import org.sireum.cli.CliOpt._
 
-object ServerExt {
-  def readInput(): String = Console.in.readLine()
-  def writeOutput(s: String): Unit = println(s)
-  def version: String = $internal.Macro.version
-  def logikaService(numOfThreads: Z): Service = new service.LogikaService(numOfThreads)
+object cli {
+
+  val serverTool: Tool = Tool(
+    name = "server",
+    command = "server",
+    description = "Sireum server",
+    header = "Sireum Server",
+    usage = "<option>*",
+    opts = ISZ(
+      Opt(name = "logika", longKey = "logika", shortKey = Some('l'),
+        tpe = Type.Num(None(), 1, Some(1), None()),
+        description = "Number of Logika workers")
+    ),
+    groups = ISZ()
+  )
 }

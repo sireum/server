@@ -32,9 +32,12 @@ import org.sireum.server.service.Service
 
 object Server {
 
-  val services: MSZ[Service] = MSZ()
+  var services: MSZ[Service] = MSZ()
 
-  def run(): Unit = {
+  def run(numOfLogikaWorkers: Z): Z = {
+    services = MSZ(
+      Ext.logikaService(numOfLogikaWorkers)
+    )
     for (i <- services.indices) {
       services(i).init()
     }
@@ -42,6 +45,7 @@ object Server {
     for (i <- services.indices) {
       services(i).finalise()
     }
+    return 0
   }
 
   def serve(): B = {
@@ -85,5 +89,6 @@ object Server {
     def readInput(): String = $
     def writeOutput(s: String): Unit = $
     def version: String = $
+    def logikaService(numOfThreads: Z): Service = $
   }
 }
