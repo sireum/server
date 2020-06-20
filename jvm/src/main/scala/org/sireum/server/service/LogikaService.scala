@@ -97,7 +97,7 @@ object LogikaService {
       case Os.Kind.Win => "win"
       case Os.Kind.Linux => "linux"
       case Os.Kind.Mac => "mac"
-      case Os.Kind.Unsupported => "unsupported"
+      case _ => "unsupported"
     }
     def z3Path(home: String): Option[Os.Path] = {
       val r = (Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3"))
