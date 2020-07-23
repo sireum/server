@@ -26,9 +26,9 @@
 
 package org.sireum.server.protocol
 
+import org.sireum._
 import org.sireum.S8._
 import org.sireum.U8._
-import org.sireum._
 import org.sireum.lang.symbol._
 import org.sireum.lang.{ast => AST}
 
