@@ -168,35 +168,39 @@ object MsgPack {
 
     val _logikaStateClaimLetImply: Z = 33
 
-    val orgsireumlogikaConfig: Z = 34
+    val _logikaStateStrictPureMethod: Z = 34
 
-    val orgsireumlogikaLoopId: Z = 35
+    val _logikaStateStrictPureMethodHeader: Z = 35
 
-    val _logikaSmt2QueryResult: Z = 36
+    val orgsireumlogikaConfig: Z = 36
 
-    val _langastTypedName: Z = 37
+    val orgsireumlogikaLoopId: Z = 37
 
-    val _langastTypedTuple: Z = 38
+    val _logikaSmt2QueryResult: Z = 38
 
-    val _langastTypedFun: Z = 39
+    val _langastTypedName: Z = 39
 
-    val _langastTypedTypeVar: Z = 40
+    val _langastTypedTuple: Z = 40
 
-    val _langastTypedPackage: Z = 41
+    val _langastTypedFun: Z = 41
 
-    val _langastTypedObject: Z = 42
+    val _langastTypedTypeVar: Z = 42
 
-    val _langastTypedEnum: Z = 43
+    val _langastTypedPackage: Z = 43
 
-    val _langastTypedMethod: Z = 44
+    val _langastTypedObject: Z = 44
 
-    val _langastTypedMethods: Z = 45
+    val _langastTypedEnum: Z = 45
 
-    val _langastTypedFact: Z = 46
+    val _langastTypedMethod: Z = 46
 
-    val _langastTypedTheorem: Z = 47
+    val _langastTypedMethods: Z = 47
 
-    val _langastTypedInv: Z = 48
+    val _langastTypedFact: Z = 48
+
+    val _langastTypedTheorem: Z = 49
+
+    val _langastTypedInv: Z = 50
 
   }
 
@@ -824,6 +828,23 @@ object MsgPack {
       writer.writeZ(Constants._logikaStateClaimLetImply)
       write_logikaStateValueSym(o.sym)
       writer.writeISZ(o.args, write_logikaStateValue _)
+    }
+
+    def write_logikaStateStrictPureMethod(o: org.sireum.logika.State.StrictPureMethod): Unit = {
+      writer.writeZ(Constants._logikaStateStrictPureMethod)
+      write_logikaStateStrictPureMethodHeader(o.header)
+      writer.writeISZ(o.claims, write_logikaStateClaim _)
+      write_logikaStateValue(o.value)
+    }
+
+    def write_logikaStateStrictPureMethodHeader(o: org.sireum.logika.State.StrictPureMethod.Header): Unit = {
+      writer.writeZ(Constants._logikaStateStrictPureMethodHeader)
+      writer.writeOption(o.receiverTypeOpt, write_langastTyped _)
+      writer.writeISZ(o.owner, writer.writeString _)
+      writer.writeString(o.id)
+      writer.writeISZ(o.paramIds, writer.writeString _)
+      writer.writeISZ(o.paramTypes, write_langastTyped _)
+      write_langastTyped(o.returnType)
     }
 
     def writeorgsireumlogikaConfig(o: org.sireum.logika.Config): Unit = {
@@ -2185,6 +2206,39 @@ object MsgPack {
       val sym = read_logikaStateValueSym()
       val args = reader.readISZ(read_logikaStateValue _)
       return org.sireum.logika.State.Claim.Let.Imply(sym, args)
+    }
+
+    def read_logikaStateStrictPureMethod(): org.sireum.logika.State.StrictPureMethod = {
+      val r = read_logikaStateStrictPureMethodT(F)
+      return r
+    }
+
+    def read_logikaStateStrictPureMethodT(typeParsed: B): org.sireum.logika.State.StrictPureMethod = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateStrictPureMethod)
+      }
+      val header = read_logikaStateStrictPureMethodHeader()
+      val claims = reader.readISZ(read_logikaStateClaim _)
+      val value = read_logikaStateValue()
+      return org.sireum.logika.State.StrictPureMethod(header, claims, value)
+    }
+
+    def read_logikaStateStrictPureMethodHeader(): org.sireum.logika.State.StrictPureMethod.Header = {
+      val r = read_logikaStateStrictPureMethodHeaderT(F)
+      return r
+    }
+
+    def read_logikaStateStrictPureMethodHeaderT(typeParsed: B): org.sireum.logika.State.StrictPureMethod.Header = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateStrictPureMethodHeader)
+      }
+      val receiverTypeOpt = reader.readOption(read_langastTyped _)
+      val owner = reader.readISZ(reader.readString _)
+      val id = reader.readString()
+      val paramIds = reader.readISZ(reader.readString _)
+      val paramTypes = reader.readISZ(read_langastTyped _)
+      val returnType = read_langastTyped()
+      return org.sireum.logika.State.StrictPureMethod.Header(receiverTypeOpt, owner, id, paramIds, paramTypes, returnType)
     }
 
     def readorgsireumlogikaConfig(): org.sireum.logika.Config = {
@@ -3619,6 +3673,36 @@ object MsgPack {
       return r
     }
     val r = to(data, f_logikaStateClaimLetImply _)
+    return r
+  }
+
+  def from_logikaStateStrictPureMethod(o: org.sireum.logika.State.StrictPureMethod, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateStrictPureMethod(o)
+    return w.result
+  }
+
+  def to_logikaStateStrictPureMethod(data: ISZ[U8]): Either[org.sireum.logika.State.StrictPureMethod, MessagePack.ErrorMsg] = {
+    def f_logikaStateStrictPureMethod(reader: Reader): org.sireum.logika.State.StrictPureMethod = {
+      val r = reader.read_logikaStateStrictPureMethod()
+      return r
+    }
+    val r = to(data, f_logikaStateStrictPureMethod _)
+    return r
+  }
+
+  def from_logikaStateStrictPureMethodHeader(o: org.sireum.logika.State.StrictPureMethod.Header, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateStrictPureMethodHeader(o)
+    return w.result
+  }
+
+  def to_logikaStateStrictPureMethodHeader(data: ISZ[U8]): Either[org.sireum.logika.State.StrictPureMethod.Header, MessagePack.ErrorMsg] = {
+    def f_logikaStateStrictPureMethodHeader(reader: Reader): org.sireum.logika.State.StrictPureMethod.Header = {
+      val r = reader.read_logikaStateStrictPureMethodHeader()
+      return r
+    }
+    val r = to(data, f_logikaStateStrictPureMethodHeader _)
     return r
   }
 
