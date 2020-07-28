@@ -156,49 +156,51 @@ object MsgPack {
 
     val _logikaStateClaimLetFieldLookup: Z = 27
 
-    val _logikaStateClaimLetApply: Z = 28
+    val _logikaStateClaimLetProofFunApply: Z = 28
 
-    val _logikaStateClaimLetIApply: Z = 29
+    val _logikaStateClaimLetApply: Z = 29
 
-    val _logikaStateClaimLetTupleLit: Z = 30
+    val _logikaStateClaimLetIApply: Z = 30
 
-    val _logikaStateClaimLetAnd: Z = 31
+    val _logikaStateClaimLetTupleLit: Z = 31
 
-    val _logikaStateClaimLetOr: Z = 32
+    val _logikaStateClaimLetAnd: Z = 32
 
-    val _logikaStateClaimLetImply: Z = 33
+    val _logikaStateClaimLetOr: Z = 33
 
-    val _logikaStateStrictPureMethod: Z = 34
+    val _logikaStateClaimLetImply: Z = 34
 
-    val orgsireumlogikaConfig: Z = 35
+    val _logikaStateProofFun: Z = 35
 
-    val orgsireumlogikaLoopId: Z = 36
+    val orgsireumlogikaConfig: Z = 36
 
-    val _logikaSmt2QueryResult: Z = 37
+    val orgsireumlogikaLoopId: Z = 37
 
-    val _langastTypedName: Z = 38
+    val _logikaSmt2QueryResult: Z = 38
 
-    val _langastTypedTuple: Z = 39
+    val _langastTypedName: Z = 39
 
-    val _langastTypedFun: Z = 40
+    val _langastTypedTuple: Z = 40
 
-    val _langastTypedTypeVar: Z = 41
+    val _langastTypedFun: Z = 41
 
-    val _langastTypedPackage: Z = 42
+    val _langastTypedTypeVar: Z = 42
 
-    val _langastTypedObject: Z = 43
+    val _langastTypedPackage: Z = 43
 
-    val _langastTypedEnum: Z = 44
+    val _langastTypedObject: Z = 44
 
-    val _langastTypedMethod: Z = 45
+    val _langastTypedEnum: Z = 45
 
-    val _langastTypedMethods: Z = 46
+    val _langastTypedMethod: Z = 46
 
-    val _langastTypedFact: Z = 47
+    val _langastTypedMethods: Z = 47
 
-    val _langastTypedTheorem: Z = 48
+    val _langastTypedFact: Z = 48
 
-    val _langastTypedInv: Z = 49
+    val _langastTypedTheorem: Z = 49
+
+    val _langastTypedInv: Z = 50
 
   }
 
@@ -524,6 +526,7 @@ object MsgPack {
         case o: org.sireum.logika.State.Claim.Let.SeqLookup => write_logikaStateClaimLetSeqLookup(o)
         case o: org.sireum.logika.State.Claim.Let.SeqInBound => write_logikaStateClaimLetSeqInBound(o)
         case o: org.sireum.logika.State.Claim.Let.FieldLookup => write_logikaStateClaimLetFieldLookup(o)
+        case o: org.sireum.logika.State.Claim.Let.ProofFunApply => write_logikaStateClaimLetProofFunApply(o)
         case o: org.sireum.logika.State.Claim.Let.Apply => write_logikaStateClaimLetApply(o)
         case o: org.sireum.logika.State.Claim.Let.IApply => write_logikaStateClaimLetIApply(o)
         case o: org.sireum.logika.State.Claim.Let.TupleLit => write_logikaStateClaimLetTupleLit(o)
@@ -597,6 +600,7 @@ object MsgPack {
         case o: org.sireum.logika.State.Claim.Let.SeqLookup => write_logikaStateClaimLetSeqLookup(o)
         case o: org.sireum.logika.State.Claim.Let.SeqInBound => write_logikaStateClaimLetSeqInBound(o)
         case o: org.sireum.logika.State.Claim.Let.FieldLookup => write_logikaStateClaimLetFieldLookup(o)
+        case o: org.sireum.logika.State.Claim.Let.ProofFunApply => write_logikaStateClaimLetProofFunApply(o)
         case o: org.sireum.logika.State.Claim.Let.Apply => write_logikaStateClaimLetApply(o)
         case o: org.sireum.logika.State.Claim.Let.IApply => write_logikaStateClaimLetIApply(o)
         case o: org.sireum.logika.State.Claim.Let.TupleLit => write_logikaStateClaimLetTupleLit(o)
@@ -661,6 +665,7 @@ object MsgPack {
         case o: org.sireum.logika.State.Claim.Let.SeqLookup => write_logikaStateClaimLetSeqLookup(o)
         case o: org.sireum.logika.State.Claim.Let.SeqInBound => write_logikaStateClaimLetSeqInBound(o)
         case o: org.sireum.logika.State.Claim.Let.FieldLookup => write_logikaStateClaimLetFieldLookup(o)
+        case o: org.sireum.logika.State.Claim.Let.ProofFunApply => write_logikaStateClaimLetProofFunApply(o)
         case o: org.sireum.logika.State.Claim.Let.Apply => write_logikaStateClaimLetApply(o)
         case o: org.sireum.logika.State.Claim.Let.IApply => write_logikaStateClaimLetIApply(o)
         case o: org.sireum.logika.State.Claim.Let.TupleLit => write_logikaStateClaimLetTupleLit(o)
@@ -788,6 +793,13 @@ object MsgPack {
       writer.writeString(o.id)
     }
 
+    def write_logikaStateClaimLetProofFunApply(o: org.sireum.logika.State.Claim.Let.ProofFunApply): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetProofFunApply)
+      write_logikaStateValueSym(o.sym)
+      write_logikaStateProofFun(o.pf)
+      writer.writeISZ(o.args, write_logikaStateValue _)
+    }
+
     def write_logikaStateClaimLetApply(o: org.sireum.logika.State.Claim.Let.Apply): Unit = {
       writer.writeZ(Constants._logikaStateClaimLetApply)
       write_logikaStateValueSym(o.sym)
@@ -828,8 +840,8 @@ object MsgPack {
       writer.writeISZ(o.args, write_logikaStateValue _)
     }
 
-    def write_logikaStateStrictPureMethod(o: org.sireum.logika.State.StrictPureMethod): Unit = {
-      writer.writeZ(Constants._logikaStateStrictPureMethod)
+    def write_logikaStateProofFun(o: org.sireum.logika.State.ProofFun): Unit = {
+      writer.writeZ(Constants._logikaStateProofFun)
       writer.writeOption(o.receiverTypeOpt, write_langastTyped _)
       writer.writeISZ(o.owner, writer.writeString _)
       writer.writeString(o.id)
@@ -1603,6 +1615,7 @@ object MsgPack {
         case Constants._logikaStateClaimLetSeqLookup => val r = read_logikaStateClaimLetSeqLookupT(T); return r
         case Constants._logikaStateClaimLetSeqInBound => val r = read_logikaStateClaimLetSeqInBoundT(T); return r
         case Constants._logikaStateClaimLetFieldLookup => val r = read_logikaStateClaimLetFieldLookupT(T); return r
+        case Constants._logikaStateClaimLetProofFunApply => val r = read_logikaStateClaimLetProofFunApplyT(T); return r
         case Constants._logikaStateClaimLetApply => val r = read_logikaStateClaimLetApplyT(T); return r
         case Constants._logikaStateClaimLetIApply => val r = read_logikaStateClaimLetIApplyT(T); return r
         case Constants._logikaStateClaimLetTupleLit => val r = read_logikaStateClaimLetTupleLitT(T); return r
@@ -1736,6 +1749,7 @@ object MsgPack {
         case Constants._logikaStateClaimLetSeqLookup => val r = read_logikaStateClaimLetSeqLookupT(T); return r
         case Constants._logikaStateClaimLetSeqInBound => val r = read_logikaStateClaimLetSeqInBoundT(T); return r
         case Constants._logikaStateClaimLetFieldLookup => val r = read_logikaStateClaimLetFieldLookupT(T); return r
+        case Constants._logikaStateClaimLetProofFunApply => val r = read_logikaStateClaimLetProofFunApplyT(T); return r
         case Constants._logikaStateClaimLetApply => val r = read_logikaStateClaimLetApplyT(T); return r
         case Constants._logikaStateClaimLetIApply => val r = read_logikaStateClaimLetIApplyT(T); return r
         case Constants._logikaStateClaimLetTupleLit => val r = read_logikaStateClaimLetTupleLitT(T); return r
@@ -1854,6 +1868,7 @@ object MsgPack {
         case Constants._logikaStateClaimLetSeqLookup => val r = read_logikaStateClaimLetSeqLookupT(T); return r
         case Constants._logikaStateClaimLetSeqInBound => val r = read_logikaStateClaimLetSeqInBoundT(T); return r
         case Constants._logikaStateClaimLetFieldLookup => val r = read_logikaStateClaimLetFieldLookupT(T); return r
+        case Constants._logikaStateClaimLetProofFunApply => val r = read_logikaStateClaimLetProofFunApplyT(T); return r
         case Constants._logikaStateClaimLetApply => val r = read_logikaStateClaimLetApplyT(T); return r
         case Constants._logikaStateClaimLetIApply => val r = read_logikaStateClaimLetIApplyT(T); return r
         case Constants._logikaStateClaimLetTupleLit => val r = read_logikaStateClaimLetTupleLitT(T); return r
@@ -2111,6 +2126,21 @@ object MsgPack {
       return org.sireum.logika.State.Claim.Let.FieldLookup(sym, adt, id)
     }
 
+    def read_logikaStateClaimLetProofFunApply(): org.sireum.logika.State.Claim.Let.ProofFunApply = {
+      val r = read_logikaStateClaimLetProofFunApplyT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetProofFunApplyT(typeParsed: B): org.sireum.logika.State.Claim.Let.ProofFunApply = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetProofFunApply)
+      }
+      val sym = read_logikaStateValueSym()
+      val pf = read_logikaStateProofFun()
+      val args = reader.readISZ(read_logikaStateValue _)
+      return org.sireum.logika.State.Claim.Let.ProofFunApply(sym, pf, args)
+    }
+
     def read_logikaStateClaimLetApply(): org.sireum.logika.State.Claim.Let.Apply = {
       val r = read_logikaStateClaimLetApplyT(F)
       return r
@@ -2199,14 +2229,14 @@ object MsgPack {
       return org.sireum.logika.State.Claim.Let.Imply(sym, args)
     }
 
-    def read_logikaStateStrictPureMethod(): org.sireum.logika.State.StrictPureMethod = {
-      val r = read_logikaStateStrictPureMethodT(F)
+    def read_logikaStateProofFun(): org.sireum.logika.State.ProofFun = {
+      val r = read_logikaStateProofFunT(F)
       return r
     }
 
-    def read_logikaStateStrictPureMethodT(typeParsed: B): org.sireum.logika.State.StrictPureMethod = {
+    def read_logikaStateProofFunT(typeParsed: B): org.sireum.logika.State.ProofFun = {
       if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateStrictPureMethod)
+        reader.expectZ(Constants._logikaStateProofFun)
       }
       val receiverTypeOpt = reader.readOption(read_langastTyped _)
       val owner = reader.readISZ(reader.readString _)
@@ -2214,7 +2244,7 @@ object MsgPack {
       val paramIds = reader.readISZ(reader.readString _)
       val paramTypes = reader.readISZ(read_langastTyped _)
       val returnType = read_langastTyped()
-      return org.sireum.logika.State.StrictPureMethod(receiverTypeOpt, owner, id, paramIds, paramTypes, returnType)
+      return org.sireum.logika.State.ProofFun(receiverTypeOpt, owner, id, paramIds, paramTypes, returnType)
     }
 
     def readorgsireumlogikaConfig(): org.sireum.logika.Config = {
@@ -3562,6 +3592,21 @@ object MsgPack {
     return r
   }
 
+  def from_logikaStateClaimLetProofFunApply(o: org.sireum.logika.State.Claim.Let.ProofFunApply, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetProofFunApply(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetProofFunApply(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.ProofFunApply, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetProofFunApply(reader: Reader): org.sireum.logika.State.Claim.Let.ProofFunApply = {
+      val r = reader.read_logikaStateClaimLetProofFunApply()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetProofFunApply _)
+    return r
+  }
+
   def from_logikaStateClaimLetApply(o: org.sireum.logika.State.Claim.Let.Apply, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
     w.write_logikaStateClaimLetApply(o)
@@ -3652,18 +3697,18 @@ object MsgPack {
     return r
   }
 
-  def from_logikaStateStrictPureMethod(o: org.sireum.logika.State.StrictPureMethod, pooling: B): ISZ[U8] = {
+  def from_logikaStateProofFun(o: org.sireum.logika.State.ProofFun, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateStrictPureMethod(o)
+    w.write_logikaStateProofFun(o)
     return w.result
   }
 
-  def to_logikaStateStrictPureMethod(data: ISZ[U8]): Either[org.sireum.logika.State.StrictPureMethod, MessagePack.ErrorMsg] = {
-    def f_logikaStateStrictPureMethod(reader: Reader): org.sireum.logika.State.StrictPureMethod = {
-      val r = reader.read_logikaStateStrictPureMethod()
+  def to_logikaStateProofFun(data: ISZ[U8]): Either[org.sireum.logika.State.ProofFun, MessagePack.ErrorMsg] = {
+    def f_logikaStateProofFun(reader: Reader): org.sireum.logika.State.ProofFun = {
+      val r = reader.read_logikaStateProofFun()
       return r
     }
-    val r = to(data, f_logikaStateStrictPureMethod _)
+    val r = to(data, f_logikaStateProofFun _)
     return r
   }
 
