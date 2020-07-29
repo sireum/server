@@ -84,6 +84,8 @@ object Logika {
 
     @datatype class State(val id: String, val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
+    @datatype class Halted(val id: String, val posOpt: Option[Position], val state: logika.State) extends ResponseId
+
     @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
     val defaultConfig: logika.Config = logika.Config(

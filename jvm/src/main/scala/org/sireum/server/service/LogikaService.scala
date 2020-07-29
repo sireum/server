@@ -75,6 +75,11 @@ object LogikaService {
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
     }
 
+    override def halted(posOpt: Option[Position], s: State): Unit = {
+      val resp = Logika.Verify.Halted(id, posOpt, s)
+      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+    }
+
     override def messages: ISZ[Message] = {
       return _messages
     }
