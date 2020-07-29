@@ -843,7 +843,7 @@ object MsgPack {
     def write_logikaStateProofFun(o: org.sireum.logika.State.ProofFun): Unit = {
       writer.writeZ(Constants._logikaStateProofFun)
       writer.writeOption(o.receiverTypeOpt, write_langastTyped _)
-      writer.writeISZ(o.owner, writer.writeString _)
+      writer.writeISZ(o.context, writer.writeString _)
       writer.writeString(o.id)
       writer.writeISZ(o.paramIds, writer.writeString _)
       writer.writeISZ(o.paramTypes, write_langastTyped _)
@@ -2239,12 +2239,12 @@ object MsgPack {
         reader.expectZ(Constants._logikaStateProofFun)
       }
       val receiverTypeOpt = reader.readOption(read_langastTyped _)
-      val owner = reader.readISZ(reader.readString _)
+      val context = reader.readISZ(reader.readString _)
       val id = reader.readString()
       val paramIds = reader.readISZ(reader.readString _)
       val paramTypes = reader.readISZ(read_langastTyped _)
       val returnType = read_langastTyped()
-      return org.sireum.logika.State.ProofFun(receiverTypeOpt, owner, id, paramIds, paramTypes, returnType)
+      return org.sireum.logika.State.ProofFun(receiverTypeOpt, context, id, paramIds, paramTypes, returnType)
     }
 
     def readorgsireumlogikaConfig(): org.sireum.logika.Config = {
