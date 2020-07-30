@@ -98,6 +98,7 @@ object Logika {
       logPc = F,
       logRawPc = F,
       logVc = F,
+      logVcDirOpt = None()
     )
 
   }

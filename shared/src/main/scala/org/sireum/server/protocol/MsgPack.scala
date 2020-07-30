@@ -872,6 +872,7 @@ object MsgPack {
       writer.writeB(o.logPc)
       writer.writeB(o.logRawPc)
       writer.writeB(o.logVc)
+      writer.writeOption(o.logVcDirOpt, writer.writeString _)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2293,7 +2294,8 @@ object MsgPack {
       val logPc = reader.readB()
       val logRawPc = reader.readB()
       val logVc = reader.readB()
-      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc)
+      val logVcDirOpt = reader.readOption(reader.readString _)
+      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
