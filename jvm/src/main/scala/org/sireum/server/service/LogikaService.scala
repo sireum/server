@@ -151,7 +151,7 @@ object LogikaService {
     val reporter = new LogikaService.ReporterImpl(req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl(z3Exe, logika.Smt2Impl.z3ArgF _, th, config.charBitWidth, config.intBitWidth), reporter)
+      logika.Smt2Impl(T, z3Exe, logika.Smt2Impl.z3ArgF _, th, config.charBitWidth, config.intBitWidth), reporter)
   }
 }
 
