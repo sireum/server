@@ -873,6 +873,11 @@ object MsgPack {
       writer.writeB(o.logRawPc)
       writer.writeB(o.logVc)
       writer.writeOption(o.logVcDirOpt, writer.writeString _)
+      writer.writeB(o.splitAll)
+      writer.writeB(o.splitBinary)
+      writer.writeB(o.splitIf)
+      writer.writeB(o.splitMatch)
+      writer.writeB(o.splitContract)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2295,7 +2300,12 @@ object MsgPack {
       val logRawPc = reader.readB()
       val logVc = reader.readB()
       val logVcDirOpt = reader.readOption(reader.readString _)
-      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt)
+      val splitAll = reader.readB()
+      val splitBinary = reader.readB()
+      val splitIf = reader.readB()
+      val splitMatch = reader.readB()
+      val splitContract = reader.readB()
+      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitBinary, splitIf, splitMatch, splitContract)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

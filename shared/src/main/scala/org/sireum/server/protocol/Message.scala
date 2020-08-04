@@ -98,7 +98,12 @@ object Logika {
       logPc = F,
       logRawPc = F,
       logVc = F,
-      logVcDirOpt = None()
+      logVcDirOpt = None(),
+      splitAll = F,
+      splitBinary = F,
+      splitContract = F,
+      splitIf = F,
+      splitMatch = F
     )
 
   }
