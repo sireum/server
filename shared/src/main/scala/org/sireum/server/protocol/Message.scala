@@ -102,7 +102,8 @@ object Logika {
       splitAll = F,
       splitContract = F,
       splitIf = F,
-      splitMatch = F
+      splitMatch = F,
+      simplifiedQuery = F,
     )
 
   }

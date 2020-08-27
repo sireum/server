@@ -877,6 +877,7 @@ object MsgPack {
       writer.writeB(o.splitIf)
       writer.writeB(o.splitMatch)
       writer.writeB(o.splitContract)
+      writer.writeB(o.simplifiedQuery)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2303,7 +2304,8 @@ object MsgPack {
       val splitIf = reader.readB()
       val splitMatch = reader.readB()
       val splitContract = reader.readB()
-      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitIf, splitMatch, splitContract)
+      val simplifiedQuery = reader.readB()
+      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
