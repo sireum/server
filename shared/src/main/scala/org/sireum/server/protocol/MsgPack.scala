@@ -176,33 +176,37 @@ object MsgPack {
 
     val orgsireumlogikaConfig: Z = 37
 
-    val orgsireumlogikaLoopId: Z = 38
+    val orgsireumlogikaZ3Config: Z = 38
 
-    val _logikaSmt2QueryResult: Z = 39
+    val orgsireumlogikaCvc4Config: Z = 39
 
-    val _langastTypedName: Z = 40
+    val orgsireumlogikaLoopId: Z = 40
 
-    val _langastTypedTuple: Z = 41
+    val _logikaSmt2QueryResult: Z = 41
 
-    val _langastTypedFun: Z = 42
+    val _langastTypedName: Z = 42
 
-    val _langastTypedTypeVar: Z = 43
+    val _langastTypedTuple: Z = 43
 
-    val _langastTypedPackage: Z = 44
+    val _langastTypedFun: Z = 44
 
-    val _langastTypedObject: Z = 45
+    val _langastTypedTypeVar: Z = 45
 
-    val _langastTypedEnum: Z = 46
+    val _langastTypedPackage: Z = 46
 
-    val _langastTypedMethod: Z = 47
+    val _langastTypedObject: Z = 47
 
-    val _langastTypedMethods: Z = 48
+    val _langastTypedEnum: Z = 48
 
-    val _langastTypedFact: Z = 49
+    val _langastTypedMethod: Z = 49
 
-    val _langastTypedTheorem: Z = 50
+    val _langastTypedMethods: Z = 50
 
-    val _langastTypedInv: Z = 51
+    val _langastTypedFact: Z = 51
+
+    val _langastTypedTheorem: Z = 52
+
+    val _langastTypedInv: Z = 53
 
   }
 
@@ -863,9 +867,9 @@ object MsgPack {
 
     def writeorgsireumlogikaConfig(o: org.sireum.logika.Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaConfig)
+      writer.writeISZ(o.smt2Configs, writeorgsireumlogikaSmt2Config _)
       writer.writeZ(o.defaultLoopBound)
       writer.writeHashMap(o.loopBounds, writeorgsireumlogikaLoopId _, writer.writeZ _)
-      writer.writeZ(o.smt2TimeoutInSeconds)
       writer.writeB(o.unroll)
       writer.writeZ(o.charBitWidth)
       writer.writeZ(o.intBitWidth)
@@ -880,6 +884,25 @@ object MsgPack {
       writer.writeB(o.simplifiedQuery)
     }
 
+    def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
+      o match {
+        case o: org.sireum.logika.Z3Config => writeorgsireumlogikaZ3Config(o)
+        case o: org.sireum.logika.Cvc4Config => writeorgsireumlogikaCvc4Config(o)
+      }
+    }
+
+    def writeorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): Unit = {
+      writer.writeZ(Constants.orgsireumlogikaZ3Config)
+      writer.writeString(o.exe)
+      writer.writeZ(o.timeoutInMs)
+    }
+
+    def writeorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): Unit = {
+      writer.writeZ(Constants.orgsireumlogikaCvc4Config)
+      writer.writeString(o.exe)
+      writer.writeZ(o.timeoutInMs)
+    }
+
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
       writer.writeZ(Constants.orgsireumlogikaLoopId)
       writer.writeISZ(o.ids, writer.writeString _)
@@ -892,6 +915,7 @@ object MsgPack {
     def write_logikaSmt2QueryResult(o: org.sireum.logika.Smt2Query.Result): Unit = {
       writer.writeZ(Constants._logikaSmt2QueryResult)
       write_logikaSmt2QueryResultKindType(o.kind)
+      writer.writeString(o.solverName)
       writer.writeString(o.query)
       writer.writeString(o.output)
     }
@@ -2290,9 +2314,9 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.orgsireumlogikaConfig)
       }
+      val smt2Configs = reader.readISZ(readorgsireumlogikaSmt2Config _)
       val defaultLoopBound = reader.readZ()
       val loopBounds = reader.readHashMap(readorgsireumlogikaLoopId _, reader.readZ _)
-      val smt2TimeoutInSeconds = reader.readZ()
       val unroll = reader.readB()
       val charBitWidth = reader.readZ()
       val intBitWidth = reader.readZ()
@@ -2305,7 +2329,48 @@ object MsgPack {
       val splitMatch = reader.readB()
       val splitContract = reader.readB()
       val simplifiedQuery = reader.readB()
-      return org.sireum.logika.Config(defaultLoopBound, loopBounds, smt2TimeoutInSeconds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      return org.sireum.logika.Config(smt2Configs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+    }
+
+    def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
+      val i = reader.curr
+      val t = reader.readZ()
+      t match {
+        case Constants.orgsireumlogikaZ3Config => val r = readorgsireumlogikaZ3ConfigT(T); return r
+        case Constants.orgsireumlogikaCvc4Config => val r = readorgsireumlogikaCvc4ConfigT(T); return r
+        case _ =>
+          reader.error(i, s"$t is not a valid type of org.sireum.logika.Smt2Config.")
+          val r = readorgsireumlogikaCvc4ConfigT(T)
+          return r
+      }
+    }
+
+    def readorgsireumlogikaZ3Config(): org.sireum.logika.Z3Config = {
+      val r = readorgsireumlogikaZ3ConfigT(F)
+      return r
+    }
+
+    def readorgsireumlogikaZ3ConfigT(typeParsed: B): org.sireum.logika.Z3Config = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.orgsireumlogikaZ3Config)
+      }
+      val exe = reader.readString()
+      val timeoutInMs = reader.readZ()
+      return org.sireum.logika.Z3Config(exe, timeoutInMs)
+    }
+
+    def readorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
+      val r = readorgsireumlogikaCvc4ConfigT(F)
+      return r
+    }
+
+    def readorgsireumlogikaCvc4ConfigT(typeParsed: B): org.sireum.logika.Cvc4Config = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.orgsireumlogikaCvc4Config)
+      }
+      val exe = reader.readString()
+      val timeoutInMs = reader.readZ()
+      return org.sireum.logika.Cvc4Config(exe, timeoutInMs)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
@@ -2336,9 +2401,10 @@ object MsgPack {
         reader.expectZ(Constants._logikaSmt2QueryResult)
       }
       val kind = read_logikaSmt2QueryResultKindType()
+      val solverName = reader.readString()
       val query = reader.readString()
       val output = reader.readString()
-      return org.sireum.logika.Smt2Query.Result(kind, query, output)
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output)
     }
 
     def read_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {
@@ -3779,6 +3845,51 @@ object MsgPack {
       return r
     }
     val r = to(data, forgsireumlogikaConfig _)
+    return r
+  }
+
+  def fromorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeorgsireumlogikaSmt2Config(o)
+    return w.result
+  }
+
+  def toorgsireumlogikaSmt2Config(data: ISZ[U8]): Either[org.sireum.logika.Smt2Config, MessagePack.ErrorMsg] = {
+    def forgsireumlogikaSmt2Config(reader: Reader): org.sireum.logika.Smt2Config = {
+      val r = reader.readorgsireumlogikaSmt2Config()
+      return r
+    }
+    val r = to(data, forgsireumlogikaSmt2Config _)
+    return r
+  }
+
+  def fromorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeorgsireumlogikaZ3Config(o)
+    return w.result
+  }
+
+  def toorgsireumlogikaZ3Config(data: ISZ[U8]): Either[org.sireum.logika.Z3Config, MessagePack.ErrorMsg] = {
+    def forgsireumlogikaZ3Config(reader: Reader): org.sireum.logika.Z3Config = {
+      val r = reader.readorgsireumlogikaZ3Config()
+      return r
+    }
+    val r = to(data, forgsireumlogikaZ3Config _)
+    return r
+  }
+
+  def fromorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeorgsireumlogikaCvc4Config(o)
+    return w.result
+  }
+
+  def toorgsireumlogikaCvc4Config(data: ISZ[U8]): Either[org.sireum.logika.Cvc4Config, MessagePack.ErrorMsg] = {
+    def forgsireumlogikaCvc4Config(reader: Reader): org.sireum.logika.Cvc4Config = {
+      val r = reader.readorgsireumlogikaCvc4Config()
+      return r
+    }
+    val r = to(data, forgsireumlogikaCvc4Config _)
     return r
   }
 
