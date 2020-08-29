@@ -188,7 +188,7 @@ class LogikaService(numOfThreads: Z) extends Service {
         if (!it.hasNext) {
           return F
         }
-        return it.next().replaceAllLiterally(" ", "").replaceAllLiterally("\t", "").contains("#Logika")
+        return it.next().replace(" ", "").replace("\t", "").contains("#Logika")
       case _ => return F
     }
   }
