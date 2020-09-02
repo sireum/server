@@ -877,6 +877,7 @@ object MsgPack {
       writer.writeB(o.logRawPc)
       writer.writeB(o.logVc)
       writer.writeOption(o.logVcDirOpt, writer.writeString _)
+      writer.writeB(o.dontSplitPfq)
       writer.writeB(o.splitAll)
       writer.writeB(o.splitIf)
       writer.writeB(o.splitMatch)
@@ -2324,12 +2325,13 @@ object MsgPack {
       val logRawPc = reader.readB()
       val logVc = reader.readB()
       val logVcDirOpt = reader.readOption(reader.readString _)
+      val dontSplitPfq = reader.readB()
       val splitAll = reader.readB()
       val splitIf = reader.readB()
       val splitMatch = reader.readB()
       val splitContract = reader.readB()
       val simplifiedQuery = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      return org.sireum.logika.Config(smt2Configs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

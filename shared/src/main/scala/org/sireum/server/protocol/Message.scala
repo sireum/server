@@ -99,6 +99,7 @@ object Logika {
       logRawPc = F,
       logVc = F,
       logVcDirOpt = None(),
+      dontSplitPfq = F,
       splitAll = F,
       splitContract = F,
       splitIf = F,
