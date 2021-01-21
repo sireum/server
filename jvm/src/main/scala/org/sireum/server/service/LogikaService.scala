@@ -49,6 +49,35 @@ object LogikaService {
     }
   }
 
+  class ScriptCache(val req: Logika.Verify.StartScript,
+                    val storage: java.util.Map[(Z, Predef.String), Smt2Query.Result] =
+                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), Smt2Query.Result]) extends logika.Smt2Impl.Cache {
+    var _owned: Boolean = false
+    var _ignore: B = F
+
+    override def $owned: Boolean = _owned
+
+    override def $owned_=(b: Boolean): ScriptCache = {
+      _owned = b
+      this
+    }
+
+    override def $clone: ScriptCache = this
+
+    override def string: String = {
+      return "Smt2Cache"
+    }
+
+    def get(isSat: B, query: String, timeoutInMs: Z): Option[Smt2Query.Result] = {
+      val r = storage.get((timeoutInMs, query.value))
+      return if (r == null) None() else Some(r)
+    }
+
+    def set(isSat: B, query: String, timeoutInMs: Z, result: Smt2Query.Result): Unit = {
+      storage.put((timeoutInMs, query.value), result)
+    }
+  }
+
   class ReporterImpl(id: String, var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
@@ -192,12 +221,17 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
+  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.StartScript("", None(), ""))
+
   def checkScript(req: Logika.Verify.StartScript): Unit = {
+    if (scriptCache.req.uriOpt != req.uriOpt) {
+      scriptCache = new ScriptCache(req)
+    }
     val reporter = new LogikaService.ReporterImpl(req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl(defaultConfig.smt2Configs, th, config.timeoutInMs, config.charBitWidth, config.intBitWidth,
-        config.simplifiedQuery), reporter, T)
+      logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
+        config.intBitWidth, config.simplifiedQuery), reporter, T)
   }
 }
 
