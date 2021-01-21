@@ -868,6 +868,7 @@ object MsgPack {
     def writeorgsireumlogikaConfig(o: org.sireum.logika.Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaConfig)
       writer.writeISZ(o.smt2Configs, writeorgsireumlogikaSmt2Config _)
+      writer.writeZ(o.timeoutInMs)
       writer.writeZ(o.defaultLoopBound)
       writer.writeHashMap(o.loopBounds, writeorgsireumlogikaLoopId _, writer.writeZ _)
       writer.writeB(o.unroll)
@@ -895,13 +896,11 @@ object MsgPack {
     def writeorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaZ3Config)
       writer.writeString(o.exe)
-      writer.writeZ(o.timeoutInMs)
     }
 
     def writeorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaCvc4Config)
       writer.writeString(o.exe)
-      writer.writeZ(o.timeoutInMs)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2316,6 +2315,7 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaConfig)
       }
       val smt2Configs = reader.readISZ(readorgsireumlogikaSmt2Config _)
+      val timeoutInMs = reader.readZ()
       val defaultLoopBound = reader.readZ()
       val loopBounds = reader.readHashMap(readorgsireumlogikaLoopId _, reader.readZ _)
       val unroll = reader.readB()
@@ -2331,7 +2331,7 @@ object MsgPack {
       val splitMatch = reader.readB()
       val splitContract = reader.readB()
       val simplifiedQuery = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      return org.sireum.logika.Config(smt2Configs, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -2357,8 +2357,7 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaZ3Config)
       }
       val exe = reader.readString()
-      val timeoutInMs = reader.readZ()
-      return org.sireum.logika.Z3Config(exe, timeoutInMs)
+      return org.sireum.logika.Z3Config(exe)
     }
 
     def readorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
@@ -2371,8 +2370,7 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaCvc4Config)
       }
       val exe = reader.readString()
-      val timeoutInMs = reader.readZ()
-      return org.sireum.logika.Cvc4Config(exe, timeoutInMs)
+      return org.sireum.logika.Cvc4Config(exe)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
