@@ -36,11 +36,14 @@ object LogikaService {
       while (!terminated.get()) {
         _root_.java.lang.Thread.interrupted()
         val req = checkQueue.poll()
-        try {
-          idMap.put(req.id, this)
-          extension.Cancel.handleCancellable(() => checkScript(req))
-        } finally {
-          idMap.remove(req.id)
+        if (req != null) {
+          try {
+            idMap.put(req.id, this)
+            extension.Cancel.handleCancellable(() => checkScript(req))
+          } finally {
+            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.End(req.id)))
+            idMap.remove(req.id)
+          }
         }
       }
     }
@@ -78,6 +81,10 @@ object LogikaService {
     override def halted(posOpt: Option[Position], s: State): Unit = {
       val resp = Logika.Verify.Halted(id, posOpt, s)
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+    }
+
+    override def empty: logika.Logika.Reporter = {
+      return new ReporterImpl(id, ISZ())
     }
 
     override def messages: ISZ[Message] = {
@@ -135,7 +142,45 @@ object LogikaService {
     }
     h()
   }
-  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check.Script.Start]()
+  val cvc4Exe: String = {
+    val platform: String = Os.kind match {
+      case Os.Kind.Win => "win"
+      case Os.Kind.Linux => "linux"
+      case Os.Kind.Mac => "mac"
+      case _ => "unsupported"
+    }
+    def cvc4Path(home: String): Option[Os.Path] = {
+      val r = (Os.path(home) / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4"))
+      if (r.exists) {
+        return Some(r)
+      }
+      return None()
+    }
+    def h(): String = {
+      if (Os.kind == Os.Kind.Unsupported) {
+        return "cvc4"
+      }
+      Os.env("SIREUM_HOME") match {
+        case Some(home) =>
+          cvc4Path(home) match {
+            case Some(p) => return p.string
+            case _ =>
+          }
+        case _ =>
+      }
+      _root_.java.lang.System.getProperty("org.sireum.home") match {
+        case home if home != null =>
+          cvc4Path(home) match {
+            case Some(p) => return p.string
+            case _ =>
+          }
+        case _ =>
+      }
+      return "cvc4"
+    }
+    h()
+  }
+  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Logika.Verify.StartScript]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[String, Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
@@ -147,7 +192,7 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  def checkScript(req: Slang.Check.Script.Start): Unit = {
+  def checkScript(req: Logika.Verify.StartScript): Unit = {
     val reporter = new LogikaService.ReporterImpl(req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
@@ -178,18 +223,22 @@ class LogikaService(numOfThreads: Z) extends Service {
   def init(): Unit = {
     terminated.set(false)
     threads = for (i <- z"0" until numOfThreads) yield new LogikaService.Thread(terminated)
+    for (t <- threads) {
+      t.start()
+    }
   }
 
   def canHandle(req: Request): B = {
     req match {
       case req: Cancel => return LogikaService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
-      case req: Slang.Check.Script.Start =>
+      case req: Logika.Verify.StartScript =>
         val it = req.content.value.linesIterator
         if (!it.hasNext) {
           return F
         }
-        return it.next().replace(" ", "").replace("\t", "").contains("#Logika")
+        val line = it.next().replace(" ", "").replace("\t", "")
+        return line.contains("#Logika")
       case _ => return F
     }
   }
@@ -202,7 +251,7 @@ class LogikaService(numOfThreads: Z) extends Service {
           case _ =>
         }
       case req: Logika.Verify.Config => LogikaService.defaultConfig = req.config
-      case req: Slang.Check.Script.Start => LogikaService.checkQueue.add(req)
+      case req: Logika.Verify.StartScript => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
   }

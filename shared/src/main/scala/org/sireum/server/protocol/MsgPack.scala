@@ -48,9 +48,9 @@ object MsgPack {
 
     val VersionResponse: Z = -27
 
-    val SlangCheckScriptStart: Z = -26
+    val LogikaVerifyStartScript: Z = -26
 
-    val SlangCheckEnd: Z = -25
+    val LogikaVerifyEnd: Z = -25
 
     val LogikaVerifyConfig: Z = -24
 
@@ -225,7 +225,7 @@ object MsgPack {
         case o: Terminate => writeTerminate(o)
         case o: Cancel => writeCancel(o)
         case o: Version.Request => writeVersionRequest(o)
-        case o: Slang.Check.Script.Start => writeSlangCheckScriptStart(o)
+        case o: Logika.Verify.StartScript => writeLogikaVerifyStartScript(o)
         case o: Logika.Verify.Config => writeLogikaVerifyConfig(o)
       }
     }
@@ -239,7 +239,7 @@ object MsgPack {
         case o: Report => writeReport(o)
         case o: ReportId => writeReportId(o)
         case o: Version.Response => writeVersionResponse(o)
-        case o: Slang.Check.End => writeSlangCheckEnd(o)
+        case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
         case o: Logika.Verify.Smt2QueryResult => writeLogikaVerifySmt2QueryResult(o)
@@ -254,7 +254,7 @@ object MsgPack {
     def writeRequestId(o: RequestId): Unit = {
       o match {
         case o: Cancel => writeCancel(o)
-        case o: Slang.Check.Script.Start => writeSlangCheckScriptStart(o)
+        case o: Logika.Verify.StartScript => writeLogikaVerifyStartScript(o)
       }
     }
 
@@ -266,7 +266,7 @@ object MsgPack {
     def writeResponseId(o: ResponseId): Unit = {
       o match {
         case o: ReportId => writeReportId(o)
-        case o: Slang.Check.End => writeSlangCheckEnd(o)
+        case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
         case o: Logika.Verify.Smt2QueryResult => writeLogikaVerifySmt2QueryResult(o)
@@ -288,15 +288,15 @@ object MsgPack {
       writer.writeString(o.version)
     }
 
-    def writeSlangCheckScriptStart(o: Slang.Check.Script.Start): Unit = {
-      writer.writeZ(Constants.SlangCheckScriptStart)
+    def writeLogikaVerifyStartScript(o: Logika.Verify.StartScript): Unit = {
+      writer.writeZ(Constants.LogikaVerifyStartScript)
       writer.writeString(o.id)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
     }
 
-    def writeSlangCheckEnd(o: Slang.Check.End): Unit = {
-      writer.writeZ(Constants.SlangCheckEnd)
+    def writeLogikaVerifyEnd(o: Logika.Verify.End): Unit = {
+      writer.writeZ(Constants.LogikaVerifyEnd)
       writer.writeString(o.id)
     }
 
@@ -1044,7 +1044,7 @@ object MsgPack {
         case Constants.Terminate => val r = readTerminateT(T); return r
         case Constants.Cancel => val r = readCancelT(T); return r
         case Constants.VersionRequest => val r = readVersionRequestT(T); return r
-        case Constants.SlangCheckScriptStart => val r = readSlangCheckScriptStartT(T); return r
+        case Constants.LogikaVerifyStartScript => val r = readLogikaVerifyStartScriptT(T); return r
         case Constants.LogikaVerifyConfig => val r = readLogikaVerifyConfigT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of Request.")
@@ -1072,7 +1072,7 @@ object MsgPack {
         case Constants.Report => val r = readReportT(T); return r
         case Constants.ReportId => val r = readReportIdT(T); return r
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
-        case Constants.SlangCheckEnd => val r = readSlangCheckEndT(T); return r
+        case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
         case Constants.LogikaVerifySmt2QueryResult => val r = readLogikaVerifySmt2QueryResultT(T); return r
@@ -1101,10 +1101,10 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.Cancel => val r = readCancelT(T); return r
-        case Constants.SlangCheckScriptStart => val r = readSlangCheckScriptStartT(T); return r
+        case Constants.LogikaVerifyStartScript => val r = readLogikaVerifyStartScriptT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of RequestId.")
-          val r = readSlangCheckScriptStartT(T)
+          val r = readLogikaVerifyStartScriptT(T)
           return r
       }
     }
@@ -1127,7 +1127,7 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.ReportId => val r = readReportIdT(T); return r
-        case Constants.SlangCheckEnd => val r = readSlangCheckEndT(T); return r
+        case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
         case Constants.LogikaVerifySmt2QueryResult => val r = readLogikaVerifySmt2QueryResultT(T); return r
@@ -1177,32 +1177,32 @@ object MsgPack {
       return Version.Response(version)
     }
 
-    def readSlangCheckScriptStart(): Slang.Check.Script.Start = {
-      val r = readSlangCheckScriptStartT(F)
+    def readLogikaVerifyStartScript(): Logika.Verify.StartScript = {
+      val r = readLogikaVerifyStartScriptT(F)
       return r
     }
 
-    def readSlangCheckScriptStartT(typeParsed: B): Slang.Check.Script.Start = {
+    def readLogikaVerifyStartScriptT(typeParsed: B): Logika.Verify.StartScript = {
       if (!typeParsed) {
-        reader.expectZ(Constants.SlangCheckScriptStart)
+        reader.expectZ(Constants.LogikaVerifyStartScript)
       }
       val id = reader.readString()
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Slang.Check.Script.Start(id, uriOpt, content)
+      return Logika.Verify.StartScript(id, uriOpt, content)
     }
 
-    def readSlangCheckEnd(): Slang.Check.End = {
-      val r = readSlangCheckEndT(F)
+    def readLogikaVerifyEnd(): Logika.Verify.End = {
+      val r = readLogikaVerifyEndT(F)
       return r
     }
 
-    def readSlangCheckEndT(typeParsed: B): Slang.Check.End = {
+    def readLogikaVerifyEndT(typeParsed: B): Logika.Verify.End = {
       if (!typeParsed) {
-        reader.expectZ(Constants.SlangCheckEnd)
+        reader.expectZ(Constants.LogikaVerifyEnd)
       }
       val id = reader.readString()
-      return Slang.Check.End(id)
+      return Logika.Verify.End(id)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -2770,33 +2770,33 @@ object MsgPack {
     return r
   }
 
-  def fromSlangCheckScriptStart(o: Slang.Check.Script.Start, pooling: B): ISZ[U8] = {
+  def fromLogikaVerifyStartScript(o: Logika.Verify.StartScript, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeSlangCheckScriptStart(o)
+    w.writeLogikaVerifyStartScript(o)
     return w.result
   }
 
-  def toSlangCheckScriptStart(data: ISZ[U8]): Either[Slang.Check.Script.Start, MessagePack.ErrorMsg] = {
-    def fSlangCheckScriptStart(reader: Reader): Slang.Check.Script.Start = {
-      val r = reader.readSlangCheckScriptStart()
+  def toLogikaVerifyStartScript(data: ISZ[U8]): Either[Logika.Verify.StartScript, MessagePack.ErrorMsg] = {
+    def fLogikaVerifyStartScript(reader: Reader): Logika.Verify.StartScript = {
+      val r = reader.readLogikaVerifyStartScript()
       return r
     }
-    val r = to(data, fSlangCheckScriptStart _)
+    val r = to(data, fLogikaVerifyStartScript _)
     return r
   }
 
-  def fromSlangCheckEnd(o: Slang.Check.End, pooling: B): ISZ[U8] = {
+  def fromLogikaVerifyEnd(o: Logika.Verify.End, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeSlangCheckEnd(o)
+    w.writeLogikaVerifyEnd(o)
     return w.result
   }
 
-  def toSlangCheckEnd(data: ISZ[U8]): Either[Slang.Check.End, MessagePack.ErrorMsg] = {
-    def fSlangCheckEnd(reader: Reader): Slang.Check.End = {
-      val r = reader.readSlangCheckEnd()
+  def toLogikaVerifyEnd(data: ISZ[U8]): Either[Logika.Verify.End, MessagePack.ErrorMsg] = {
+    def fLogikaVerifyEnd(reader: Reader): Logika.Verify.End = {
+      val r = reader.readLogikaVerifyEnd()
       return r
     }
-    val r = to(data, fSlangCheckEnd _)
+    val r = to(data, fLogikaVerifyEnd _)
     return r
   }
 

@@ -25,11 +25,33 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.service.Service
+import org.sireum.server.service.{Service, LogikaService}
+
+import java.io.ByteArrayOutputStream
 
 object ServerExt {
-  def readInput(): String = Console.in.readLine()
-  def writeOutput(s: String): Unit = println(s)
+  def readInput(): String = {
+    var b = System.in.read
+    val baos = new ByteArrayOutputStream()
+    while (b >= 0) {
+      if (b == '\n') {
+        return new Predef.String(baos.toByteArray, "UTF-8")
+      } else {
+        baos.write(b)
+      }
+      b = System.in.read
+    }
+    return new Predef.String(baos.toByteArray, "UTF-8")
+  }
+  def writeOutput(s: String): Unit = this.synchronized {
+    System.out.println(s)
+    System.out.flush()
+  }
   def version: String = $internal.Macro.version
-  def logikaService(numOfThreads: Z): Service = new service.LogikaService(numOfThreads)
+  def logikaService(numOfThreads: Z): Service = {
+    LogikaService.defaultConfig = LogikaService.defaultConfig(smt2Configs = ISZ(
+      logika.Cvc4Config(LogikaService.cvc4Exe, 2000), logika.Z3Config(LogikaService.z3Exe, 2000)
+    ))
+    new service.LogikaService(numOfThreads)
+  }
 }

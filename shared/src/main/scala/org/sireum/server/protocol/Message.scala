@@ -60,25 +60,13 @@ object Version {
 }
 
 
-object Slang {
-
-  object Check {
-
-    object Script {
-
-      @datatype class Start(val id: String, val uriOpt: Option[String], val content: String) extends RequestId
-
-    }
-
-    @datatype class End(val id: String) extends ResponseId
-
-  }
-
-}
-
 object Logika {
 
   object Verify {
+
+    @datatype class StartScript(val id: String, val uriOpt: Option[String], val content: String) extends RequestId
+
+    @datatype class End(val id: String) extends ResponseId
 
     @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
 
@@ -89,7 +77,7 @@ object Logika {
     @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
     val defaultConfig: logika.Config = logika.Config(
-      smt2Configs = ISZ(logika.Z3Config("z3", 2000)),
+      smt2Configs = ISZ(),
       defaultLoopBound = 3,
       loopBounds = HashMap.empty,
       unroll = F,
