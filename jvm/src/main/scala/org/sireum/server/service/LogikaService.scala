@@ -78,7 +78,7 @@ object LogikaService {
     }
   }
 
-  class ReporterImpl(id: String, var _messages: ISZ[Message]) extends logika.Logika.Reporter {
+  class ReporterImpl(id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
 
@@ -210,7 +210,7 @@ object LogikaService {
     h()
   }
   val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Logika.Verify.StartScript]()
-  val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[String, Thread]()
+  val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
   def defaultConfig: logika.Config = synchronized {
@@ -221,7 +221,7 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.StartScript("", None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.StartScript(ISZ(), None(), ""))
 
   def checkScript(req: Logika.Verify.StartScript): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {

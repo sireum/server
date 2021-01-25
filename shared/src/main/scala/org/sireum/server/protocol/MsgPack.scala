@@ -2,7 +2,7 @@
 // @formatter:off
 
 /*
- Copyright (c) 2020, Robby, Kansas State University
+ Copyright (c) 2021, Robby, Kansas State University
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -260,7 +260,7 @@ object MsgPack {
 
     def writeCancel(o: Cancel): Unit = {
       writer.writeZ(Constants.Cancel)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
     }
 
     def writeResponseId(o: ResponseId): Unit = {
@@ -275,7 +275,7 @@ object MsgPack {
 
     def writeReportId(o: ReportId): Unit = {
       writer.writeZ(Constants.ReportId)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
       writer.writeMessage(o.message)
     }
 
@@ -290,14 +290,14 @@ object MsgPack {
 
     def writeLogikaVerifyStartScript(o: Logika.Verify.StartScript): Unit = {
       writer.writeZ(Constants.LogikaVerifyStartScript)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
     }
 
     def writeLogikaVerifyEnd(o: Logika.Verify.End): Unit = {
       writer.writeZ(Constants.LogikaVerifyEnd)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
     }
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
@@ -307,21 +307,21 @@ object MsgPack {
 
     def writeLogikaVerifyState(o: Logika.Verify.State): Unit = {
       writer.writeZ(Constants.LogikaVerifyState)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.posOpt, writer.writePosition _)
       writeorgsireumlogikaState(o.state)
     }
 
     def writeLogikaVerifyHalted(o: Logika.Verify.Halted): Unit = {
       writer.writeZ(Constants.LogikaVerifyHalted)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.posOpt, writer.writePosition _)
       writeorgsireumlogikaState(o.state)
     }
 
     def writeLogikaVerifySmt2QueryResult(o: Logika.Verify.Smt2QueryResult): Unit = {
       writer.writeZ(Constants.LogikaVerifySmt2QueryResult)
-      writer.writeString(o.id)
+      writer.writeISZ(o.id, writer.writeString _)
       writer.writePosition(o.pos)
       write_logikaSmt2QueryResult(o.result)
     }
@@ -1117,7 +1117,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.Cancel)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       return Cancel(id)
     }
 
@@ -1146,7 +1146,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.ReportId)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       val message = reader.readMessage()
       return ReportId(id, message)
     }
@@ -1185,7 +1185,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyStartScript)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
       return Logika.Verify.StartScript(id, uriOpt, content)
@@ -1200,7 +1200,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyEnd)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       return Logika.Verify.End(id)
     }
 
@@ -1226,7 +1226,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyState)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       val posOpt = reader.readOption(reader.readPosition _)
       val state = readorgsireumlogikaState()
       return Logika.Verify.State(id, posOpt, state)
@@ -1241,7 +1241,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyHalted)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       val posOpt = reader.readOption(reader.readPosition _)
       val state = readorgsireumlogikaState()
       return Logika.Verify.Halted(id, posOpt, state)
@@ -1256,7 +1256,7 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifySmt2QueryResult)
       }
-      val id = reader.readString()
+      val id = reader.readISZ(reader.readString _)
       val pos = reader.readPosition()
       val result = read_logikaSmt2QueryResult()
       return Logika.Verify.Smt2QueryResult(id, pos, result)

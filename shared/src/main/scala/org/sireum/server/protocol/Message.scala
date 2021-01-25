@@ -39,16 +39,16 @@ import org.sireum.message.Message
 @datatype class Report(val message: Message) extends Response
 
 @datatype trait RequestId extends Request {
-  def id: String
+  def id: ISZ[String]
 }
 
-@datatype class Cancel(val id: String) extends RequestId
+@datatype class Cancel(val id: ISZ[String]) extends RequestId
 
 @datatype trait ResponseId extends Response {
-  def id: String
+  def id: ISZ[String]
 }
 
-@datatype class ReportId(val id: String, val message: Message) extends ResponseId
+@datatype class ReportId(val id: ISZ[String], val message: Message) extends ResponseId
 
 
 object Version {
@@ -64,17 +64,17 @@ object Logika {
 
   object Verify {
 
-    @datatype class StartScript(val id: String, val uriOpt: Option[String], val content: String) extends RequestId
+    @datatype class StartScript(val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
 
-    @datatype class End(val id: String) extends ResponseId
+    @datatype class End(val id: ISZ[String]) extends ResponseId
 
     @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
 
-    @datatype class State(val id: String, val posOpt: Option[Position], val state: logika.State) extends ResponseId
+    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
-    @datatype class Halted(val id: String, val posOpt: Option[Position], val state: logika.State) extends ResponseId
+    @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
-    @datatype class Smt2QueryResult(val id: String, val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
+    @datatype class Smt2QueryResult(val id: ISZ[String], val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
 
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),

@@ -10,7 +10,7 @@ import java.io._
 class LogikaServerTest extends TestSuite {
 
   val tests = Tests {
-    * - test(StartScript("", None(),
+    * - test(StartScript(ISZ(), None(),
       s"""// #Sireum #Logika
          |import org.sireum._
          |
