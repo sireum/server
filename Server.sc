@@ -62,17 +62,22 @@ trait Module extends CrossJvmJsJitPack {
     if (isSourceDep) Seq(alirObject, transpilersCObject, toolsObject, logikaObject, hamrCodegenObject)
     else Seq()
 
-  final override def jvmTestFrameworks = Seq()
+  final override def testDeps =
+    if (isSourceDep) Seq(testObject.shared) else Seq()
+
+  final override def testIvyDeps =
+    if (isSourceDep) Agg.empty
+    else Agg(jpLatest(isCross = true, "sireum", "runtime", "test"))
 
   final override def jvmTestIvyDeps = Agg.empty
 
-  final override def jsTestFrameworks = Seq()
-
   final override def jsTestIvyDeps = Agg.empty
 
-  final override def testIvyDeps = Agg.empty
-
   final override def testScalacPluginIvyDeps = scalacPluginIvyDeps
+
+  final override def jvmTestFrameworks = Seq("org.scalatest.tools.Framework")
+
+  final override def jsTestFrameworks = jvmTestFrameworks
 
   def alirObject: CrossJvmJsPublish
 
@@ -86,4 +91,5 @@ trait Module extends CrossJvmJsJitPack {
 
   def phantomObject: JvmPublish
 
+  def testObject: CrossJvmJsPublish
 }

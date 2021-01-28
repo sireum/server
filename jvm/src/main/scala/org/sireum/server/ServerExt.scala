@@ -31,19 +31,25 @@ import java.io.ByteArrayOutputStream
 
 object ServerExt {
   def readInput(): String = {
-    var b = System.in.read
     val baos = new ByteArrayOutputStream()
-    while (b >= 0) {
-      if (b == '\n') {
-        return new Predef.String(baos.toByteArray, "UTF-8")
-      } else {
-        baos.write(b)
+    def read(): Predef.String = {
+      var b = System.in.read
+      while (b >= 0) {
+        if (b == '\n') {
+          return new Predef.String(baos.toByteArray, "UTF-8")
+        } else {
+          baos.write(b)
+        }
+        b = System.in.read
       }
-      b = System.in.read
+      return new Predef.String(baos.toByteArray, "UTF-8")
     }
-    return new Predef.String(baos.toByteArray, "UTF-8")
+    val r = read()
+    assert(r.startsWith(Server.prefix.value), s"Input should start with '${Server.prefix}'")
+    return r.substring(Server.prefix.value.length)
   }
   def writeOutput(s: String): Unit = this.synchronized {
+    System.out.print(Server.prefix.value)
     System.out.println(s)
     System.out.flush()
   }

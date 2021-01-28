@@ -32,6 +32,8 @@ import org.sireum.server.service.Service
 
 object Server {
 
+  val prefix: String = "Sireum Server:"
+
   var services: MSZ[Service] = MSZ()
 
   def run(numOfLogikaWorkers: Z): Z = {
@@ -72,16 +74,18 @@ object Server {
   }
 
   def retrieveRequest(): Option[protocol.Request] = {
-    CustomMessagePack.toRequest(Ext.readInput()) match {
+    val input = Ext.readInput()
+    //println(s"'$input'")
+    CustomMessagePack.toRequest(input) match {
       case Either.Left(r) => return Some(r)
       case Either.Right(err) =>
-        reportError(err)
+        reportError(err, input)
         return None()
     }
   }
 
-  def reportError(msg: String): Unit = {
-    val resp = protocol.Report(message.Message(message.Level.Error, None(), "Server", s"Unrecognized request: $msg"))
+  def reportError(msg: String, input: String): Unit = {
+    val resp = protocol.Report(message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'"))
     Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
   }
 
