@@ -35,7 +35,6 @@ object ServerExt {
 
   def readInput(): String = {
     val baos = new ByteArrayOutputStream
-    val baosPrefix = new ByteArrayOutputStream
     var b = System.in.read()
     var i = 0
     while (b >= 0) {
@@ -43,15 +42,18 @@ object ServerExt {
         return new Predef.String(baos.toByteArray, "UTF-8")
       } else if (i < prefixSize) {
         if (prefixChars(i) == b) {
-          baosPrefix.write(b)
+          baos.write(b)
         } else {
           while (b >= 0 && b != '\n') {
-            baosPrefix.write(b)
+            baos.write(b)
             b = System.in.read()
           }
-          return new Predef.String(baosPrefix.toByteArray, "UTF-8")
+          return new Predef.String(baos.toByteArray, "UTF-8")
         }
       } else {
+        if (i == prefixSize) {
+          baos.reset()
+        }
         baos.write(b)
       }
       i = i + 1

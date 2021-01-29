@@ -32,7 +32,7 @@ import org.sireum.server.service.Service
 
 object Server {
 
-  val prefix: String = "Sireum Server:"
+  val prefix: String = "Sireum:"
 
   var services: MSZ[Service] = MSZ()
 
