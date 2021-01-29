@@ -102,8 +102,7 @@ class LogikaServerTest extends TestSuite {
             }
         }
       }
-      posIn.write(CustomMessagePack.fromRequest(protocol.Terminate()).value.getBytes("UTF-8"))
-      posIn.write('\n')
+      writeRequest(protocol.Terminate())
       t.synchronized(t.join())
     } catch {
       case t: Throwable =>

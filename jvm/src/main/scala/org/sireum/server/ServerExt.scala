@@ -30,23 +30,34 @@ import org.sireum.server.service.{Service, LogikaService}
 import java.io.ByteArrayOutputStream
 
 object ServerExt {
+  val prefixChars: Array[Char] = Server.prefix.value.toCharArray
+  val prefixSize: Int = prefixChars.length
+
   def readInput(): String = {
-    val baos = new ByteArrayOutputStream()
-    def read(): Predef.String = {
-      var b = System.in.read
-      while (b >= 0) {
-        if (b == '\n') {
-          return new Predef.String(baos.toByteArray, "UTF-8")
+    val baos = new ByteArrayOutputStream
+    val baosPrefix = new ByteArrayOutputStream
+    var b = System.in.read()
+    var i = 0
+    while (b >= 0) {
+      if (b == '\n') {
+        return new Predef.String(baos.toByteArray, "UTF-8")
+      } else if (i < prefixSize) {
+        if (prefixChars(i) == b) {
+          baosPrefix.write(b)
         } else {
-          baos.write(b)
+          while (b >= 0 && b != '\n') {
+            baosPrefix.write(b)
+            b = System.in.read()
+          }
+          return new Predef.String(baosPrefix.toByteArray, "UTF-8")
         }
-        b = System.in.read
+      } else {
+        baos.write(b)
       }
-      return new Predef.String(baos.toByteArray, "UTF-8")
+      i = i + 1
+      b = System.in.read
     }
-    val r = read()
-    assert(r.startsWith(Server.prefix.value), s"Input should start with '${Server.prefix}'")
-    return r.substring(Server.prefix.value.length)
+    return new Predef.String(baos.toByteArray, "UTF-8")
   }
   def writeOutput(s: String): Unit = this.synchronized {
     System.out.print(Server.prefix.value)
