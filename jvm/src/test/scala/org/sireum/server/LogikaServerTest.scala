@@ -15,14 +15,14 @@ class LogikaServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(id => Seq(
-      StartScript(id, None(),
+      CheckScript(id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin)))
 
     * - test(id => Seq(
-      StartScript(id, None(),
+      CheckScript(id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
@@ -57,7 +57,7 @@ class LogikaServerTest extends TestSuite {
       var first = T
       for (req <- freqs(ISZ(s"L${line.value}"))) {
         if (!first) {
-          Thread.sleep(1000)
+          Thread.sleep(100)
         }
         first = F
         oldOut.println(req)

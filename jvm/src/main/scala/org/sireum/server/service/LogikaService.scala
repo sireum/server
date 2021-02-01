@@ -39,9 +39,12 @@ object LogikaService {
         if (req != null) {
           try {
             idMap.put(req.id, this)
+            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.Start(req.id,
+              extension.Time.currentMillis)))
             extension.Cancel.handleCancellable(() => checkScript(req))
           } finally {
-            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.End(req.id)))
+            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.End(req.id,
+              extension.Time.currentMillis)))
             idMap.remove(req.id)
           }
         }
@@ -49,7 +52,7 @@ object LogikaService {
     }
   }
 
-  class ScriptCache(val req: Logika.Verify.StartScript,
+  class ScriptCache(val req: Logika.Verify.CheckScript,
                     val storage: java.util.Map[(Z, Predef.String), Smt2Query.Result] =
                       new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), Smt2Query.Result]) extends logika.Smt2Impl.Cache {
     var _owned: Boolean = false
@@ -102,13 +105,18 @@ object LogikaService {
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
     }
 
-    override def query(pos: Position, r: Smt2Query.Result): Unit = {
-      val resp = Logika.Verify.Smt2QueryResult(id, pos, r)
+    override def query(pos: Position, time: Z, r: Smt2Query.Result): Unit = {
+      val resp = Logika.Verify.Smt2Query(id, pos, time, r)
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
     }
 
     override def halted(posOpt: Option[Position], s: State): Unit = {
       val resp = Logika.Verify.Halted(id, posOpt, s)
+      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+    }
+
+    override def timing(desc: String, timeInMs: Z): Unit = {
+      val resp = Timing(id, desc, timeInMs)
       server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
     }
 
@@ -209,7 +217,7 @@ object LogikaService {
     }
     h()
   }
-  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Logika.Verify.StartScript]()
+  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Logika.Verify.CheckScript]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
@@ -221,9 +229,9 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.StartScript(ISZ(), None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(ISZ(), None(), ""))
 
-  def checkScript(req: Logika.Verify.StartScript): Unit = {
+  def checkScript(req: Logika.Verify.CheckScript): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
@@ -266,7 +274,7 @@ class LogikaService(numOfThreads: Z) extends Service {
     req match {
       case req: Cancel => return LogikaService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
-      case req: Logika.Verify.StartScript =>
+      case req: Logika.Verify.CheckScript =>
         val it = req.content.value.linesIterator
         if (!it.hasNext) {
           return F
@@ -285,7 +293,7 @@ class LogikaService(numOfThreads: Z) extends Service {
           case _ =>
         }
       case req: Logika.Verify.Config => LogikaService.defaultConfig = req.config
-      case req: Logika.Verify.StartScript => LogikaService.checkQueue.add(req)
+      case req: Logika.Verify.CheckScript => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
   }

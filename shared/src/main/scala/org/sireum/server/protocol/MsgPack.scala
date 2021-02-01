@@ -42,171 +42,175 @@ object MsgPack {
 
     val Cancel: Z = -30
 
-    val ReportId: Z = -29
+    val Timing: Z = -29
 
-    val VersionRequest: Z = -28
+    val ReportId: Z = -28
 
-    val VersionResponse: Z = -27
+    val VersionRequest: Z = -27
 
-    val LogikaVerifyStartScript: Z = -26
+    val VersionResponse: Z = -26
 
-    val LogikaVerifyEnd: Z = -25
+    val LogikaVerifyCheckScript: Z = -25
 
-    val LogikaVerifyConfig: Z = -24
+    val LogikaVerifyStart: Z = -24
 
-    val LogikaVerifyState: Z = -23
+    val LogikaVerifyEnd: Z = -23
 
-    val LogikaVerifyHalted: Z = -22
+    val LogikaVerifyConfig: Z = -22
 
-    val LogikaVerifySmt2QueryResult: Z = -21
+    val LogikaVerifyState: Z = -21
 
-    val orgsireumlogikaState: Z = -20
+    val LogikaVerifyHalted: Z = -20
 
-    val _logikaStateIFun: Z = -19
+    val LogikaVerifySmt2Query: Z = -19
 
-    val _logikaStateOFun: Z = -18
+    val orgsireumlogikaState: Z = -18
 
-    val _logikaStateValueUnit: Z = -17
+    val _logikaStateIFun: Z = -17
 
-    val _logikaStateValueB: Z = -16
+    val _logikaStateOFun: Z = -16
 
-    val _logikaStateValueZ: Z = -15
+    val _logikaStateValueUnit: Z = -15
 
-    val _logikaStateValueC: Z = -14
+    val _logikaStateValueB: Z = -14
 
-    val _logikaStateValueF32: Z = -13
+    val _logikaStateValueZ: Z = -13
 
-    val _logikaStateValueF64: Z = -12
+    val _logikaStateValueC: Z = -12
 
-    val _logikaStateValueR: Z = -11
+    val _logikaStateValueF32: Z = -11
 
-    val _logikaStateValueString: Z = -10
+    val _logikaStateValueF64: Z = -10
 
-    val _logikaStateValueRange: Z = -9
+    val _logikaStateValueR: Z = -9
 
-    val _logikaStateValueS8: Z = -8
+    val _logikaStateValueString: Z = -8
 
-    val _logikaStateValueS16: Z = -7
+    val _logikaStateValueRange: Z = -7
 
-    val _logikaStateValueS32: Z = -6
+    val _logikaStateValueS8: Z = -6
 
-    val _logikaStateValueS64: Z = -5
+    val _logikaStateValueS16: Z = -5
 
-    val _logikaStateValueU8: Z = -4
+    val _logikaStateValueS32: Z = -4
 
-    val _logikaStateValueU16: Z = -3
+    val _logikaStateValueS64: Z = -3
 
-    val _logikaStateValueU32: Z = -2
+    val _logikaStateValueU8: Z = -2
 
-    val _logikaStateValueU64: Z = -1
+    val _logikaStateValueU16: Z = -1
 
-    val _logikaStateValueEnum: Z = 0
+    val _logikaStateValueU32: Z = 0
 
-    val _logikaStateValueSym: Z = 1
+    val _logikaStateValueU64: Z = 1
 
-    val _logikaStateClaimLabel: Z = 2
+    val _logikaStateValueEnum: Z = 2
 
-    val _logikaStateClaimProp: Z = 3
+    val _logikaStateValueSym: Z = 3
 
-    val _logikaStateClaimAnd: Z = 4
+    val _logikaStateClaimLabel: Z = 4
 
-    val _logikaStateClaimOr: Z = 5
+    val _logikaStateClaimProp: Z = 5
 
-    val _logikaStateClaimImply: Z = 6
+    val _logikaStateClaimAnd: Z = 6
 
-    val _logikaStateClaimIf: Z = 7
+    val _logikaStateClaimOr: Z = 7
 
-    val _logikaStateClaimDefSeqLit: Z = 8
+    val _logikaStateClaimImply: Z = 8
 
-    val _logikaStateClaimDefSeqLitArg: Z = 9
+    val _logikaStateClaimIf: Z = 9
 
-    val _logikaStateClaimDefSeqStore: Z = 10
+    val _logikaStateClaimDefSeqLit: Z = 10
 
-    val _logikaStateClaimDefFieldStore: Z = 11
+    val _logikaStateClaimDefSeqLitArg: Z = 11
 
-    val _logikaStateClaimDefAdtLit: Z = 12
+    val _logikaStateClaimDefSeqStore: Z = 12
 
-    val _logikaStateClaimDefRandom: Z = 13
+    val _logikaStateClaimDefFieldStore: Z = 13
 
-    val _logikaStateClaimLetCurrentName: Z = 14
+    val _logikaStateClaimDefAdtLit: Z = 14
 
-    val _logikaStateClaimLetName: Z = 15
+    val _logikaStateClaimDefRandom: Z = 15
 
-    val _logikaStateClaimLetCurrentId: Z = 16
+    val _logikaStateClaimLetCurrentName: Z = 16
 
-    val _logikaStateClaimLetId: Z = 17
+    val _logikaStateClaimLetName: Z = 17
 
-    val _logikaStateClaimLetEq: Z = 18
+    val _logikaStateClaimLetCurrentId: Z = 18
 
-    val _logikaStateClaimLetTypeTest: Z = 19
+    val _logikaStateClaimLetId: Z = 19
 
-    val _logikaStateClaimLetQuantVarId: Z = 20
+    val _logikaStateClaimLetEq: Z = 20
 
-    val _logikaStateClaimLetQuantVarSym: Z = 21
+    val _logikaStateClaimLetTypeTest: Z = 21
 
-    val _logikaStateClaimLetQuant: Z = 22
+    val _logikaStateClaimLetQuantVarId: Z = 22
 
-    val _logikaStateClaimLetIte: Z = 23
+    val _logikaStateClaimLetQuantVarSym: Z = 23
 
-    val _logikaStateClaimLetBinary: Z = 24
+    val _logikaStateClaimLetQuant: Z = 24
 
-    val _logikaStateClaimLetUnary: Z = 25
+    val _logikaStateClaimLetIte: Z = 25
 
-    val _logikaStateClaimLetSeqLookup: Z = 26
+    val _logikaStateClaimLetBinary: Z = 26
 
-    val _logikaStateClaimLetSeqInBound: Z = 27
+    val _logikaStateClaimLetUnary: Z = 27
 
-    val _logikaStateClaimLetFieldLookup: Z = 28
+    val _logikaStateClaimLetSeqLookup: Z = 28
 
-    val _logikaStateClaimLetProofFunApply: Z = 29
+    val _logikaStateClaimLetSeqInBound: Z = 29
 
-    val _logikaStateClaimLetApply: Z = 30
+    val _logikaStateClaimLetFieldLookup: Z = 30
 
-    val _logikaStateClaimLetIApply: Z = 31
+    val _logikaStateClaimLetProofFunApply: Z = 31
 
-    val _logikaStateClaimLetTupleLit: Z = 32
+    val _logikaStateClaimLetApply: Z = 32
 
-    val _logikaStateClaimLetAnd: Z = 33
+    val _logikaStateClaimLetIApply: Z = 33
 
-    val _logikaStateClaimLetOr: Z = 34
+    val _logikaStateClaimLetTupleLit: Z = 34
 
-    val _logikaStateClaimLetImply: Z = 35
+    val _logikaStateClaimLetAnd: Z = 35
 
-    val _logikaStateProofFun: Z = 36
+    val _logikaStateClaimLetOr: Z = 36
 
-    val orgsireumlogikaConfig: Z = 37
+    val _logikaStateClaimLetImply: Z = 37
 
-    val orgsireumlogikaZ3Config: Z = 38
+    val _logikaStateProofFun: Z = 38
 
-    val orgsireumlogikaCvc4Config: Z = 39
+    val orgsireumlogikaConfig: Z = 39
 
-    val orgsireumlogikaLoopId: Z = 40
+    val orgsireumlogikaZ3Config: Z = 40
 
-    val _logikaSmt2QueryResult: Z = 41
+    val orgsireumlogikaCvc4Config: Z = 41
 
-    val _langastTypedName: Z = 42
+    val orgsireumlogikaLoopId: Z = 42
 
-    val _langastTypedTuple: Z = 43
+    val _logikaSmt2QueryResult: Z = 43
 
-    val _langastTypedFun: Z = 44
+    val _langastTypedName: Z = 44
 
-    val _langastTypedTypeVar: Z = 45
+    val _langastTypedTuple: Z = 45
 
-    val _langastTypedPackage: Z = 46
+    val _langastTypedFun: Z = 46
 
-    val _langastTypedObject: Z = 47
+    val _langastTypedTypeVar: Z = 47
 
-    val _langastTypedEnum: Z = 48
+    val _langastTypedPackage: Z = 48
 
-    val _langastTypedMethod: Z = 49
+    val _langastTypedObject: Z = 49
 
-    val _langastTypedMethods: Z = 50
+    val _langastTypedEnum: Z = 50
 
-    val _langastTypedFact: Z = 51
+    val _langastTypedMethod: Z = 51
 
-    val _langastTypedTheorem: Z = 52
+    val _langastTypedMethods: Z = 52
 
-    val _langastTypedInv: Z = 53
+    val _langastTypedFact: Z = 53
+
+    val _langastTypedTheorem: Z = 54
+
+    val _langastTypedInv: Z = 55
 
   }
 
@@ -225,7 +229,7 @@ object MsgPack {
         case o: Terminate => writeTerminate(o)
         case o: Cancel => writeCancel(o)
         case o: Version.Request => writeVersionRequest(o)
-        case o: Logika.Verify.StartScript => writeLogikaVerifyStartScript(o)
+        case o: Logika.Verify.CheckScript => writeLogikaVerifyCheckScript(o)
         case o: Logika.Verify.Config => writeLogikaVerifyConfig(o)
       }
     }
@@ -237,12 +241,14 @@ object MsgPack {
     def writeResponse(o: Response): Unit = {
       o match {
         case o: Report => writeReport(o)
+        case o: Timing => writeTiming(o)
         case o: ReportId => writeReportId(o)
         case o: Version.Response => writeVersionResponse(o)
+        case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
         case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
-        case o: Logika.Verify.Smt2QueryResult => writeLogikaVerifySmt2QueryResult(o)
+        case o: Logika.Verify.Smt2Query => writeLogikaVerifySmt2Query(o)
       }
     }
 
@@ -254,7 +260,7 @@ object MsgPack {
     def writeRequestId(o: RequestId): Unit = {
       o match {
         case o: Cancel => writeCancel(o)
-        case o: Logika.Verify.StartScript => writeLogikaVerifyStartScript(o)
+        case o: Logika.Verify.CheckScript => writeLogikaVerifyCheckScript(o)
       }
     }
 
@@ -265,12 +271,21 @@ object MsgPack {
 
     def writeResponseId(o: ResponseId): Unit = {
       o match {
+        case o: Timing => writeTiming(o)
         case o: ReportId => writeReportId(o)
+        case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
         case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
-        case o: Logika.Verify.Smt2QueryResult => writeLogikaVerifySmt2QueryResult(o)
+        case o: Logika.Verify.Smt2Query => writeLogikaVerifySmt2Query(o)
       }
+    }
+
+    def writeTiming(o: Timing): Unit = {
+      writer.writeZ(Constants.Timing)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writeString(o.desc)
+      writer.writeZ(o.timeInMs)
     }
 
     def writeReportId(o: ReportId): Unit = {
@@ -288,16 +303,23 @@ object MsgPack {
       writer.writeString(o.version)
     }
 
-    def writeLogikaVerifyStartScript(o: Logika.Verify.StartScript): Unit = {
-      writer.writeZ(Constants.LogikaVerifyStartScript)
+    def writeLogikaVerifyCheckScript(o: Logika.Verify.CheckScript): Unit = {
+      writer.writeZ(Constants.LogikaVerifyCheckScript)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
     }
 
+    def writeLogikaVerifyStart(o: Logika.Verify.Start): Unit = {
+      writer.writeZ(Constants.LogikaVerifyStart)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writeZ(o.currentTimeMillis)
+    }
+
     def writeLogikaVerifyEnd(o: Logika.Verify.End): Unit = {
       writer.writeZ(Constants.LogikaVerifyEnd)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeZ(o.currentTimeMillis)
     }
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
@@ -319,10 +341,11 @@ object MsgPack {
       writeorgsireumlogikaState(o.state)
     }
 
-    def writeLogikaVerifySmt2QueryResult(o: Logika.Verify.Smt2QueryResult): Unit = {
-      writer.writeZ(Constants.LogikaVerifySmt2QueryResult)
+    def writeLogikaVerifySmt2Query(o: Logika.Verify.Smt2Query): Unit = {
+      writer.writeZ(Constants.LogikaVerifySmt2Query)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writePosition(o.pos)
+      writer.writeZ(o.timeInMs)
       write_logikaSmt2QueryResult(o.result)
     }
 
@@ -1043,7 +1066,7 @@ object MsgPack {
         case Constants.Terminate => val r = readTerminateT(T); return r
         case Constants.Cancel => val r = readCancelT(T); return r
         case Constants.VersionRequest => val r = readVersionRequestT(T); return r
-        case Constants.LogikaVerifyStartScript => val r = readLogikaVerifyStartScriptT(T); return r
+        case Constants.LogikaVerifyCheckScript => val r = readLogikaVerifyCheckScriptT(T); return r
         case Constants.LogikaVerifyConfig => val r = readLogikaVerifyConfigT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of Request.")
@@ -1069,15 +1092,17 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.Report => val r = readReportT(T); return r
+        case Constants.Timing => val r = readTimingT(T); return r
         case Constants.ReportId => val r = readReportIdT(T); return r
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
+        case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
         case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
-        case Constants.LogikaVerifySmt2QueryResult => val r = readLogikaVerifySmt2QueryResultT(T); return r
+        case Constants.LogikaVerifySmt2Query => val r = readLogikaVerifySmt2QueryT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of Response.")
-          val r = readLogikaVerifySmt2QueryResultT(T)
+          val r = readLogikaVerifySmt2QueryT(T)
           return r
       }
     }
@@ -1100,10 +1125,10 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.Cancel => val r = readCancelT(T); return r
-        case Constants.LogikaVerifyStartScript => val r = readLogikaVerifyStartScriptT(T); return r
+        case Constants.LogikaVerifyCheckScript => val r = readLogikaVerifyCheckScriptT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of RequestId.")
-          val r = readLogikaVerifyStartScriptT(T)
+          val r = readLogikaVerifyCheckScriptT(T)
           return r
       }
     }
@@ -1125,16 +1150,33 @@ object MsgPack {
       val i = reader.curr
       val t = reader.readZ()
       t match {
+        case Constants.Timing => val r = readTimingT(T); return r
         case Constants.ReportId => val r = readReportIdT(T); return r
+        case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
         case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
-        case Constants.LogikaVerifySmt2QueryResult => val r = readLogikaVerifySmt2QueryResultT(T); return r
+        case Constants.LogikaVerifySmt2Query => val r = readLogikaVerifySmt2QueryT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of ResponseId.")
-          val r = readLogikaVerifySmt2QueryResultT(T)
+          val r = readLogikaVerifySmt2QueryT(T)
           return r
       }
+    }
+
+    def readTiming(): Timing = {
+      val r = readTimingT(F)
+      return r
+    }
+
+    def readTimingT(typeParsed: B): Timing = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.Timing)
+      }
+      val id = reader.readISZ(reader.readString _)
+      val desc = reader.readString()
+      val timeInMs = reader.readZ()
+      return Timing(id, desc, timeInMs)
     }
 
     def readReportId(): ReportId = {
@@ -1176,19 +1218,33 @@ object MsgPack {
       return Version.Response(version)
     }
 
-    def readLogikaVerifyStartScript(): Logika.Verify.StartScript = {
-      val r = readLogikaVerifyStartScriptT(F)
+    def readLogikaVerifyCheckScript(): Logika.Verify.CheckScript = {
+      val r = readLogikaVerifyCheckScriptT(F)
       return r
     }
 
-    def readLogikaVerifyStartScriptT(typeParsed: B): Logika.Verify.StartScript = {
+    def readLogikaVerifyCheckScriptT(typeParsed: B): Logika.Verify.CheckScript = {
       if (!typeParsed) {
-        reader.expectZ(Constants.LogikaVerifyStartScript)
+        reader.expectZ(Constants.LogikaVerifyCheckScript)
       }
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Logika.Verify.StartScript(id, uriOpt, content)
+      return Logika.Verify.CheckScript(id, uriOpt, content)
+    }
+
+    def readLogikaVerifyStart(): Logika.Verify.Start = {
+      val r = readLogikaVerifyStartT(F)
+      return r
+    }
+
+    def readLogikaVerifyStartT(typeParsed: B): Logika.Verify.Start = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.LogikaVerifyStart)
+      }
+      val id = reader.readISZ(reader.readString _)
+      val currentTimeMillis = reader.readZ()
+      return Logika.Verify.Start(id, currentTimeMillis)
     }
 
     def readLogikaVerifyEnd(): Logika.Verify.End = {
@@ -1201,7 +1257,8 @@ object MsgPack {
         reader.expectZ(Constants.LogikaVerifyEnd)
       }
       val id = reader.readISZ(reader.readString _)
-      return Logika.Verify.End(id)
+      val currentTimeMillis = reader.readZ()
+      return Logika.Verify.End(id, currentTimeMillis)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -1247,19 +1304,20 @@ object MsgPack {
       return Logika.Verify.Halted(id, posOpt, state)
     }
 
-    def readLogikaVerifySmt2QueryResult(): Logika.Verify.Smt2QueryResult = {
-      val r = readLogikaVerifySmt2QueryResultT(F)
+    def readLogikaVerifySmt2Query(): Logika.Verify.Smt2Query = {
+      val r = readLogikaVerifySmt2QueryT(F)
       return r
     }
 
-    def readLogikaVerifySmt2QueryResultT(typeParsed: B): Logika.Verify.Smt2QueryResult = {
+    def readLogikaVerifySmt2QueryT(typeParsed: B): Logika.Verify.Smt2Query = {
       if (!typeParsed) {
-        reader.expectZ(Constants.LogikaVerifySmt2QueryResult)
+        reader.expectZ(Constants.LogikaVerifySmt2Query)
       }
       val id = reader.readISZ(reader.readString _)
       val pos = reader.readPosition()
+      val timeInMs = reader.readZ()
       val result = read_logikaSmt2QueryResult()
-      return Logika.Verify.Smt2QueryResult(id, pos, result)
+      return Logika.Verify.Smt2Query(id, pos, timeInMs, result)
     }
 
     def readorgsireumlogikaState(): org.sireum.logika.State = {
@@ -2723,6 +2781,21 @@ object MsgPack {
     return r
   }
 
+  def fromTiming(o: Timing, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeTiming(o)
+    return w.result
+  }
+
+  def toTiming(data: ISZ[U8]): Either[Timing, MessagePack.ErrorMsg] = {
+    def fTiming(reader: Reader): Timing = {
+      val r = reader.readTiming()
+      return r
+    }
+    val r = to(data, fTiming _)
+    return r
+  }
+
   def fromReportId(o: ReportId, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
     w.writeReportId(o)
@@ -2768,18 +2841,33 @@ object MsgPack {
     return r
   }
 
-  def fromLogikaVerifyStartScript(o: Logika.Verify.StartScript, pooling: B): ISZ[U8] = {
+  def fromLogikaVerifyCheckScript(o: Logika.Verify.CheckScript, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeLogikaVerifyStartScript(o)
+    w.writeLogikaVerifyCheckScript(o)
     return w.result
   }
 
-  def toLogikaVerifyStartScript(data: ISZ[U8]): Either[Logika.Verify.StartScript, MessagePack.ErrorMsg] = {
-    def fLogikaVerifyStartScript(reader: Reader): Logika.Verify.StartScript = {
-      val r = reader.readLogikaVerifyStartScript()
+  def toLogikaVerifyCheckScript(data: ISZ[U8]): Either[Logika.Verify.CheckScript, MessagePack.ErrorMsg] = {
+    def fLogikaVerifyCheckScript(reader: Reader): Logika.Verify.CheckScript = {
+      val r = reader.readLogikaVerifyCheckScript()
       return r
     }
-    val r = to(data, fLogikaVerifyStartScript _)
+    val r = to(data, fLogikaVerifyCheckScript _)
+    return r
+  }
+
+  def fromLogikaVerifyStart(o: Logika.Verify.Start, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeLogikaVerifyStart(o)
+    return w.result
+  }
+
+  def toLogikaVerifyStart(data: ISZ[U8]): Either[Logika.Verify.Start, MessagePack.ErrorMsg] = {
+    def fLogikaVerifyStart(reader: Reader): Logika.Verify.Start = {
+      val r = reader.readLogikaVerifyStart()
+      return r
+    }
+    val r = to(data, fLogikaVerifyStart _)
     return r
   }
 
@@ -2843,18 +2931,18 @@ object MsgPack {
     return r
   }
 
-  def fromLogikaVerifySmt2QueryResult(o: Logika.Verify.Smt2QueryResult, pooling: B): ISZ[U8] = {
+  def fromLogikaVerifySmt2Query(o: Logika.Verify.Smt2Query, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeLogikaVerifySmt2QueryResult(o)
+    w.writeLogikaVerifySmt2Query(o)
     return w.result
   }
 
-  def toLogikaVerifySmt2QueryResult(data: ISZ[U8]): Either[Logika.Verify.Smt2QueryResult, MessagePack.ErrorMsg] = {
-    def fLogikaVerifySmt2QueryResult(reader: Reader): Logika.Verify.Smt2QueryResult = {
-      val r = reader.readLogikaVerifySmt2QueryResult()
+  def toLogikaVerifySmt2Query(data: ISZ[U8]): Either[Logika.Verify.Smt2Query, MessagePack.ErrorMsg] = {
+    def fLogikaVerifySmt2Query(reader: Reader): Logika.Verify.Smt2Query = {
+      val r = reader.readLogikaVerifySmt2Query()
       return r
     }
-    val r = to(data, fLogikaVerifySmt2QueryResult _)
+    val r = to(data, fLogikaVerifySmt2Query _)
     return r
   }
 

@@ -48,6 +48,8 @@ import org.sireum.message.Message
   def id: ISZ[String]
 }
 
+@datatype class Timing(val id: ISZ[String], desc: String, timeInMs: Z) extends ResponseId
+
 @datatype class ReportId(val id: ISZ[String], val message: Message) extends ResponseId
 
 
@@ -64,9 +66,11 @@ object Logika {
 
   object Verify {
 
-    @datatype class StartScript(val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
+    @datatype class CheckScript(val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
 
-    @datatype class End(val id: ISZ[String]) extends ResponseId
+    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
+
+    @datatype class End(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
 
     @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
 
@@ -74,7 +78,7 @@ object Logika {
 
     @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
-    @datatype class Smt2QueryResult(val id: ISZ[String], val pos: Position, val result: logika.Smt2Query.Result) extends ResponseId
+    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val result: logika.Smt2Query.Result) extends ResponseId
 
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),
