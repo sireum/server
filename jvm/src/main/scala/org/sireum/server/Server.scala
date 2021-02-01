@@ -32,8 +32,6 @@ import org.sireum.server.service.Service
 
 object Server {
 
-  var prefix: String = ""
-
   def run(isMsgPack: B, numOfLogikaWorkers: Z): Z = {
     val server = Server(
       isMsgPack,

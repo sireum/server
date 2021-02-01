@@ -30,8 +30,9 @@ import org.sireum.server.service.{Service, LogikaService}
 import java.io.ByteArrayOutputStream
 
 object ServerExt {
+  var prefix: Predef.String = ""
+
   def readInput(): String = {
-    val prefix = Server.prefix.value
     val prefixSize = prefix.length
 
     val baos = new ByteArrayOutputStream
@@ -62,7 +63,7 @@ object ServerExt {
     return new Predef.String(baos.toByteArray, "UTF-8")
   }
   def writeOutput(s: String): Unit = this.synchronized {
-    if (Server.prefix.value.nonEmpty) System.out.print(Server.prefix.value)
+    if (prefix.nonEmpty) System.out.print(prefix)
     System.out.println(s)
     System.out.flush()
   }

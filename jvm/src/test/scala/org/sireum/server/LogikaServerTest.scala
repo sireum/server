@@ -36,8 +36,8 @@ class LogikaServerTest extends TestSuite {
       }
     }
 
-    Server.prefix = "Sireum:"
-    val prefixBytes = Server.prefix.value.getBytes("UTF-8")
+    ServerExt.prefix = "Sireum:"
+    val prefixBytes = ServerExt.prefix.getBytes("UTF-8")
     while (System.in.available() > 0) System.in.read()
     val oldIn = System.in
     val oldOut = System.out
@@ -78,8 +78,8 @@ class LogikaServerTest extends TestSuite {
         while (b >= 0) {
           if (b == '\n') {
             val r = new Predef.String(baos.toByteArray, "UTF-8")
-            if (r.startsWith(Server.prefix.value)) {
-              val resp = r.substring(Server.prefix.value.length)
+            if (r.startsWith(ServerExt.prefix)) {
+              val resp = r.substring(ServerExt.prefix.length)
               return if (isMsgPack) CustomMessagePack.toResponse(resp) else JSON.toResponse(resp)
             } else {
               oldOut.println(r)
