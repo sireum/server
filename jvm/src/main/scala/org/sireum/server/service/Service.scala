@@ -30,7 +30,7 @@ import org.sireum.server.protocol
 
 @msig trait Service {
   def id: String
-  def init(): Unit
+  def init(serverAPI: server.ServerAPI): Unit
   def canHandle(request: protocol.Request): B
   def handle(request: protocol.Request): Unit
   def finalise(): Unit

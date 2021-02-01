@@ -38,6 +38,9 @@ object cli {
     header = "Sireum Server",
     usage = "<option>*",
     opts = ISZ(
+      Opt(name = "message", longKey = "message", shortKey = Some('m'),
+        tpe = Type.Choice("ServerMessage", None(), ISZ("msgpack", "json")),
+        description = "Message format"),
       Opt(name = "logika", longKey = "logika", shortKey = Some('l'),
         tpe = Type.Num(None(), 1, Some(1), None()),
         description = "Number of Logika workers")

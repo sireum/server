@@ -27,21 +27,52 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.protocol.CustomMessagePack
+import org.sireum.server.protocol.{JSON, CustomMessagePack}
 import org.sireum.server.service.Service
 
 object Server {
 
-  val prefix: String = "Sireum:"
+  var prefix: String = ""
 
-  var services: MSZ[Service] = MSZ()
-
-  def run(numOfLogikaWorkers: Z): Z = {
-    services = MSZ(
-      Ext.logikaService(numOfLogikaWorkers)
+  def run(isMsgPack: B, numOfLogikaWorkers: Z): Z = {
+    val server = Server(
+      isMsgPack,
+      MSZ(
+        Ext.logikaService(numOfLogikaWorkers)
+      )
     )
+    return server.run()
+  }
+
+  @ext("ServerExt") object Ext {
+    def readInput(): String = $
+    def writeOutput(s: String): Unit = $
+    def version: String = $
+    def logikaService(numOfThreads: Z): Service = $
+  }
+}
+
+@datatype trait ServerAPI {
+  def sendRespond(resp: protocol.Response): Unit
+}
+
+@datatype class JsonServerAPI extends ServerAPI {
+  def sendRespond(resp: protocol.Response): Unit = {
+    Server.Ext.writeOutput(protocol.JSON.fromResponse(resp, T))
+  }
+}
+
+@datatype class MsgPackServerAPI extends ServerAPI {
+  def sendRespond(resp: protocol.Response): Unit = {
+    Server.Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
+  }
+}
+
+@datatype class Server(isMsgPack: B, services: MSZ[Service]) {
+  val serverAPI: ServerAPI = if (isMsgPack) MsgPackServerAPI() else JsonServerAPI()
+  def run(): Z = {
     for (i <- services.indices) {
-      services(i).init()
+      services(i).init(serverAPI)
     }
     while (serve()) {}
     for (i <- services.indices) {
@@ -69,30 +100,30 @@ object Server {
   }
 
   def handleVersion(): Unit = {
-    val resp = protocol.Version.Response(Ext.version)
-    Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
+    serverAPI.sendRespond(protocol.Version.Response(Server.Ext.version))
   }
 
   def retrieveRequest(): Option[protocol.Request] = {
-    val input = Ext.readInput()
+    val input = Server.Ext.readInput()
     //println(s"'$input'")
-    CustomMessagePack.toRequest(input) match {
-      case Either.Left(r) => return Some(r)
-      case Either.Right(err) =>
-        reportError(err, input)
-        return None()
+    if (isMsgPack) {
+      CustomMessagePack.toRequest(input) match {
+        case Either.Left(r) => return Some(r)
+        case Either.Right(err) =>
+          reportError(err, input)
+          return None()
+      }
+    } else {
+      JSON.toRequest(input) match {
+        case Either.Left(r) => return Some(r)
+        case Either.Right(err) =>
+          reportError(err.message, input)
+          return None()
+      }
     }
   }
 
   def reportError(msg: String, input: String): Unit = {
-    val resp = protocol.Report(message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'"))
-    Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
-  }
-
-  @ext("ServerExt") object Ext {
-    def readInput(): String = $
-    def writeOutput(s: String): Unit = $
-    def version: String = $
-    def logikaService(numOfThreads: Z): Service = $
+    serverAPI.sendRespond(protocol.Report(message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
   }
 }

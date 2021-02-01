@@ -10,18 +10,16 @@ import java.io._
 
 class LogikaServerTest extends TestSuite {
 
-  val prefixBytes = Server.prefix.value.getBytes("UTF-8")
-
   val tests = Tests {
 
-    * - test(id => Seq(
+    * - test(T, id => Seq(
       CheckScript(id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin)))
 
-    * - test(id => Seq(
+    * - test(F, id => Seq(
       CheckScript(id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
@@ -31,7 +29,15 @@ class LogikaServerTest extends TestSuite {
 
   }
 
-  def test(freqs: ISZ[String] => Seq[Request])(implicit line: sourcecode.Line): Unit = {
+  def test(isMsgPack: B, freqs: ISZ[String] => Seq[Request])(implicit line: sourcecode.Line): Unit = {
+    class ServerThread extends Thread {
+      override def run(): Unit = {
+        Server.run(isMsgPack, 1)
+      }
+    }
+
+    Server.prefix = "Sireum:"
+    val prefixBytes = Server.prefix.value.getBytes("UTF-8")
     while (System.in.available() > 0) System.in.read()
     val oldIn = System.in
     val oldOut = System.out
@@ -49,7 +55,8 @@ class LogikaServerTest extends TestSuite {
       System.setErr(pw)
       def writeRequest(req: Request): Unit = {
         posIn.write(prefixBytes)
-        posIn.write(CustomMessagePack.fromRequest(req).value.getBytes("UTF-8"))
+        val msg = if (isMsgPack) CustomMessagePack.fromRequest(req) else JSON.fromRequest(req, T)
+        posIn.write(msg.value.getBytes("UTF-8"))
         posIn.write('\n')
       }
       val t = new ServerThread
@@ -65,14 +72,15 @@ class LogikaServerTest extends TestSuite {
         writeRequest(req)
       }
 
-      def readResponse(): Either[protocol.Response, String] = {
+      def readResponse(): Either[protocol.Response, _] = {
         val baos = new ByteArrayOutputStream
         var b = pisOut.read()
         while (b >= 0) {
           if (b == '\n') {
             val r = new Predef.String(baos.toByteArray, "UTF-8")
             if (r.startsWith(Server.prefix.value)) {
-              return CustomMessagePack.toResponse(r.substring(Server.prefix.value.length))
+              val resp = r.substring(Server.prefix.value.length)
+              return if (isMsgPack) CustomMessagePack.toResponse(resp) else JSON.toResponse(resp)
             } else {
               oldOut.println(r)
               oldOut.flush()
@@ -96,7 +104,11 @@ class LogikaServerTest extends TestSuite {
               foundEnd = T
             }
           case Either.Right(value) =>
-            if (value.size != 0) {
+            val text = value match {
+              case value: Predef.String => value
+              case value: Json.ErrorMsg => value.message.value
+            }
+            if (text.nonEmpty) {
               t.interrupt()
               assert(F, s"Unexpected response: '$value''")
             }
@@ -113,12 +125,6 @@ class LogikaServerTest extends TestSuite {
       System.setIn(oldIn)
       System.setOut(oldOut)
       System.setErr(oldErr)
-    }
-  }
-
-  class ServerThread extends Thread {
-    override def run(): Unit = {
-      Server.run(1)
     }
   }
 

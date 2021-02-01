@@ -31,21 +31,20 @@ import org.sireum.server.protocol._
 
 object LogikaService {
 
-  class Thread(terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
+  class Thread(serverAPI: server.ServerAPI,
+               terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
       while (!terminated.get()) {
-        _root_.java.lang.Thread.interrupted()
         val req = checkQueue.poll()
         if (req != null) {
           try {
             idMap.put(req.id, this)
-            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.Start(req.id,
-              extension.Time.currentMillis)))
-            extension.Cancel.handleCancellable(() => checkScript(req))
+            serverAPI.sendRespond(Logika.Verify.Start(req.id, extension.Time.currentMillis))
+            extension.Cancel.handleCancellable(() => checkScript(serverAPI, req))
           } finally {
-            server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(Logika.Verify.End(req.id,
-              extension.Time.currentMillis)))
+            serverAPI.sendRespond(Logika.Verify.End(req.id, extension.Time.currentMillis))
             idMap.remove(req.id)
+            _root_.java.lang.Thread.interrupted()
           }
         }
       }
@@ -81,7 +80,7 @@ object LogikaService {
     }
   }
 
-  class ReporterImpl(id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
+  class ReporterImpl(serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
 
@@ -93,7 +92,7 @@ object LogikaService {
     }
 
     override def $clone: ReporterImpl = {
-      return new ReporterImpl(id, _messages)
+      return new ReporterImpl(serverAPI, id, _messages)
     }
 
     override def string: String = {
@@ -101,27 +100,23 @@ object LogikaService {
     }
 
     override def state(posOpt: Option[Position], s: State): Unit = {
-      val resp = Logika.Verify.State(id, posOpt, s)
-      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, s))
     }
 
     override def query(pos: Position, time: Z, r: Smt2Query.Result): Unit = {
-      val resp = Logika.Verify.Smt2Query(id, pos, time, r)
-      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+      serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
     }
 
     override def halted(posOpt: Option[Position], s: State): Unit = {
-      val resp = Logika.Verify.Halted(id, posOpt, s)
-      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+      serverAPI.sendRespond(Logika.Verify.Halted(id, posOpt, s))
     }
 
     override def timing(desc: String, timeInMs: Z): Unit = {
-      val resp = Timing(id, desc, timeInMs)
-      server.Server.Ext.writeOutput(CustomMessagePack.fromResponse(resp))
+      serverAPI.sendRespond(Timing(id, desc, timeInMs))
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(id, ISZ())
+      return new ReporterImpl(serverAPI, id, ISZ())
     }
 
     override def messages: ISZ[Message] = {
@@ -231,11 +226,11 @@ object LogikaService {
 
   var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(ISZ(), None(), ""))
 
-  def checkScript(req: Logika.Verify.CheckScript): Unit = {
+  def checkScript(serverAPI: server.ServerAPI, req: Logika.Verify.CheckScript): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
-    val reporter = new LogikaService.ReporterImpl(req.id, ISZ())
+    val reporter = new LogikaService.ReporterImpl(serverAPI, req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
@@ -262,9 +257,10 @@ class LogikaService(numOfThreads: Z) extends Service {
 
   @strictpure def id: String = "logika"
 
-  def init(): Unit = {
+  def init(serverAPI: server.ServerAPI): Unit = {
+    lang.FrontEnd.checkedLibraryReporter
     terminated.set(false)
-    threads = for (i <- z"0" until numOfThreads) yield new LogikaService.Thread(terminated)
+    threads = for (i <- z"0" until numOfThreads) yield new LogikaService.Thread(serverAPI, terminated)
     for (t <- threads) {
       t.start()
     }
