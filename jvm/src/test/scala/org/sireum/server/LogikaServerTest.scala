@@ -13,14 +13,14 @@ class LogikaServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(T, id => Seq(
-      CheckScript(id, None(),
+      CheckScript(F, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin)))
 
     * - test(F, id => Seq(
-      CheckScript(id, None(),
+      CheckScript(F, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |

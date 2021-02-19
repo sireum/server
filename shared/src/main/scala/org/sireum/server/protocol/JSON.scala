@@ -133,6 +133,7 @@ object JSON {
     @pure def printLogikaVerifyCheckScript(o: Logika.Verify.CheckScript): ST = {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.CheckScript""""),
+        ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content))
@@ -150,8 +151,13 @@ object JSON {
     @pure def printLogikaVerifyEnd(o: Logika.Verify.End): ST = {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.End""""),
+        ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
-        ("currentTimeMillis", printZ(o.currentTimeMillis))
+        ("totalTimeMillis", printZ(o.totalTimeMillis)),
+        ("numOfSmt2Calls", printZ(o.numOfSmt2Calls)),
+        ("smt2TimeMillis", printZ(o.smt2TimeMillis)),
+        ("numOfErrors", printZ(o.numOfErrors)),
+        ("numOfWarnings", printZ(o.numOfWarnings))
       ))
     }
 
@@ -914,7 +920,8 @@ object JSON {
         ("kind", print_logikaSmt2QueryResultKindType(o.kind)),
         ("solverName", printString(o.solverName)),
         ("query", printString(o.query)),
-        ("output", printString(o.output))
+        ("output", printString(o.output)),
+        ("timeMillis", printZ(o.timeMillis))
       ))
     }
 
@@ -1229,6 +1236,9 @@ object JSON {
       if (!typeParsed) {
         parser.parseObjectType("Logika.Verify.CheckScript")
       }
+      parser.parseObjectKey("isBackground")
+      val isBackground = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
@@ -1238,7 +1248,7 @@ object JSON {
       parser.parseObjectKey("content")
       val content = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.CheckScript(id, uriOpt, content)
+      return Logika.Verify.CheckScript(isBackground, id, uriOpt, content)
     }
 
     def parseLogikaVerifyStart(): Logika.Verify.Start = {
@@ -1268,13 +1278,28 @@ object JSON {
       if (!typeParsed) {
         parser.parseObjectType("Logika.Verify.End")
       }
+      parser.parseObjectKey("isBackground")
+      val isBackground = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      parser.parseObjectKey("currentTimeMillis")
-      val currentTimeMillis = parser.parseZ()
+      parser.parseObjectKey("totalTimeMillis")
+      val totalTimeMillis = parser.parseZ()
       parser.parseObjectNext()
-      return Logika.Verify.End(id, currentTimeMillis)
+      parser.parseObjectKey("numOfSmt2Calls")
+      val numOfSmt2Calls = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("smt2TimeMillis")
+      val smt2TimeMillis = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("numOfErrors")
+      val numOfErrors = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("numOfWarnings")
+      val numOfWarnings = parser.parseZ()
+      parser.parseObjectNext()
+      return Logika.Verify.End(isBackground, id, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
     }
 
     def parseLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -2844,7 +2869,10 @@ object JSON {
       parser.parseObjectKey("output")
       val output = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output)
+      parser.parseObjectKey("timeMillis")
+      val timeMillis = parser.parseZ()
+      parser.parseObjectNext()
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output, timeMillis)
     }
 
     def parse_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {

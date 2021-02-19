@@ -305,6 +305,7 @@ object MsgPack {
 
     def writeLogikaVerifyCheckScript(o: Logika.Verify.CheckScript): Unit = {
       writer.writeZ(Constants.LogikaVerifyCheckScript)
+      writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
@@ -318,8 +319,13 @@ object MsgPack {
 
     def writeLogikaVerifyEnd(o: Logika.Verify.End): Unit = {
       writer.writeZ(Constants.LogikaVerifyEnd)
+      writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
-      writer.writeZ(o.currentTimeMillis)
+      writer.writeZ(o.totalTimeMillis)
+      writer.writeZ(o.numOfSmt2Calls)
+      writer.writeZ(o.smt2TimeMillis)
+      writer.writeZ(o.numOfErrors)
+      writer.writeZ(o.numOfWarnings)
     }
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
@@ -941,6 +947,7 @@ object MsgPack {
       writer.writeString(o.solverName)
       writer.writeString(o.query)
       writer.writeString(o.output)
+      writer.writeZ(o.timeMillis)
     }
 
     def write_langastMethodModeType(o: org.sireum.lang.ast.MethodMode.Type): Unit = {
@@ -1227,10 +1234,11 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyCheckScript)
       }
+      val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Logika.Verify.CheckScript(id, uriOpt, content)
+      return Logika.Verify.CheckScript(isBackground, id, uriOpt, content)
     }
 
     def readLogikaVerifyStart(): Logika.Verify.Start = {
@@ -1256,9 +1264,14 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyEnd)
       }
+      val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
-      val currentTimeMillis = reader.readZ()
-      return Logika.Verify.End(id, currentTimeMillis)
+      val totalTimeMillis = reader.readZ()
+      val numOfSmt2Calls = reader.readZ()
+      val smt2TimeMillis = reader.readZ()
+      val numOfErrors = reader.readZ()
+      val numOfWarnings = reader.readZ()
+      return Logika.Verify.End(isBackground, id, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -2462,7 +2475,8 @@ object MsgPack {
       val solverName = reader.readString()
       val query = reader.readString()
       val output = reader.readString()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output)
+      val timeMillis = reader.readZ()
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output, timeMillis)
     }
 
     def read_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {

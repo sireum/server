@@ -25,7 +25,6 @@
 package org.sireum.server.service
 
 import org.sireum._
-import org.sireum.logika.{Smt2Query, State}
 import org.sireum.message._
 import org.sireum.server.protocol._
 
@@ -36,13 +35,23 @@ object LogikaService {
     override def run(): Unit = {
       while (!terminated.get()) {
         val req = checkQueue.poll()
+        val reporter = new ReporterImpl(serverAPI, req.id, ISZ())
         if (req != null) {
+          idMap.put(req.id, this)
+          val startTime = extension.Time.currentMillis
           try {
-            idMap.put(req.id, this)
-            serverAPI.sendRespond(Logika.Verify.Start(req.id, extension.Time.currentMillis))
-            extension.Cancel.handleCancellable(() => checkScript(serverAPI, req))
+            serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
+            extension.Cancel.handleCancellable(() => checkScript(serverAPI, req, reporter))
           } finally {
-            serverAPI.sendRespond(Logika.Verify.End(req.id, extension.Time.currentMillis))
+            serverAPI.sendRespond(Logika.Verify.End(
+              isBackground = req.isBackground,
+              id = req.id,
+              totalTimeMillis = extension.Time.currentMillis - startTime,
+              numOfSmt2Calls = reporter.numOfSmt2Calls,
+              smt2TimeMillis = reporter.smt2TimeMillis,
+              numOfErrors = reporter.numOfErrors,
+              numOfWarnings = reporter.numOfWarnings
+            ))
             idMap.remove(req.id)
             _root_.java.lang.Thread.interrupted()
           }
@@ -52,8 +61,8 @@ object LogikaService {
   }
 
   class ScriptCache(val req: Logika.Verify.CheckScript,
-                    val storage: java.util.Map[(Z, Predef.String), Smt2Query.Result] =
-                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), Smt2Query.Result]) extends logika.Smt2Impl.Cache {
+                    val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
+                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2Impl.Cache {
     var _owned: Boolean = false
     var _ignore: B = F
 
@@ -70,12 +79,12 @@ object LogikaService {
       return "Smt2Cache"
     }
 
-    def get(isSat: B, query: String, timeoutInMs: Z): Option[Smt2Query.Result] = {
+    def get(isSat: B, query: String, timeoutInMs: Z): Option[logika.Smt2Query.Result] = {
       val r = storage.get((timeoutInMs, query.value))
       return if (r == null) None() else Some(r)
     }
 
-    def set(isSat: B, query: String, timeoutInMs: Z, result: Smt2Query.Result): Unit = {
+    def set(isSat: B, query: String, timeoutInMs: Z, result: logika.Smt2Query.Result): Unit = {
       storage.put((timeoutInMs, query.value), result)
     }
   }
@@ -83,6 +92,22 @@ object LogikaService {
   class ReporterImpl(serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
+    var numOfSmt2Calls: Z = 0
+    var smt2TimeMillis: Z = 0
+    var numOfErrors: Z = 0
+    var numOfWarnings: Z = 0
+
+    override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
+      other match {
+        case other: ReporterImpl =>
+          _messages = _messages ++ other._messages
+          numOfSmt2Calls = numOfSmt2Calls + other.numOfSmt2Calls
+          smt2TimeMillis = smt2TimeMillis + other.smt2TimeMillis
+          numOfErrors = numOfErrors + other.numOfErrors
+          numOfWarnings = numOfWarnings + other.numOfWarnings
+          return this
+      }
+    }
 
     override def $owned: Boolean = _owned
 
@@ -99,15 +124,20 @@ object LogikaService {
       return "ReporterImpl"
     }
 
-    override def state(posOpt: Option[Position], s: State): Unit = {
+    override def state(posOpt: Option[Position], s: logika.State): Unit = {
       serverAPI.sendRespond(Logika.Verify.State(id, posOpt, s))
     }
 
-    override def query(pos: Position, time: Z, r: Smt2Query.Result): Unit = {
+    override def query(pos: Position, time: Z, r: logika.Smt2Query.Result): Unit = {
+      numOfSmt2Calls = numOfSmt2Calls + 1
+      smt2TimeMillis = smt2TimeMillis + r.timeMillis
       serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
     }
 
-    override def halted(posOpt: Option[Position], s: State): Unit = {
+    override def halted(posOpt: Option[Position], s: logika.State): Unit = {
+      if (!s.status) {
+        numOfErrors = numOfErrors + 1
+      }
       serverAPI.sendRespond(Logika.Verify.Halted(id, posOpt, s))
     }
 
@@ -224,13 +254,12 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(ISZ(), None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(F, ISZ(), None(), ""))
 
-  def checkScript(serverAPI: server.ServerAPI, req: Logika.Verify.CheckScript): Unit = {
+  def checkScript(serverAPI: server.ServerAPI, req: Logika.Verify.CheckScript, reporter: ReporterImpl): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
-    val reporter = new LogikaService.ReporterImpl(serverAPI, req.id, ISZ())
     val config = defaultConfig
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,

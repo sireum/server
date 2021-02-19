@@ -30,9 +30,13 @@ import org.sireum._
 import org.sireum.message.Position
 import org.sireum.message.Message
 
-@datatype trait Request
+@datatype trait Request {
+  @pure def isBackground: B
+}
 
-@datatype class Terminate extends Request
+@datatype class Terminate extends Request {
+  @strictpure override def isBackground: B = F
+}
 
 @datatype trait Response
 
@@ -42,7 +46,9 @@ import org.sireum.message.Message
   def id: ISZ[String]
 }
 
-@datatype class Cancel(val id: ISZ[String]) extends RequestId
+@datatype class Cancel(val id: ISZ[String]) extends RequestId {
+  @strictpure override def isBackground: B = F
+}
 
 @datatype trait ResponseId extends Response {
   def id: ISZ[String]
@@ -55,7 +61,9 @@ import org.sireum.message.Message
 
 object Version {
 
-  @datatype class Request extends org.sireum.server.protocol.Request
+  @datatype class Request extends org.sireum.server.protocol.Request {
+    @strictpure override def isBackground: B = F
+  }
 
   @datatype class Response(val version: String) extends org.sireum.server.protocol.Response
 
@@ -66,13 +74,21 @@ object Logika {
 
   object Verify {
 
-    @datatype class CheckScript(val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
+    @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
 
     @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
 
-    @datatype class End(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
+    @datatype class End(val isBackground: B,
+                        val id: ISZ[String],
+                        val totalTimeMillis: Z,
+                        val numOfSmt2Calls: Z,
+                        val smt2TimeMillis: Z,
+                        val numOfErrors: Z,
+                        val numOfWarnings: Z) extends ResponseId
 
-    @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request
+    @datatype class Config(val config: logika.Config) extends org.sireum.server.protocol.Request {
+      @strictpure override def isBackground: B = F
+    }
 
     @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
 
