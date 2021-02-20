@@ -28,24 +28,31 @@ import org.sireum._
 import org.sireum.message._
 import org.sireum.server.protocol._
 
+import java.util.concurrent.TimeUnit
+
 object LogikaService {
 
   class Thread(serverAPI: server.ServerAPI,
                terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
       while (!terminated.get()) {
-        val req = checkQueue.poll()
-        val reporter = new ReporterImpl(serverAPI, req.id, ISZ())
+        val req = try checkQueue.poll(200, TimeUnit.MILLISECONDS) catch { case _: InterruptedException => null }
         if (req != null) {
-          idMap.put(req.id, this)
+          val reporter = new ReporterImpl(serverAPI, req.id, ISZ())
           val startTime = extension.Time.currentMillis
+          idMap.put(req.id, this)
+          var cancelled = true
           try {
             serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
-            extension.Cancel.handleCancellable(() => checkScript(serverAPI, req, reporter))
+            extension.Cancel.handleCancellable { () =>
+              checkScript(serverAPI, req, reporter)
+              cancelled = false
+            }
           } finally {
             serverAPI.sendRespond(Logika.Verify.End(
               isBackground = req.isBackground,
               id = req.id,
+              wasCancelled = cancelled,
               totalTimeMillis = extension.Time.currentMillis - startTime,
               numOfSmt2Calls = reporter.numOfSmt2Calls,
               smt2TimeMillis = reporter.smt2TimeMillis,

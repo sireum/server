@@ -321,6 +321,7 @@ object MsgPack {
       writer.writeZ(Constants.LogikaVerifyEnd)
       writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeB(o.wasCancelled)
       writer.writeZ(o.totalTimeMillis)
       writer.writeZ(o.numOfSmt2Calls)
       writer.writeZ(o.smt2TimeMillis)
@@ -1266,12 +1267,13 @@ object MsgPack {
       }
       val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
+      val wasCancelled = reader.readB()
       val totalTimeMillis = reader.readZ()
       val numOfSmt2Calls = reader.readZ()
       val smt2TimeMillis = reader.readZ()
       val numOfErrors = reader.readZ()
       val numOfWarnings = reader.readZ()
-      return Logika.Verify.End(isBackground, id, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
+      return Logika.Verify.End(isBackground, id, wasCancelled, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
