@@ -10,6 +10,8 @@ import java.io._
 
 class LogikaServerTest extends TestSuite {
 
+  val WAIT_THRESHOLD_IN_MILLIS: Int = 2 * 60 * 1000
+
   val tests = Tests {
 
     * - test(T, id => Seq(
@@ -74,22 +76,33 @@ class LogikaServerTest extends TestSuite {
 
       def readResponse(): Either[protocol.Response, _] = {
         val baos = new ByteArrayOutputStream
-        var b = pisOut.read()
-        while (b >= 0) {
-          if (b == '\n') {
-            val r = new Predef.String(baos.toByteArray, "UTF-8")
-            if (r.startsWith(ServerExt.prefix)) {
-              val resp = r.substring(ServerExt.prefix.length)
-              return if (isMsgPack) CustomMessagePack.toResponse(resp) else JSON.toResponse(resp)
-            } else {
-              oldOut.println(r)
-              oldOut.flush()
-              return Either.Right("")
+        val startWaitTime = System.currentTimeMillis
+        while (true) {
+          if (pisOut.available > 0) {
+            var b = pisOut.read()
+            while (b >= 0) {
+              if (b == '\n') {
+                val r = new Predef.String(baos.toByteArray, "UTF-8")
+                if (r.startsWith(ServerExt.prefix)) {
+                  val resp = r.substring(ServerExt.prefix.length)
+                  return if (isMsgPack) CustomMessagePack.toResponse(resp) else JSON.toResponse(resp)
+                } else {
+                  oldOut.println(r)
+                  oldOut.flush()
+                  return Either.Right("")
+                }
+              } else {
+                baos.write(b)
+              }
+              b = pisOut.read()
             }
           } else {
-            baos.write(b)
+            Thread.sleep(100)
+            if (System.currentTimeMillis - startWaitTime > WAIT_THRESHOLD_IN_MILLIS) {
+              t.interrupt()
+              throw new RuntimeException("Expecting further responses from server but it took too long")
+            }
           }
-          b = pisOut.read()
         }
         return Either.Right(new Predef.String(baos.toByteArray, "UTF-8"))
       }
