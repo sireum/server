@@ -53,6 +53,7 @@ object LogikaService {
               isBackground = req.isBackground,
               id = req.id,
               wasCancelled = cancelled,
+              isIllFormed = reporter.isIllFormed,
               totalTimeMillis = extension.Time.currentMillis - startTime,
               numOfSmt2Calls = reporter.numOfSmt2Calls,
               smt2TimeMillis = reporter.smt2TimeMillis,
@@ -99,6 +100,7 @@ object LogikaService {
   class ReporterImpl(serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
+    var isIllFormed: B = F
     var numOfSmt2Calls: Z = 0
     var smt2TimeMillis: Z = 0
     var numOfErrors: Z = 0
@@ -108,6 +110,7 @@ object LogikaService {
       other match {
         case other: ReporterImpl =>
           _messages = _messages ++ other._messages
+          isIllFormed = isIllFormed || other.isIllFormed
           numOfSmt2Calls = numOfSmt2Calls + other.numOfSmt2Calls
           smt2TimeMillis = smt2TimeMillis + other.smt2TimeMillis
           numOfErrors = numOfErrors + other.numOfErrors
@@ -125,6 +128,7 @@ object LogikaService {
 
     override def $clone: ReporterImpl = {
       val r = new ReporterImpl(serverAPI, id, _messages)
+      r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
       r.numOfSmt2Calls = numOfSmt2Calls
@@ -134,6 +138,10 @@ object LogikaService {
 
     override def string: String = {
       return "ReporterImpl"
+    }
+
+    override def illFormed(): Unit = {
+      isIllFormed = T
     }
 
     override def state(posOpt: Option[Position], s: logika.State): Unit = {

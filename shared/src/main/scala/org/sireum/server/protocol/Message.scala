@@ -78,6 +78,7 @@ object Logika {
     @datatype class End(val isBackground: B,
                         val id: ISZ[String],
                         val wasCancelled: B,
+                        val isIllFormed: B,
                         val totalTimeMillis: Z,
                         val numOfSmt2Calls: Z,
                         val smt2TimeMillis: Z,

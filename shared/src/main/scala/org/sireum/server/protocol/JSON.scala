@@ -154,6 +154,7 @@ object JSON {
         ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
         ("wasCancelled", printB(o.wasCancelled)),
+        ("isIllFormed", printB(o.isIllFormed)),
         ("totalTimeMillis", printZ(o.totalTimeMillis)),
         ("numOfSmt2Calls", printZ(o.numOfSmt2Calls)),
         ("smt2TimeMillis", printZ(o.smt2TimeMillis)),
@@ -1288,6 +1289,9 @@ object JSON {
       parser.parseObjectKey("wasCancelled")
       val wasCancelled = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("isIllFormed")
+      val isIllFormed = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("totalTimeMillis")
       val totalTimeMillis = parser.parseZ()
       parser.parseObjectNext()
@@ -1303,7 +1307,7 @@ object JSON {
       parser.parseObjectKey("numOfWarnings")
       val numOfWarnings = parser.parseZ()
       parser.parseObjectNext()
-      return Logika.Verify.End(isBackground, id, wasCancelled, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
+      return Logika.Verify.End(isBackground, id, wasCancelled, isIllFormed, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
     }
 
     def parseLogikaVerifyConfig(): Logika.Verify.Config = {
