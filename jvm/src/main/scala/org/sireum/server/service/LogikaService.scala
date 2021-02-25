@@ -346,7 +346,12 @@ class LogikaService(numOfThreads: Z) extends Service {
           case t if t != null => t.interrupt()
           case _ =>
         }
-      case req: Logika.Verify.Config => LogikaService.defaultConfig = req.config
+      case req: Logika.Verify.Config =>
+        if (req.config.smt2Configs.isEmpty) {
+          LogikaService.defaultConfig = req.config(smt2Configs = LogikaService.defaultConfig.smt2Configs)
+        } else {
+          LogikaService.defaultConfig = req.config
+        }
       case req: Slang.CheckScript => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
