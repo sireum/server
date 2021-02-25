@@ -62,11 +62,16 @@ object Version {
 }
 
 
+object Slang {
+
+  @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
+
+}
+
+
 object Logika {
 
   object Verify {
-
-    @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
 
     @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
 

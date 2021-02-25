@@ -4,7 +4,7 @@ import org.sireum._
 import org.sireum.server.protocol.CustomMessagePack
 import org.sireum.test._
 import org.sireum.server.protocol._
-import org.sireum.server.protocol.Logika.Verify._
+import org.sireum.server.protocol.Slang.CheckScript
 
 import java.io._
 

@@ -42,7 +42,7 @@ object JSON {
         case o: Terminate => return printTerminate(o)
         case o: Cancel => return printCancel(o)
         case o: Version.Request => return printVersionRequest(o)
-        case o: Logika.Verify.CheckScript => return printLogikaVerifyCheckScript(o)
+        case o: Slang.CheckScript => return printSlangCheckScript(o)
         case o: Logika.Verify.Config => return printLogikaVerifyConfig(o)
       }
     }
@@ -77,7 +77,7 @@ object JSON {
     @pure def printRequestId(o: RequestId): ST = {
       o match {
         case o: Cancel => return printCancel(o)
-        case o: Logika.Verify.CheckScript => return printLogikaVerifyCheckScript(o)
+        case o: Slang.CheckScript => return printSlangCheckScript(o)
       }
     }
 
@@ -130,9 +130,9 @@ object JSON {
       ))
     }
 
-    @pure def printLogikaVerifyCheckScript(o: Logika.Verify.CheckScript): ST = {
+    @pure def printSlangCheckScript(o: Slang.CheckScript): ST = {
       return printObject(ISZ(
-        ("type", st""""Logika.Verify.CheckScript""""),
+        ("type", st""""Slang.CheckScript""""),
         ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
@@ -1070,12 +1070,12 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Logika.Verify.CheckScript", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.CheckScript", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
         case "Version.Request" => val r = parseVersionRequestT(T); return r
-        case "Logika.Verify.CheckScript" => val r = parseLogikaVerifyCheckScriptT(T); return r
+        case "Slang.CheckScript" => val r = parseSlangCheckScriptT(T); return r
         case "Logika.Verify.Config" => val r = parseLogikaVerifyConfigT(T); return r
         case _ => val r = parseLogikaVerifyConfigT(T); return r
       }
@@ -1125,11 +1125,11 @@ object JSON {
     }
 
     def parseRequestId(): RequestId = {
-      val t = parser.parseObjectTypes(ISZ("Cancel", "Logika.Verify.CheckScript"))
+      val t = parser.parseObjectTypes(ISZ("Cancel", "Slang.CheckScript"))
       t.native match {
         case "Cancel" => val r = parseCancelT(T); return r
-        case "Logika.Verify.CheckScript" => val r = parseLogikaVerifyCheckScriptT(T); return r
-        case _ => val r = parseLogikaVerifyCheckScriptT(T); return r
+        case "Slang.CheckScript" => val r = parseSlangCheckScriptT(T); return r
+        case _ => val r = parseSlangCheckScriptT(T); return r
       }
     }
 
@@ -1228,14 +1228,14 @@ object JSON {
       return Version.Response(version)
     }
 
-    def parseLogikaVerifyCheckScript(): Logika.Verify.CheckScript = {
-      val r = parseLogikaVerifyCheckScriptT(F)
+    def parseSlangCheckScript(): Slang.CheckScript = {
+      val r = parseSlangCheckScriptT(F)
       return r
     }
 
-    def parseLogikaVerifyCheckScriptT(typeParsed: B): Logika.Verify.CheckScript = {
+    def parseSlangCheckScriptT(typeParsed: B): Slang.CheckScript = {
       if (!typeParsed) {
-        parser.parseObjectType("Logika.Verify.CheckScript")
+        parser.parseObjectType("Slang.CheckScript")
       }
       parser.parseObjectKey("isBackground")
       val isBackground = parser.parseB()
@@ -1249,7 +1249,7 @@ object JSON {
       parser.parseObjectKey("content")
       val content = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.CheckScript(isBackground, id, uriOpt, content)
+      return Slang.CheckScript(isBackground, id, uriOpt, content)
     }
 
     def parseLogikaVerifyStart(): Logika.Verify.Start = {
@@ -3359,8 +3359,8 @@ object JSON {
     return r
   }
 
-  def fromLogikaVerifyCheckScript(o: Logika.Verify.CheckScript, isCompact: B): String = {
-    val st = Printer.printLogikaVerifyCheckScript(o)
+  def fromSlangCheckScript(o: Slang.CheckScript, isCompact: B): String = {
+    val st = Printer.printSlangCheckScript(o)
     if (isCompact) {
       return st.renderCompact
     } else {
@@ -3368,12 +3368,12 @@ object JSON {
     }
   }
 
-  def toLogikaVerifyCheckScript(s: String): Either[Logika.Verify.CheckScript, Json.ErrorMsg] = {
-    def fLogikaVerifyCheckScript(parser: Parser): Logika.Verify.CheckScript = {
-      val r = parser.parseLogikaVerifyCheckScript()
+  def toSlangCheckScript(s: String): Either[Slang.CheckScript, Json.ErrorMsg] = {
+    def fSlangCheckScript(parser: Parser): Slang.CheckScript = {
+      val r = parser.parseSlangCheckScript()
       return r
     }
-    val r = to(s, fLogikaVerifyCheckScript _)
+    val r = to(s, fSlangCheckScript _)
     return r
   }
 

@@ -67,7 +67,7 @@ object LogikaService {
     }
   }
 
-  class ScriptCache(val req: Logika.Verify.CheckScript,
+  class ScriptCache(val req: Slang.CheckScript,
                     val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
                       new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2Impl.Cache {
     var _owned: Boolean = false
@@ -259,7 +259,7 @@ object LogikaService {
     }
     h()
   }
-  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Logika.Verify.CheckScript]()
+  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.CheckScript]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
@@ -271,16 +271,19 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(F, ISZ(), None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, ISZ(), None(), ""))
 
-  def checkScript(req: Logika.Verify.CheckScript, reporter: ReporterImpl): Unit = {
+  def checkScript(req: Slang.CheckScript, reporter: ReporterImpl): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
     val config = defaultConfig
+    val hasLogika =
+      try { req.content.value.linesIterator.next().replace(" ", "").replace("\t", "").contains("#Logika") }
+      catch { case _: NoSuchElementException => false }
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
-        config.intBitWidth, config.simplifiedQuery), reporter, T)
+        config.intBitWidth, config.simplifiedQuery), reporter, T, hasLogika)
   }
 }
 
@@ -316,13 +319,13 @@ class LogikaService(numOfThreads: Z) extends Service {
     req match {
       case req: Cancel => return LogikaService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
-      case req: Logika.Verify.CheckScript =>
+      case req: Slang.CheckScript =>
         val it = req.content.value.linesIterator
         if (!it.hasNext) {
           return F
         }
         val line = it.next().replace(" ", "").replace("\t", "")
-        return line.contains("#Logika")
+        return line.contains("#Sireum")
       case _ => return F
     }
   }
@@ -335,7 +338,7 @@ class LogikaService(numOfThreads: Z) extends Service {
           case _ =>
         }
       case req: Logika.Verify.Config => LogikaService.defaultConfig = req.config
-      case req: Logika.Verify.CheckScript => LogikaService.checkQueue.add(req)
+      case req: Slang.CheckScript => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
   }

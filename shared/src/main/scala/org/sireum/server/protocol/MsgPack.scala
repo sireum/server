@@ -50,7 +50,7 @@ object MsgPack {
 
     val VersionResponse: Z = -26
 
-    val LogikaVerifyCheckScript: Z = -25
+    val SlangCheckScript: Z = -25
 
     val LogikaVerifyStart: Z = -24
 
@@ -229,7 +229,7 @@ object MsgPack {
         case o: Terminate => writeTerminate(o)
         case o: Cancel => writeCancel(o)
         case o: Version.Request => writeVersionRequest(o)
-        case o: Logika.Verify.CheckScript => writeLogikaVerifyCheckScript(o)
+        case o: Slang.CheckScript => writeSlangCheckScript(o)
         case o: Logika.Verify.Config => writeLogikaVerifyConfig(o)
       }
     }
@@ -260,7 +260,7 @@ object MsgPack {
     def writeRequestId(o: RequestId): Unit = {
       o match {
         case o: Cancel => writeCancel(o)
-        case o: Logika.Verify.CheckScript => writeLogikaVerifyCheckScript(o)
+        case o: Slang.CheckScript => writeSlangCheckScript(o)
       }
     }
 
@@ -303,8 +303,8 @@ object MsgPack {
       writer.writeString(o.version)
     }
 
-    def writeLogikaVerifyCheckScript(o: Logika.Verify.CheckScript): Unit = {
-      writer.writeZ(Constants.LogikaVerifyCheckScript)
+    def writeSlangCheckScript(o: Slang.CheckScript): Unit = {
+      writer.writeZ(Constants.SlangCheckScript)
       writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
@@ -1074,7 +1074,7 @@ object MsgPack {
         case Constants.Terminate => val r = readTerminateT(T); return r
         case Constants.Cancel => val r = readCancelT(T); return r
         case Constants.VersionRequest => val r = readVersionRequestT(T); return r
-        case Constants.LogikaVerifyCheckScript => val r = readLogikaVerifyCheckScriptT(T); return r
+        case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
         case Constants.LogikaVerifyConfig => val r = readLogikaVerifyConfigT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of Request.")
@@ -1133,10 +1133,10 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.Cancel => val r = readCancelT(T); return r
-        case Constants.LogikaVerifyCheckScript => val r = readLogikaVerifyCheckScriptT(T); return r
+        case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of RequestId.")
-          val r = readLogikaVerifyCheckScriptT(T)
+          val r = readSlangCheckScriptT(T)
           return r
       }
     }
@@ -1226,20 +1226,20 @@ object MsgPack {
       return Version.Response(version)
     }
 
-    def readLogikaVerifyCheckScript(): Logika.Verify.CheckScript = {
-      val r = readLogikaVerifyCheckScriptT(F)
+    def readSlangCheckScript(): Slang.CheckScript = {
+      val r = readSlangCheckScriptT(F)
       return r
     }
 
-    def readLogikaVerifyCheckScriptT(typeParsed: B): Logika.Verify.CheckScript = {
+    def readSlangCheckScriptT(typeParsed: B): Slang.CheckScript = {
       if (!typeParsed) {
-        reader.expectZ(Constants.LogikaVerifyCheckScript)
+        reader.expectZ(Constants.SlangCheckScript)
       }
       val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Logika.Verify.CheckScript(isBackground, id, uriOpt, content)
+      return Slang.CheckScript(isBackground, id, uriOpt, content)
     }
 
     def readLogikaVerifyStart(): Logika.Verify.Start = {
@@ -2857,18 +2857,18 @@ object MsgPack {
     return r
   }
 
-  def fromLogikaVerifyCheckScript(o: Logika.Verify.CheckScript, pooling: B): ISZ[U8] = {
+  def fromSlangCheckScript(o: Slang.CheckScript, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeLogikaVerifyCheckScript(o)
+    w.writeSlangCheckScript(o)
     return w.result
   }
 
-  def toLogikaVerifyCheckScript(data: ISZ[U8]): Either[Logika.Verify.CheckScript, MessagePack.ErrorMsg] = {
-    def fLogikaVerifyCheckScript(reader: Reader): Logika.Verify.CheckScript = {
-      val r = reader.readLogikaVerifyCheckScript()
+  def toSlangCheckScript(data: ISZ[U8]): Either[Slang.CheckScript, MessagePack.ErrorMsg] = {
+    def fSlangCheckScript(reader: Reader): Slang.CheckScript = {
+      val r = reader.readSlangCheckScript()
       return r
     }
-    val r = to(data, fLogikaVerifyCheckScript _)
+    val r = to(data, fSlangCheckScript _)
     return r
   }
 
