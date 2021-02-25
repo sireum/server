@@ -45,7 +45,7 @@ object LogikaService {
           try {
             serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
             extension.Cancel.handleCancellable { () =>
-              checkScript(serverAPI, req, reporter)
+              checkScript(req, reporter)
               cancelled = false
             }
           } finally {
@@ -124,7 +124,12 @@ object LogikaService {
     }
 
     override def $clone: ReporterImpl = {
-      return new ReporterImpl(serverAPI, id, _messages)
+      val r = new ReporterImpl(serverAPI, id, _messages)
+      r.numOfWarnings = numOfWarnings
+      r.numOfErrors = numOfErrors
+      r.numOfSmt2Calls = numOfSmt2Calls
+      r.smt2TimeMillis = smt2TimeMillis
+      r
     }
 
     override def string: String = {
@@ -139,13 +144,6 @@ object LogikaService {
       numOfSmt2Calls = numOfSmt2Calls + 1
       smt2TimeMillis = smt2TimeMillis + r.timeMillis
       serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
-    }
-
-    override def halted(posOpt: Option[Position], s: logika.State): Unit = {
-      if (!s.status) {
-        numOfErrors = numOfErrors + 1
-      }
-      serverAPI.sendRespond(Logika.Verify.Halted(id, posOpt, s))
     }
 
     override def timing(desc: String, timeInMs: Z): Unit = {
@@ -170,6 +168,18 @@ object LogikaService {
 
     override def setMessages(newMessages: ISZ[Message]): Unit = {
       _messages = newMessages
+    }
+
+    override def report(m: Message): Unit = {
+      if (!ignore) {
+        m.level match {
+          case Level.Error => numOfErrors = numOfErrors + 1
+          case Level.Warning => numOfWarnings = numOfWarnings + 1
+          case _ =>
+        }
+        serverAPI.sendRespond(ReportId(id, m))
+      }
+      super.report(m)
     }
   }
 
@@ -263,7 +273,7 @@ object LogikaService {
 
   var scriptCache: ScriptCache = new ScriptCache(Logika.Verify.CheckScript(F, ISZ(), None(), ""))
 
-  def checkScript(serverAPI: server.ServerAPI, req: Logika.Verify.CheckScript, reporter: ReporterImpl): Unit = {
+  def checkScript(req: Logika.Verify.CheckScript, reporter: ReporterImpl): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }

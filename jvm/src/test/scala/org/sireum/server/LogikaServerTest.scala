@@ -19,6 +19,13 @@ class LogikaServerTest extends TestSuite {
         s"""// #Sireum #Logika
            |import org.sireum._
            |
+           |assert(F)""".stripMargin)))
+
+    * - test(T, id => Seq(
+      CheckScript(F, id, None(),
+        s"""// #Sireum #Logika
+           |import org.sireum._
+           |
            |assert(T)""".stripMargin)))
 
     * - test(F, id => Seq(
