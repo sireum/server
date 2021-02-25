@@ -42,10 +42,13 @@ object LogikaService {
           val startTime = extension.Time.currentMillis
           idMap.put(req.id, this)
           var cancelled = true
+          val hasLogika =
+            try { req.content.value.linesIterator.next().replace(" ", "").replace("\t", "").contains("#Logika") }
+            catch { case _: NoSuchElementException => false }
           try {
             serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
             extension.Cancel.handleCancellable { () =>
-              checkScript(req, reporter)
+              checkScript(req, reporter, hasLogika)
               cancelled = false
             }
           } finally {
@@ -53,6 +56,7 @@ object LogikaService {
               isBackground = req.isBackground,
               id = req.id,
               wasCancelled = cancelled,
+              hasLogika = hasLogika,
               isIllFormed = reporter.isIllFormed,
               totalTimeMillis = extension.Time.currentMillis - startTime,
               numOfSmt2Calls = reporter.numOfSmt2Calls,
@@ -281,14 +285,11 @@ object LogikaService {
 
   var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, ISZ(), None(), ""))
 
-  def checkScript(req: Slang.CheckScript, reporter: ReporterImpl): Unit = {
+  def checkScript(req: Slang.CheckScript, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
     val config = defaultConfig
-    val hasLogika =
-      try { req.content.value.linesIterator.next().replace(" ", "").replace("\t", "").contains("#Logika") }
-      catch { case _: NoSuchElementException => false }
     logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
         config.intBitWidth, config.simplifiedQuery), reporter, T, hasLogika)

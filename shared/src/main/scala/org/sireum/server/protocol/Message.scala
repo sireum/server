@@ -79,6 +79,7 @@ object Logika {
                         val id: ISZ[String],
                         val wasCancelled: B,
                         val isIllFormed: B,
+                        val hasLogika: B,
                         val totalTimeMillis: Z,
                         val numOfSmt2Calls: Z,
                         val smt2TimeMillis: Z,
