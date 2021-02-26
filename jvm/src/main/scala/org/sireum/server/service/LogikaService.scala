@@ -42,13 +42,12 @@ object LogikaService {
           val startTime = extension.Time.currentMillis
           idMap.put(req.id, this)
           var cancelled = true
-          val hasLogika =
-            try { req.content.value.linesIterator.next().replace(" ", "").replace("\t", "").contains("#Logika") }
-            catch { case _: NoSuchElementException => false }
+          val (hasSireum, compactFirstLine, text) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
+          val hasLogika = hasSireum && compactFirstLine.contains("#Logika")
           try {
             serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
             extension.Cancel.handleCancellable { () =>
-              checkScript(req, reporter, hasLogika)
+              checkScript(req(content = text), reporter, hasLogika)
               cancelled = false
             }
           } finally {
@@ -328,13 +327,7 @@ class LogikaService(numOfThreads: Z) extends Service {
     req match {
       case req: Cancel => return LogikaService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
-      case req: Slang.CheckScript =>
-        val it = req.content.value.linesIterator
-        if (!it.hasNext) {
-          return F
-        }
-        val line = it.next().replace(" ", "").replace("\t", "")
-        return line.contains("#Sireum")
+      case _: Slang.CheckScript => return T
       case _ => return F
     }
   }
