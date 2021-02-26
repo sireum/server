@@ -289,7 +289,7 @@ object LogikaService {
       scriptCache = new ScriptCache(req)
     }
     val config = defaultConfig
-    logika.Logika.checkWorksheet(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
+    logika.Logika.checkFile(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
         config.intBitWidth, config.simplifiedQuery), reporter, T, hasLogika)
   }
