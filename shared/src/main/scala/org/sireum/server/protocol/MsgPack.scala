@@ -949,6 +949,7 @@ object MsgPack {
       write_logikaSmt2QueryResultKindType(o.kind)
       writer.writeString(o.solverName)
       writer.writeString(o.query)
+      writer.writeString(o.info)
       writer.writeString(o.output)
       writer.writeZ(o.timeMillis)
     }
@@ -2480,9 +2481,10 @@ object MsgPack {
       val kind = read_logikaSmt2QueryResultKindType()
       val solverName = reader.readString()
       val query = reader.readString()
+      val info = reader.readString()
       val output = reader.readString()
       val timeMillis = reader.readZ()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output, timeMillis)
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis)
     }
 
     def read_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {

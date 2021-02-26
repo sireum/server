@@ -923,6 +923,7 @@ object JSON {
         ("kind", print_logikaSmt2QueryResultKindType(o.kind)),
         ("solverName", printString(o.solverName)),
         ("query", printString(o.query)),
+        ("info", printString(o.info)),
         ("output", printString(o.output)),
         ("timeMillis", printZ(o.timeMillis))
       ))
@@ -2878,13 +2879,16 @@ object JSON {
       parser.parseObjectKey("query")
       val query = parser.parseString()
       parser.parseObjectNext()
+      parser.parseObjectKey("info")
+      val info = parser.parseString()
+      parser.parseObjectNext()
       parser.parseObjectKey("output")
       val output = parser.parseString()
       parser.parseObjectNext()
       parser.parseObjectKey("timeMillis")
       val timeMillis = parser.parseZ()
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, output, timeMillis)
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis)
     }
 
     def parse_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {
