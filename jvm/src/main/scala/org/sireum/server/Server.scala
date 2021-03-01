@@ -72,11 +72,15 @@ object Server {
     for (i <- services.indices) {
       services(i).init(serverAPI)
     }
-    while (serve()) {}
+    extension.Cancel.cancellable(serveLoop _)
     for (i <- services.indices) {
       services(i).finalise()
     }
     return 0
+  }
+
+  def serveLoop(): Unit = {
+    while (serve()) {}
   }
 
   def serve(): B = {
@@ -92,6 +96,16 @@ object Server {
         for (service <- services if !found && service.canHandle(req)) {
           found = T
           service.handle(req)
+        }
+        if (!found) {
+          req match {
+            case req: protocol.RequestId =>
+              serverAPI.sendRespond(protocol.ReportId(req.id, message.Message(message.Level.InternalError, None(),
+                "server", s"Unimplemented request handler for: $req")))
+            case _ =>
+              serverAPI.sendRespond(protocol.Report(message.Message(message.Level.InternalError, None(), "server",
+                s"Unimplemented request handler for: $req")))
+          }
         }
     }
     return T

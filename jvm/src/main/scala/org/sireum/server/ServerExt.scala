@@ -32,7 +32,7 @@ import java.io.ByteArrayOutputStream
 object ServerExt {
   var prefix: Predef.String = ""
 
-  def readInput(): String = {
+  def readInput(): String = try {
     val prefixSize = prefix.length
 
     val baos = new ByteArrayOutputStream
@@ -61,13 +61,18 @@ object ServerExt {
       b = System.in.read
     }
     return new Predef.String(baos.toByteArray, "UTF-8")
+  } catch {
+    case _: Throwable => throw new InterruptedException
   }
+
   def writeOutput(s: String): Unit = this.synchronized {
     if (prefix.nonEmpty) System.out.print(prefix)
     System.out.println(s)
     System.out.flush()
   }
+
   def version: String = $internal.Macro.version
+
   def logikaService(numOfThreads: Z): Service = {
     LogikaService.defaultConfig = LogikaService.defaultConfig(smt2Configs = ISZ(
       logika.Cvc4Config(LogikaService.cvc4Exe), logika.Z3Config(LogikaService.z3Exe)
