@@ -55,9 +55,8 @@ object JSON {
 
     @pure def printResponse(o: Response): ST = {
       o match {
-        case o: Report => return printReport(o)
         case o: Timing => return printTiming(o)
-        case o: ReportId => return printReportId(o)
+        case o: Report => return printReport(o)
         case o: Version.Response => return printVersionResponse(o)
         case o: Logika.Verify.Start => return printLogikaVerifyStart(o)
         case o: Logika.Verify.End => return printLogikaVerifyEnd(o)
@@ -67,37 +66,11 @@ object JSON {
       }
     }
 
-    @pure def printReport(o: Report): ST = {
-      return printObject(ISZ(
-        ("type", st""""Report""""),
-        ("message", printMessage(o.message))
-      ))
-    }
-
-    @pure def printRequestId(o: RequestId): ST = {
-      o match {
-        case o: Cancel => return printCancel(o)
-        case o: Slang.CheckScript => return printSlangCheckScript(o)
-      }
-    }
-
     @pure def printCancel(o: Cancel): ST = {
       return printObject(ISZ(
         ("type", st""""Cancel""""),
         ("id", printISZ(T, o.id, printString _))
       ))
-    }
-
-    @pure def printResponseId(o: ResponseId): ST = {
-      o match {
-        case o: Timing => return printTiming(o)
-        case o: ReportId => return printReportId(o)
-        case o: Logika.Verify.Start => return printLogikaVerifyStart(o)
-        case o: Logika.Verify.End => return printLogikaVerifyEnd(o)
-        case o: Logika.Verify.State => return printLogikaVerifyState(o)
-        case o: Logika.Verify.Halted => return printLogikaVerifyHalted(o)
-        case o: Logika.Verify.Smt2Query => return printLogikaVerifySmt2Query(o)
-      }
     }
 
     @pure def printTiming(o: Timing): ST = {
@@ -109,9 +82,9 @@ object JSON {
       ))
     }
 
-    @pure def printReportId(o: ReportId): ST = {
+    @pure def printReport(o: Report): ST = {
       return printObject(ISZ(
-        ("type", st""""ReportId""""),
+        ("type", st""""Report""""),
         ("id", printISZ(T, o.id, printString _)),
         ("message", printMessage(o.message))
       ))
@@ -1097,11 +1070,10 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Report", "Timing", "ReportId", "Version.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query"))
       t.native match {
-        case "Report" => val r = parseReportT(T); return r
         case "Timing" => val r = parseTimingT(T); return r
-        case "ReportId" => val r = parseReportIdT(T); return r
+        case "Report" => val r = parseReportT(T); return r
         case "Version.Response" => val r = parseVersionResponseT(T); return r
         case "Logika.Verify.Start" => val r = parseLogikaVerifyStartT(T); return r
         case "Logika.Verify.End" => val r = parseLogikaVerifyEndT(T); return r
@@ -1109,30 +1081,6 @@ object JSON {
         case "Logika.Verify.Halted" => val r = parseLogikaVerifyHaltedT(T); return r
         case "Logika.Verify.Smt2Query" => val r = parseLogikaVerifySmt2QueryT(T); return r
         case _ => val r = parseLogikaVerifySmt2QueryT(T); return r
-      }
-    }
-
-    def parseReport(): Report = {
-      val r = parseReportT(F)
-      return r
-    }
-
-    def parseReportT(typeParsed: B): Report = {
-      if (!typeParsed) {
-        parser.parseObjectType("Report")
-      }
-      parser.parseObjectKey("message")
-      val message = parser.parseMessage()
-      parser.parseObjectNext()
-      return Report(message)
-    }
-
-    def parseRequestId(): RequestId = {
-      val t = parser.parseObjectTypes(ISZ("Cancel", "Slang.CheckScript"))
-      t.native match {
-        case "Cancel" => val r = parseCancelT(T); return r
-        case "Slang.CheckScript" => val r = parseSlangCheckScriptT(T); return r
-        case _ => val r = parseSlangCheckScriptT(T); return r
       }
     }
 
@@ -1149,20 +1097,6 @@ object JSON {
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
       return Cancel(id)
-    }
-
-    def parseResponseId(): ResponseId = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "ReportId", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query"))
-      t.native match {
-        case "Timing" => val r = parseTimingT(T); return r
-        case "ReportId" => val r = parseReportIdT(T); return r
-        case "Logika.Verify.Start" => val r = parseLogikaVerifyStartT(T); return r
-        case "Logika.Verify.End" => val r = parseLogikaVerifyEndT(T); return r
-        case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
-        case "Logika.Verify.Halted" => val r = parseLogikaVerifyHaltedT(T); return r
-        case "Logika.Verify.Smt2Query" => val r = parseLogikaVerifySmt2QueryT(T); return r
-        case _ => val r = parseLogikaVerifySmt2QueryT(T); return r
-      }
     }
 
     def parseTiming(): Timing = {
@@ -1186,14 +1120,14 @@ object JSON {
       return Timing(id, desc, timeInMs)
     }
 
-    def parseReportId(): ReportId = {
-      val r = parseReportIdT(F)
+    def parseReport(): Report = {
+      val r = parseReportT(F)
       return r
     }
 
-    def parseReportIdT(typeParsed: B): ReportId = {
+    def parseReportT(typeParsed: B): Report = {
       if (!typeParsed) {
-        parser.parseObjectType("ReportId")
+        parser.parseObjectType("Report")
       }
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
@@ -1201,7 +1135,7 @@ object JSON {
       parser.parseObjectKey("message")
       val message = parser.parseMessage()
       parser.parseObjectNext()
-      return ReportId(id, message)
+      return Report(id, message)
     }
 
     def parseVersionRequest(): Version.Request = {
@@ -3227,42 +3161,6 @@ object JSON {
     return r
   }
 
-  def fromReport(o: Report, isCompact: B): String = {
-    val st = Printer.printReport(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def toReport(s: String): Either[Report, Json.ErrorMsg] = {
-    def fReport(parser: Parser): Report = {
-      val r = parser.parseReport()
-      return r
-    }
-    val r = to(s, fReport _)
-    return r
-  }
-
-  def fromRequestId(o: RequestId, isCompact: B): String = {
-    val st = Printer.printRequestId(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def toRequestId(s: String): Either[RequestId, Json.ErrorMsg] = {
-    def fRequestId(parser: Parser): RequestId = {
-      val r = parser.parseRequestId()
-      return r
-    }
-    val r = to(s, fRequestId _)
-    return r
-  }
-
   def fromCancel(o: Cancel, isCompact: B): String = {
     val st = Printer.printCancel(o)
     if (isCompact) {
@@ -3278,24 +3176,6 @@ object JSON {
       return r
     }
     val r = to(s, fCancel _)
-    return r
-  }
-
-  def fromResponseId(o: ResponseId, isCompact: B): String = {
-    val st = Printer.printResponseId(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def toResponseId(s: String): Either[ResponseId, Json.ErrorMsg] = {
-    def fResponseId(parser: Parser): ResponseId = {
-      val r = parser.parseResponseId()
-      return r
-    }
-    val r = to(s, fResponseId _)
     return r
   }
 
@@ -3317,8 +3197,8 @@ object JSON {
     return r
   }
 
-  def fromReportId(o: ReportId, isCompact: B): String = {
-    val st = Printer.printReportId(o)
+  def fromReport(o: Report, isCompact: B): String = {
+    val st = Printer.printReport(o)
     if (isCompact) {
       return st.renderCompact
     } else {
@@ -3326,12 +3206,12 @@ object JSON {
     }
   }
 
-  def toReportId(s: String): Either[ReportId, Json.ErrorMsg] = {
-    def fReportId(parser: Parser): ReportId = {
-      val r = parser.parseReportId()
+  def toReport(s: String): Either[Report, Json.ErrorMsg] = {
+    def fReport(parser: Parser): Report = {
+      val r = parser.parseReport()
       return r
     }
-    val r = to(s, fReportId _)
+    val r = to(s, fReport _)
     return r
   }
 

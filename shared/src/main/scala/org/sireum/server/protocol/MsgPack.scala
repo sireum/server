@@ -38,179 +38,177 @@ object MsgPack {
 
     val Terminate: Z = -32
 
-    val Report: Z = -31
+    val Cancel: Z = -31
 
-    val Cancel: Z = -30
+    val Timing: Z = -30
 
-    val Timing: Z = -29
+    val Report: Z = -29
 
-    val ReportId: Z = -28
+    val VersionRequest: Z = -28
 
-    val VersionRequest: Z = -27
+    val VersionResponse: Z = -27
 
-    val VersionResponse: Z = -26
+    val SlangCheckScript: Z = -26
 
-    val SlangCheckScript: Z = -25
+    val LogikaVerifyStart: Z = -25
 
-    val LogikaVerifyStart: Z = -24
+    val LogikaVerifyEnd: Z = -24
 
-    val LogikaVerifyEnd: Z = -23
+    val LogikaVerifyConfig: Z = -23
 
-    val LogikaVerifyConfig: Z = -22
+    val LogikaVerifyState: Z = -22
 
-    val LogikaVerifyState: Z = -21
+    val LogikaVerifyHalted: Z = -21
 
-    val LogikaVerifyHalted: Z = -20
+    val LogikaVerifySmt2Query: Z = -20
 
-    val LogikaVerifySmt2Query: Z = -19
+    val orgsireumlogikaState: Z = -19
 
-    val orgsireumlogikaState: Z = -18
+    val _logikaStateIFun: Z = -18
 
-    val _logikaStateIFun: Z = -17
+    val _logikaStateOFun: Z = -17
 
-    val _logikaStateOFun: Z = -16
+    val _logikaStateValueUnit: Z = -16
 
-    val _logikaStateValueUnit: Z = -15
+    val _logikaStateValueB: Z = -15
 
-    val _logikaStateValueB: Z = -14
+    val _logikaStateValueZ: Z = -14
 
-    val _logikaStateValueZ: Z = -13
+    val _logikaStateValueC: Z = -13
 
-    val _logikaStateValueC: Z = -12
+    val _logikaStateValueF32: Z = -12
 
-    val _logikaStateValueF32: Z = -11
+    val _logikaStateValueF64: Z = -11
 
-    val _logikaStateValueF64: Z = -10
+    val _logikaStateValueR: Z = -10
 
-    val _logikaStateValueR: Z = -9
+    val _logikaStateValueString: Z = -9
 
-    val _logikaStateValueString: Z = -8
+    val _logikaStateValueRange: Z = -8
 
-    val _logikaStateValueRange: Z = -7
+    val _logikaStateValueS8: Z = -7
 
-    val _logikaStateValueS8: Z = -6
+    val _logikaStateValueS16: Z = -6
 
-    val _logikaStateValueS16: Z = -5
+    val _logikaStateValueS32: Z = -5
 
-    val _logikaStateValueS32: Z = -4
+    val _logikaStateValueS64: Z = -4
 
-    val _logikaStateValueS64: Z = -3
+    val _logikaStateValueU8: Z = -3
 
-    val _logikaStateValueU8: Z = -2
+    val _logikaStateValueU16: Z = -2
 
-    val _logikaStateValueU16: Z = -1
+    val _logikaStateValueU32: Z = -1
 
-    val _logikaStateValueU32: Z = 0
+    val _logikaStateValueU64: Z = 0
 
-    val _logikaStateValueU64: Z = 1
+    val _logikaStateValueEnum: Z = 1
 
-    val _logikaStateValueEnum: Z = 2
+    val _logikaStateValueSym: Z = 2
 
-    val _logikaStateValueSym: Z = 3
+    val _logikaStateClaimLabel: Z = 3
 
-    val _logikaStateClaimLabel: Z = 4
+    val _logikaStateClaimProp: Z = 4
 
-    val _logikaStateClaimProp: Z = 5
+    val _logikaStateClaimAnd: Z = 5
 
-    val _logikaStateClaimAnd: Z = 6
+    val _logikaStateClaimOr: Z = 6
 
-    val _logikaStateClaimOr: Z = 7
+    val _logikaStateClaimImply: Z = 7
 
-    val _logikaStateClaimImply: Z = 8
+    val _logikaStateClaimIf: Z = 8
 
-    val _logikaStateClaimIf: Z = 9
+    val _logikaStateClaimDefSeqLit: Z = 9
 
-    val _logikaStateClaimDefSeqLit: Z = 10
+    val _logikaStateClaimDefSeqLitArg: Z = 10
 
-    val _logikaStateClaimDefSeqLitArg: Z = 11
+    val _logikaStateClaimDefSeqStore: Z = 11
 
-    val _logikaStateClaimDefSeqStore: Z = 12
+    val _logikaStateClaimDefFieldStore: Z = 12
 
-    val _logikaStateClaimDefFieldStore: Z = 13
+    val _logikaStateClaimDefAdtLit: Z = 13
 
-    val _logikaStateClaimDefAdtLit: Z = 14
+    val _logikaStateClaimDefRandom: Z = 14
 
-    val _logikaStateClaimDefRandom: Z = 15
+    val _logikaStateClaimLetCurrentName: Z = 15
 
-    val _logikaStateClaimLetCurrentName: Z = 16
+    val _logikaStateClaimLetName: Z = 16
 
-    val _logikaStateClaimLetName: Z = 17
+    val _logikaStateClaimLetCurrentId: Z = 17
 
-    val _logikaStateClaimLetCurrentId: Z = 18
+    val _logikaStateClaimLetId: Z = 18
 
-    val _logikaStateClaimLetId: Z = 19
+    val _logikaStateClaimLetEq: Z = 19
 
-    val _logikaStateClaimLetEq: Z = 20
+    val _logikaStateClaimLetTypeTest: Z = 20
 
-    val _logikaStateClaimLetTypeTest: Z = 21
+    val _logikaStateClaimLetQuantVarId: Z = 21
 
-    val _logikaStateClaimLetQuantVarId: Z = 22
+    val _logikaStateClaimLetQuantVarSym: Z = 22
 
-    val _logikaStateClaimLetQuantVarSym: Z = 23
+    val _logikaStateClaimLetQuant: Z = 23
 
-    val _logikaStateClaimLetQuant: Z = 24
+    val _logikaStateClaimLetIte: Z = 24
 
-    val _logikaStateClaimLetIte: Z = 25
+    val _logikaStateClaimLetBinary: Z = 25
 
-    val _logikaStateClaimLetBinary: Z = 26
+    val _logikaStateClaimLetUnary: Z = 26
 
-    val _logikaStateClaimLetUnary: Z = 27
+    val _logikaStateClaimLetSeqLookup: Z = 27
 
-    val _logikaStateClaimLetSeqLookup: Z = 28
+    val _logikaStateClaimLetSeqInBound: Z = 28
 
-    val _logikaStateClaimLetSeqInBound: Z = 29
+    val _logikaStateClaimLetFieldLookup: Z = 29
 
-    val _logikaStateClaimLetFieldLookup: Z = 30
+    val _logikaStateClaimLetProofFunApply: Z = 30
 
-    val _logikaStateClaimLetProofFunApply: Z = 31
+    val _logikaStateClaimLetApply: Z = 31
 
-    val _logikaStateClaimLetApply: Z = 32
+    val _logikaStateClaimLetIApply: Z = 32
 
-    val _logikaStateClaimLetIApply: Z = 33
+    val _logikaStateClaimLetTupleLit: Z = 33
 
-    val _logikaStateClaimLetTupleLit: Z = 34
+    val _logikaStateClaimLetAnd: Z = 34
 
-    val _logikaStateClaimLetAnd: Z = 35
+    val _logikaStateClaimLetOr: Z = 35
 
-    val _logikaStateClaimLetOr: Z = 36
+    val _logikaStateClaimLetImply: Z = 36
 
-    val _logikaStateClaimLetImply: Z = 37
+    val _logikaStateProofFun: Z = 37
 
-    val _logikaStateProofFun: Z = 38
+    val orgsireumlogikaConfig: Z = 38
 
-    val orgsireumlogikaConfig: Z = 39
+    val orgsireumlogikaZ3Config: Z = 39
 
-    val orgsireumlogikaZ3Config: Z = 40
+    val orgsireumlogikaCvc4Config: Z = 40
 
-    val orgsireumlogikaCvc4Config: Z = 41
+    val orgsireumlogikaLoopId: Z = 41
 
-    val orgsireumlogikaLoopId: Z = 42
+    val _logikaSmt2QueryResult: Z = 42
 
-    val _logikaSmt2QueryResult: Z = 43
+    val _langastTypedName: Z = 43
 
-    val _langastTypedName: Z = 44
+    val _langastTypedTuple: Z = 44
 
-    val _langastTypedTuple: Z = 45
+    val _langastTypedFun: Z = 45
 
-    val _langastTypedFun: Z = 46
+    val _langastTypedTypeVar: Z = 46
 
-    val _langastTypedTypeVar: Z = 47
+    val _langastTypedPackage: Z = 47
 
-    val _langastTypedPackage: Z = 48
+    val _langastTypedObject: Z = 48
 
-    val _langastTypedObject: Z = 49
+    val _langastTypedEnum: Z = 49
 
-    val _langastTypedEnum: Z = 50
+    val _langastTypedMethod: Z = 50
 
-    val _langastTypedMethod: Z = 51
+    val _langastTypedMethods: Z = 51
 
-    val _langastTypedMethods: Z = 52
+    val _langastTypedFact: Z = 52
 
-    val _langastTypedFact: Z = 53
+    val _langastTypedTheorem: Z = 53
 
-    val _langastTypedTheorem: Z = 54
-
-    val _langastTypedInv: Z = 55
+    val _langastTypedInv: Z = 54
 
   }
 
@@ -240,9 +238,8 @@ object MsgPack {
 
     def writeResponse(o: Response): Unit = {
       o match {
-        case o: Report => writeReport(o)
         case o: Timing => writeTiming(o)
-        case o: ReportId => writeReportId(o)
+        case o: Report => writeReport(o)
         case o: Version.Response => writeVersionResponse(o)
         case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
         case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
@@ -252,33 +249,9 @@ object MsgPack {
       }
     }
 
-    def writeReport(o: Report): Unit = {
-      writer.writeZ(Constants.Report)
-      writer.writeMessage(o.message)
-    }
-
-    def writeRequestId(o: RequestId): Unit = {
-      o match {
-        case o: Cancel => writeCancel(o)
-        case o: Slang.CheckScript => writeSlangCheckScript(o)
-      }
-    }
-
     def writeCancel(o: Cancel): Unit = {
       writer.writeZ(Constants.Cancel)
       writer.writeISZ(o.id, writer.writeString _)
-    }
-
-    def writeResponseId(o: ResponseId): Unit = {
-      o match {
-        case o: Timing => writeTiming(o)
-        case o: ReportId => writeReportId(o)
-        case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
-        case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
-        case o: Logika.Verify.State => writeLogikaVerifyState(o)
-        case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
-        case o: Logika.Verify.Smt2Query => writeLogikaVerifySmt2Query(o)
-      }
     }
 
     def writeTiming(o: Timing): Unit = {
@@ -288,8 +261,8 @@ object MsgPack {
       writer.writeZ(o.timeInMs)
     }
 
-    def writeReportId(o: ReportId): Unit = {
-      writer.writeZ(Constants.ReportId)
+    def writeReport(o: Report): Unit = {
+      writer.writeZ(Constants.Report)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeMessage(o.message)
     }
@@ -1102,9 +1075,8 @@ object MsgPack {
       val i = reader.curr
       val t = reader.readZ()
       t match {
-        case Constants.Report => val r = readReportT(T); return r
         case Constants.Timing => val r = readTimingT(T); return r
-        case Constants.ReportId => val r = readReportIdT(T); return r
+        case Constants.Report => val r = readReportT(T); return r
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
         case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
         case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
@@ -1114,32 +1086,6 @@ object MsgPack {
         case _ =>
           reader.error(i, s"$t is not a valid type of Response.")
           val r = readLogikaVerifySmt2QueryT(T)
-          return r
-      }
-    }
-
-    def readReport(): Report = {
-      val r = readReportT(F)
-      return r
-    }
-
-    def readReportT(typeParsed: B): Report = {
-      if (!typeParsed) {
-        reader.expectZ(Constants.Report)
-      }
-      val message = reader.readMessage()
-      return Report(message)
-    }
-
-    def readRequestId(): RequestId = {
-      val i = reader.curr
-      val t = reader.readZ()
-      t match {
-        case Constants.Cancel => val r = readCancelT(T); return r
-        case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
-        case _ =>
-          reader.error(i, s"$t is not a valid type of RequestId.")
-          val r = readSlangCheckScriptT(T)
           return r
       }
     }
@@ -1157,24 +1103,6 @@ object MsgPack {
       return Cancel(id)
     }
 
-    def readResponseId(): ResponseId = {
-      val i = reader.curr
-      val t = reader.readZ()
-      t match {
-        case Constants.Timing => val r = readTimingT(T); return r
-        case Constants.ReportId => val r = readReportIdT(T); return r
-        case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
-        case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
-        case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
-        case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
-        case Constants.LogikaVerifySmt2Query => val r = readLogikaVerifySmt2QueryT(T); return r
-        case _ =>
-          reader.error(i, s"$t is not a valid type of ResponseId.")
-          val r = readLogikaVerifySmt2QueryT(T)
-          return r
-      }
-    }
-
     def readTiming(): Timing = {
       val r = readTimingT(F)
       return r
@@ -1190,18 +1118,18 @@ object MsgPack {
       return Timing(id, desc, timeInMs)
     }
 
-    def readReportId(): ReportId = {
-      val r = readReportIdT(F)
+    def readReport(): Report = {
+      val r = readReportT(F)
       return r
     }
 
-    def readReportIdT(typeParsed: B): ReportId = {
+    def readReportT(typeParsed: B): Report = {
       if (!typeParsed) {
-        reader.expectZ(Constants.ReportId)
+        reader.expectZ(Constants.Report)
       }
       val id = reader.readISZ(reader.readString _)
       val message = reader.readMessage()
-      return ReportId(id, message)
+      return Report(id, message)
     }
 
     def readVersionRequest(): Version.Request = {
@@ -2743,36 +2671,6 @@ object MsgPack {
     return r
   }
 
-  def fromReport(o: Report, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeReport(o)
-    return w.result
-  }
-
-  def toReport(data: ISZ[U8]): Either[Report, MessagePack.ErrorMsg] = {
-    def fReport(reader: Reader): Report = {
-      val r = reader.readReport()
-      return r
-    }
-    val r = to(data, fReport _)
-    return r
-  }
-
-  def fromRequestId(o: RequestId, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeRequestId(o)
-    return w.result
-  }
-
-  def toRequestId(data: ISZ[U8]): Either[RequestId, MessagePack.ErrorMsg] = {
-    def fRequestId(reader: Reader): RequestId = {
-      val r = reader.readRequestId()
-      return r
-    }
-    val r = to(data, fRequestId _)
-    return r
-  }
-
   def fromCancel(o: Cancel, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
     w.writeCancel(o)
@@ -2785,21 +2683,6 @@ object MsgPack {
       return r
     }
     val r = to(data, fCancel _)
-    return r
-  }
-
-  def fromResponseId(o: ResponseId, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeResponseId(o)
-    return w.result
-  }
-
-  def toResponseId(data: ISZ[U8]): Either[ResponseId, MessagePack.ErrorMsg] = {
-    def fResponseId(reader: Reader): ResponseId = {
-      val r = reader.readResponseId()
-      return r
-    }
-    val r = to(data, fResponseId _)
     return r
   }
 
@@ -2818,18 +2701,18 @@ object MsgPack {
     return r
   }
 
-  def fromReportId(o: ReportId, pooling: B): ISZ[U8] = {
+  def fromReport(o: Report, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeReportId(o)
+    w.writeReport(o)
     return w.result
   }
 
-  def toReportId(data: ISZ[U8]): Either[ReportId, MessagePack.ErrorMsg] = {
-    def fReportId(reader: Reader): ReportId = {
-      val r = reader.readReportId()
+  def toReport(data: ISZ[U8]): Either[Report, MessagePack.ErrorMsg] = {
+    def fReport(reader: Reader): Report = {
+      val r = reader.readReport()
       return r
     }
-    val r = to(data, fReportId _)
+    val r = to(data, fReport _)
     return r
   }
 

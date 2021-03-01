@@ -30,41 +30,41 @@ import org.sireum._
 import org.sireum.message.Position
 import org.sireum.message.Message
 
-@datatype trait Request
-
-@datatype class Terminate extends Request
-
-@datatype trait Response
-
-@datatype class Report(val message: Message) extends Response
-
-@datatype trait RequestId extends Request {
+@datatype trait Request {
   def id: ISZ[String]
 }
 
-@datatype class Cancel(val id: ISZ[String]) extends RequestId
+@datatype class Terminate extends Request {
+  @strictpure def id: ISZ[String] = ISZ()
+}
 
-@datatype trait ResponseId extends Response {
+@datatype trait Response {
   def id: ISZ[String]
 }
 
-@datatype class Timing(val id: ISZ[String], desc: String, timeInMs: Z) extends ResponseId
+@datatype class Cancel(val id: ISZ[String]) extends Request
 
-@datatype class ReportId(val id: ISZ[String], val message: Message) extends ResponseId
+@datatype class Timing(val id: ISZ[String], desc: String, timeInMs: Z) extends Response
+
+@datatype class Report(val id: ISZ[String], val message: Message) extends Response
 
 
 object Version {
 
-  @datatype class Request extends org.sireum.server.protocol.Request
+  @datatype class Request extends org.sireum.server.protocol.Request {
+    @strictpure def id: ISZ[String] = ISZ()
+  }
 
-  @datatype class Response(val version: String) extends org.sireum.server.protocol.Response
+  @datatype class Response(val version: String) extends org.sireum.server.protocol.Response {
+    @strictpure def id: ISZ[String] = ISZ()
+  }
 
 }
 
 
 object Slang {
 
-  @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends RequestId
+  @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends Request
 
 }
 
@@ -73,7 +73,7 @@ object Logika {
 
   object Verify {
 
-    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends ResponseId
+    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response
 
     @datatype class End(val isBackground: B,
                         val id: ISZ[String],
@@ -84,15 +84,17 @@ object Logika {
                         val numOfSmt2Calls: Z,
                         val smt2TimeMillis: Z,
                         val numOfErrors: Z,
-                        val numOfWarnings: Z) extends ResponseId
+                        val numOfWarnings: Z) extends Response
 
-    @datatype class Config(val config: logika.Config) extends Request
+    @datatype class Config(val config: logika.Config) extends Request {
+      @strictpure def id: ISZ[String] = ISZ()
+    }
 
-    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
+    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
 
-    @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends ResponseId
+    @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
 
-    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val result: logika.Smt2Query.Result) extends ResponseId
+    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val result: logika.Smt2Query.Result) extends Response
 
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),

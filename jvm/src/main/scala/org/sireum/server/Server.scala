@@ -98,14 +98,8 @@ object Server {
           service.handle(req)
         }
         if (!found) {
-          req match {
-            case req: protocol.RequestId =>
-              serverAPI.sendRespond(protocol.ReportId(req.id, message.Message(message.Level.InternalError, None(),
-                "server", s"Unimplemented request handler for: $req")))
-            case _ =>
-              serverAPI.sendRespond(protocol.Report(message.Message(message.Level.InternalError, None(), "server",
-                s"Unimplemented request handler for: $req")))
-          }
+          serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
+            "server", s"Unimplemented request handler for: $req")))
         }
     }
     return T
@@ -122,20 +116,20 @@ object Server {
       CustomMessagePack.toRequest(input) match {
         case Either.Left(r) => return Some(r)
         case Either.Right(err) =>
-          reportError(err, input)
+          reportError(ISZ(), err, input)
           return None()
       }
     } else {
       JSON.toRequest(input) match {
         case Either.Left(r) => return Some(r)
         case Either.Right(err) =>
-          reportError(err.message, input)
+          reportError(ISZ(), err.message, input)
           return None()
       }
     }
   }
 
-  def reportError(msg: String, input: String): Unit = {
-    serverAPI.sendRespond(protocol.Report(message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
+  def reportError(id: ISZ[String], msg: String, input: String): Unit = {
+    serverAPI.sendRespond(protocol.Report(id, message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
   }
 }

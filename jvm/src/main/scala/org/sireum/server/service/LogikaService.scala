@@ -188,7 +188,7 @@ object LogikaService {
           case Level.Warning => numOfWarnings = numOfWarnings + 1
           case _ =>
         }
-        serverAPI.sendRespond(ReportId(id, m))
+        serverAPI.sendRespond(Report(id, m))
       }
       super.report(m)
     }
