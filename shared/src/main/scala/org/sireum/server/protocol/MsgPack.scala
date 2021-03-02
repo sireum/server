@@ -300,12 +300,15 @@ object MsgPack {
       writer.writeZ(o.totalTimeMillis)
       writer.writeZ(o.numOfSmt2Calls)
       writer.writeZ(o.smt2TimeMillis)
+      writer.writeZ(o.numOfInternalErrors)
       writer.writeZ(o.numOfErrors)
       writer.writeZ(o.numOfWarnings)
     }
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
       writer.writeZ(Constants.LogikaVerifyConfig)
+      writer.writeB(o.hint)
+      writer.writeB(o.smt2query)
       writeorgsireumlogikaConfig(o.config)
     }
 
@@ -1204,9 +1207,10 @@ object MsgPack {
       val totalTimeMillis = reader.readZ()
       val numOfSmt2Calls = reader.readZ()
       val smt2TimeMillis = reader.readZ()
+      val numOfInternalErrors = reader.readZ()
       val numOfErrors = reader.readZ()
       val numOfWarnings = reader.readZ()
-      return Logika.Verify.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfErrors, numOfWarnings)
+      return Logika.Verify.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -1218,8 +1222,10 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyConfig)
       }
+      val hint = reader.readB()
+      val smt2query = reader.readB()
       val config = readorgsireumlogikaConfig()
-      return Logika.Verify.Config(config)
+      return Logika.Verify.Config(hint, smt2query, config)
     }
 
     def readLogikaVerifyState(): Logika.Verify.State = {

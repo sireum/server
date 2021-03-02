@@ -83,10 +83,11 @@ object Logika {
                         val totalTimeMillis: Z,
                         val numOfSmt2Calls: Z,
                         val smt2TimeMillis: Z,
+                        val numOfInternalErrors: Z,
                         val numOfErrors: Z,
                         val numOfWarnings: Z) extends Response
 
-    @datatype class Config(val config: logika.Config) extends Request {
+    @datatype class Config(val hint: B, val smt2query: B, val config: logika.Config) extends Request {
       @strictpure def id: ISZ[String] = ISZ()
     }
 

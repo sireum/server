@@ -74,9 +74,9 @@ object ServerExt {
   def version: String = $internal.Macro.version
 
   def logikaService(numOfThreads: Z): Service = {
-    LogikaService.defaultConfig = LogikaService.defaultConfig(smt2Configs = ISZ(
-      logika.Cvc4Config(LogikaService.cvc4Exe), logika.Z3Config(LogikaService.z3Exe)
-    ))
+    LogikaService.setConfig(LogikaService._hint, LogikaService._smt2query,
+      LogikaService.defaultConfig(smt2Configs = ISZ(
+        logika.Cvc4Config(LogikaService.cvc4Exe), logika.Z3Config(LogikaService.z3Exe))))
     new service.LogikaService(numOfThreads)
   }
 }

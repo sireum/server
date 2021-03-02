@@ -28,6 +28,7 @@ import org.sireum._
 import org.sireum.message._
 import org.sireum.server.protocol._
 
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 
 object LogikaService {
@@ -38,7 +39,7 @@ object LogikaService {
       while (!terminated.get()) {
         val req = try checkQueue.poll(200, TimeUnit.MILLISECONDS) catch { case _: InterruptedException => null }
         if (req != null) {
-          val reporter = new ReporterImpl(serverAPI, req.id, ISZ())
+          val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
           val startTime = extension.Time.currentMillis
           idMap.put(req.id, this)
           var cancelled = true
@@ -50,6 +51,14 @@ object LogikaService {
               checkScript(req(content = text), reporter, hasLogika)
               cancelled = false
             }
+          } catch {
+            case t: Throwable =>
+              cancelled = true
+              val baos = new ByteArrayOutputStream()
+              t.printStackTrace(new java.io.PrintStream(baos))
+              serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
+                s"""Internal error occurred:
+                   |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
           } finally {
             serverAPI.sendRespond(Logika.Verify.End(
               isBackground = req.isBackground,
@@ -60,6 +69,7 @@ object LogikaService {
               totalTimeMillis = extension.Time.currentMillis - startTime,
               numOfSmt2Calls = reporter.numOfSmt2Calls,
               smt2TimeMillis = reporter.smt2TimeMillis,
+              numOfInternalErrors = reporter.numOfInternalErrors,
               numOfErrors = reporter.numOfErrors,
               numOfWarnings = reporter.numOfWarnings
             ))
@@ -100,13 +110,14 @@ object LogikaService {
     }
   }
 
-  class ReporterImpl(serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
+  class ReporterImpl(hint: B, smt2query: B, serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
     var _owned: Boolean = false
     var _ignore: B = F
     var isIllFormed: B = F
     var numOfSmt2Calls: Z = 0
     var smt2TimeMillis: Z = 0
     var numOfErrors: Z = 0
+    var numOfInternalErrors: Z = 0
     var numOfWarnings: Z = 0
 
     override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
@@ -117,6 +128,7 @@ object LogikaService {
           numOfSmt2Calls = numOfSmt2Calls + other.numOfSmt2Calls
           smt2TimeMillis = smt2TimeMillis + other.smt2TimeMillis
           numOfErrors = numOfErrors + other.numOfErrors
+          numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
           numOfWarnings = numOfWarnings + other.numOfWarnings
           return this
       }
@@ -130,12 +142,13 @@ object LogikaService {
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(serverAPI, id, _messages)
+      val r = new ReporterImpl(hint, smt2query, serverAPI, id, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
       r.numOfSmt2Calls = numOfSmt2Calls
       r.smt2TimeMillis = smt2TimeMillis
+      r.numOfInternalErrors = numOfInternalErrors
       r
     }
 
@@ -147,14 +160,16 @@ object LogikaService {
       isIllFormed = T
     }
 
-    override def state(posOpt: Option[Position], s: logika.State): Unit = {
+    override def state(posOpt: Option[Position], s: logika.State): Unit = if (hint) {
       serverAPI.sendRespond(Logika.Verify.State(id, posOpt, s))
     }
 
     override def query(pos: Position, time: Z, r: logika.Smt2Query.Result): Unit = {
       numOfSmt2Calls = numOfSmt2Calls + 1
       smt2TimeMillis = smt2TimeMillis + r.timeMillis
-      serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
+      if (smt2query) {
+        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
+      }
     }
 
     override def timing(desc: String, timeInMs: Z): Unit = {
@@ -162,7 +177,7 @@ object LogikaService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(serverAPI, id, ISZ())
+      return new ReporterImpl(hint, smt2query, serverAPI, id, ISZ())
     }
 
     override def messages: ISZ[Message] = {
@@ -184,6 +199,7 @@ object LogikaService {
     override def report(m: Message): Unit = {
       if (!ignore) {
         m.level match {
+          case Level.InternalError => numOfInternalErrors = numOfInternalErrors + 1
           case Level.Error => numOfErrors = numOfErrors + 1
           case Level.Warning => numOfWarnings = numOfWarnings + 1
           case _ =>
@@ -274,11 +290,16 @@ object LogikaService {
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
+  var _hint: B = T
+  var _smt2query: B = T
+
   def defaultConfig: logika.Config = synchronized {
     return _defaultConfig
   }
 
-  def defaultConfig_=(newConfig: logika.Config): Unit = synchronized {
+  def setConfig(newHint: B, newSmt2Query: B, newConfig: logika.Config): Unit = synchronized {
+    _hint = newHint
+    _smt2query = newSmt2Query
     _defaultConfig = newConfig
   }
 
@@ -340,11 +361,10 @@ class LogikaService(numOfThreads: Z) extends Service {
           case _ =>
         }
       case req: Logika.Verify.Config =>
-        if (req.config.smt2Configs.isEmpty) {
-          LogikaService.defaultConfig = req.config(smt2Configs = LogikaService.defaultConfig.smt2Configs)
-        } else {
-          LogikaService.defaultConfig = req.config
-        }
+        val config: logika.Config =
+          if (req.config.smt2Configs.isEmpty) req.config(smt2Configs = LogikaService.defaultConfig.smt2Configs)
+          else req.config
+        LogikaService.setConfig(req.hint, req.smt2query, config)
       case req: Slang.CheckScript => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
