@@ -279,6 +279,7 @@ object MsgPack {
     def writeSlangCheckScript(o: Slang.CheckScript): Unit = {
       writer.writeZ(Constants.SlangCheckScript)
       writer.writeB(o.isBackground)
+      writer.writeB(o.logikaEnabled)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
@@ -1170,10 +1171,11 @@ object MsgPack {
         reader.expectZ(Constants.SlangCheckScript)
       }
       val isBackground = reader.readB()
+      val logikaEnabled = reader.readB()
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Slang.CheckScript(isBackground, id, uriOpt, content)
+      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content)
     }
 
     def readLogikaVerifyStart(): Logika.Verify.Start = {

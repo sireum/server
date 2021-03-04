@@ -64,7 +64,11 @@ object Version {
 
 object Slang {
 
-  @datatype class CheckScript(val isBackground: B, val id: ISZ[String], val uriOpt: Option[String], val content: String) extends Request
+  @datatype class CheckScript(val isBackground: B,
+                              val logikaEnabled: B,
+                              val id: ISZ[String],
+                              val uriOpt: Option[String],
+                              val content: String) extends Request
 
 }
 

@@ -107,6 +107,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Slang.CheckScript""""),
         ("isBackground", printB(o.isBackground)),
+        ("logikaEnabled", printB(o.logikaEnabled)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content))
@@ -1180,6 +1181,9 @@ object JSON {
       parser.parseObjectKey("isBackground")
       val isBackground = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("logikaEnabled")
+      val logikaEnabled = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
@@ -1189,7 +1193,7 @@ object JSON {
       parser.parseObjectKey("content")
       val content = parser.parseString()
       parser.parseObjectNext()
-      return Slang.CheckScript(isBackground, id, uriOpt, content)
+      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content)
     }
 
     def parseLogikaVerifyStart(): Logika.Verify.Start = {

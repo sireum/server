@@ -44,7 +44,7 @@ object LogikaService {
           idMap.put(req.id, this)
           var cancelled = true
           val (hasSireum, compactFirstLine, text) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
-          val hasLogika = hasSireum && compactFirstLine.contains("#Logika")
+          val hasLogika = req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
           try {
             serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
             extension.Cancel.handleCancellable { () =>
@@ -303,7 +303,7 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, ISZ(), None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, ISZ(), None(), ""))
 
   def checkScript(req: Slang.CheckScript, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
