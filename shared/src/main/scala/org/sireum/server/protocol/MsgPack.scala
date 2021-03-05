@@ -755,6 +755,7 @@ object MsgPack {
 
     def write_logikaStateClaimLetQuantVarId(o: org.sireum.logika.State.Claim.Let.Quant.Var.Id): Unit = {
       writer.writeZ(Constants._logikaStateClaimLetQuantVarId)
+      writer.writeISZ(o.context, writer.writeString _)
       writer.writeString(o.id)
       write_langastTyped(o.tipe)
     }
@@ -2071,9 +2072,10 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants._logikaStateClaimLetQuantVarId)
       }
+      val context = reader.readISZ(reader.readString _)
       val id = reader.readString()
       val tipe = read_langastTyped()
-      return org.sireum.logika.State.Claim.Let.Quant.Var.Id(id, tipe)
+      return org.sireum.logika.State.Claim.Let.Quant.Var.Id(context, id, tipe)
     }
 
     def read_logikaStateClaimLetQuantVarSym(): org.sireum.logika.State.Claim.Let.Quant.Var.Sym = {

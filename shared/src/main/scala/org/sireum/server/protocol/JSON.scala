@@ -677,6 +677,7 @@ object JSON {
     @pure def print_logikaStateClaimLetQuantVarId(o: org.sireum.logika.State.Claim.Let.Quant.Var.Id): ST = {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.State.Claim.Let.Quant.Var.Id""""),
+        ("context", printISZ(T, o.context, printString _)),
         ("id", printString(o.id)),
         ("tipe", print_langastTyped(o.tipe))
       ))
@@ -2319,13 +2320,16 @@ object JSON {
       if (!typeParsed) {
         parser.parseObjectType("org.sireum.logika.State.Claim.Let.Quant.Var.Id")
       }
+      parser.parseObjectKey("context")
+      val context = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseString()
       parser.parseObjectNext()
       parser.parseObjectKey("tipe")
       val tipe = parse_langastTyped()
       parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Let.Quant.Var.Id(id, tipe)
+      return org.sireum.logika.State.Claim.Let.Quant.Var.Id(context, id, tipe)
     }
 
     def parse_logikaStateClaimLetQuantVarSym(): org.sireum.logika.State.Claim.Let.Quant.Var.Sym = {
