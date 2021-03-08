@@ -15,6 +15,21 @@ class LogikaServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(T, id => Seq(
+      CheckScript(F, T, id, None(),
+        s"""// #Sireum #Logika
+           |import org.sireum._
+           |
+           |var x: Z = 1
+           |
+           |def bar(): Unit = {
+           |  Contract(Modifies(x))
+           |}
+           |
+           |def foo(): Unit = {
+           |  bar()
+           |}""".stripMargin)))
+
+    * - test(T, id => Seq(
       CheckScript(F, T, id, Some("script.cmd"),
         """::#! 2> /dev/null                                              #
            |@ 2>/dev/null # 2>nul & echo off & goto BOF                   #
