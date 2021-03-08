@@ -834,6 +834,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Config""""),
         ("smt2Configs", printISZ(F, o.smt2Configs, printorgsireumlogikaSmt2Config _)),
+        ("sat", printB(o.sat)),
         ("timeoutInMs", printZ(o.timeoutInMs)),
         ("defaultLoopBound", printZ(o.defaultLoopBound)),
         ("loopBounds", printHashMap(F, o.loopBounds, printorgsireumlogikaLoopId _, printZ _)),
@@ -2689,6 +2690,9 @@ object JSON {
       parser.parseObjectKey("smt2Configs")
       val smt2Configs = parser.parseISZ(parseorgsireumlogikaSmt2Config _)
       parser.parseObjectNext()
+      parser.parseObjectKey("sat")
+      val sat = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("timeoutInMs")
       val timeoutInMs = parser.parseZ()
       parser.parseObjectNext()
@@ -2737,7 +2741,7 @@ object JSON {
       parser.parseObjectKey("simplifiedQuery")
       val simplifiedQuery = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
