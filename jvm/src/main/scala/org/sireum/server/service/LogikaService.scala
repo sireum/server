@@ -311,7 +311,7 @@ object LogikaService {
     }
     val config = defaultConfig
     logika.Logika.checkFile(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
+      logika.Smt2Impl.create(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
         config.intBitWidth, config.simplifiedQuery), reporter, T, hasLogika)
   }
 }
