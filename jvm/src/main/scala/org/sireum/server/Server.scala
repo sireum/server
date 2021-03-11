@@ -46,6 +46,7 @@ object Server {
     def readInput(): String = $
     def writeOutput(s: String): Unit = $
     def version: String = $
+    def pause(): Unit = $
     def logikaService(numOfThreads: Z): Service = $
   }
 }
@@ -93,13 +94,22 @@ object Server {
       case _: protocol.Version.Request => handleVersion()
       case _ =>
         var found = F
-        for (service <- services if !found && service.canHandle(req)) {
-          found = T
-          service.handle(req)
-        }
-        if (!found) {
-          serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
-            "server", s"Unimplemented request handler for: $req")))
+        val maxTries = 3
+        var tries = 0
+        while (!found && tries < maxTries) {
+          for (service <- services if !found && service.canHandle(req)) {
+            found = T
+            service.handle(req)
+          }
+          if (!found) {
+            if (tries < maxTries) {
+
+              tries = tries + 1
+            } else {
+              serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
+                "server", s"Unimplemented request handler for: $req")))
+            }
+          }
         }
     }
     return T

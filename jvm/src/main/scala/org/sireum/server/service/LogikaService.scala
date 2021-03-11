@@ -26,6 +26,7 @@ package org.sireum.server.service
 
 import org.sireum._
 import org.sireum.message._
+import org.sireum.server.ServerExt
 import org.sireum.server.protocol._
 
 import java.io.ByteArrayOutputStream
@@ -37,42 +38,45 @@ object LogikaService {
                terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
       while (!terminated.get()) {
-        val req = try checkQueue.poll(200, TimeUnit.MILLISECONDS) catch { case _: InterruptedException => null }
+        val req = try checkQueue.poll(ServerExt.pauseTime, TimeUnit.MILLISECONDS) catch { case _: InterruptedException => null }
         if (req != null) {
-          val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
-          val startTime = extension.Time.currentMillis
           idMap.put(req.id, this)
-          var cancelled = true
-          val (hasSireum, compactFirstLine, text) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
-          val hasLogika = req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
           try {
-            serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
-            extension.Cancel.handleCancellable { () =>
-              checkScript(req(content = text), reporter, hasLogika)
-              cancelled = false
+            val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
+            val startTime = extension.Time.currentMillis
+            var cancelled = true
+            val (hasSireum, compactFirstLine, text) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
+            val hasLogika = req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
+            try {
+              serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
+              extension.Cancel.handleCancellable { () =>
+                checkScript(req(content = text), reporter, hasLogika)
+                cancelled = false
+              }
+            } catch {
+              case t: Throwable =>
+                cancelled = true
+                val baos = new ByteArrayOutputStream()
+                t.printStackTrace(new java.io.PrintStream(baos))
+                serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
+                  s"""Internal error occurred:
+                     |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
+            } finally {
+              serverAPI.sendRespond(Logika.Verify.End(
+                isBackground = req.isBackground,
+                id = req.id,
+                wasCancelled = cancelled,
+                hasLogika = hasLogika,
+                isIllFormed = reporter.isIllFormed,
+                totalTimeMillis = extension.Time.currentMillis - startTime,
+                numOfSmt2Calls = reporter.numOfSmt2Calls,
+                smt2TimeMillis = reporter.smt2TimeMillis,
+                numOfInternalErrors = reporter.numOfInternalErrors,
+                numOfErrors = reporter.numOfErrors,
+                numOfWarnings = reporter.numOfWarnings
+              ))
             }
-          } catch {
-            case t: Throwable =>
-              cancelled = true
-              val baos = new ByteArrayOutputStream()
-              t.printStackTrace(new java.io.PrintStream(baos))
-              serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
-                s"""Internal error occurred:
-                   |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
           } finally {
-            serverAPI.sendRespond(Logika.Verify.End(
-              isBackground = req.isBackground,
-              id = req.id,
-              wasCancelled = cancelled,
-              hasLogika = hasLogika,
-              isIllFormed = reporter.isIllFormed,
-              totalTimeMillis = extension.Time.currentMillis - startTime,
-              numOfSmt2Calls = reporter.numOfSmt2Calls,
-              smt2TimeMillis = reporter.smt2TimeMillis,
-              numOfInternalErrors = reporter.numOfInternalErrors,
-              numOfErrors = reporter.numOfErrors,
-              numOfWarnings = reporter.numOfWarnings
-            ))
             idMap.remove(req.id)
             _root_.java.lang.Thread.interrupted()
           }

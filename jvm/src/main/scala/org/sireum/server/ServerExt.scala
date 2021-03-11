@@ -30,6 +30,7 @@ import org.sireum.server.service.{Service, LogikaService}
 import java.io.ByteArrayOutputStream
 
 object ServerExt {
+  val pauseTime: Long = 200
   var prefix: Predef.String = ""
 
   def readInput(): String = try {
@@ -72,6 +73,8 @@ object ServerExt {
   }
 
   def version: String = $internal.Macro.version
+
+  def pause(): Unit = Thread.sleep(pauseTime)
 
   def logikaService(numOfThreads: Z): Service = {
     LogikaService.setConfig(LogikaService._hint, LogikaService._smt2query,
