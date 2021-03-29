@@ -1,0 +1,3 @@
+*.cmd.jar
+*.cmd.com
+/out
