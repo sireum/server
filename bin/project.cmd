@@ -41,6 +41,8 @@ val logika = "logika"
 
 val codegen = "hamr-codegen"
 
+val phantom = "hamr-phantom"
+
 val server = "server"
 
 val homeDir = Os.slashDir.up.canon
@@ -50,7 +52,7 @@ val (serverShared, serverJvm) = moduleSharedJvm(
   baseDir = homeDir,
   sharedDeps = sharedId(library),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(transpilers, tools, logika, codegen),
+  jvmDeps = ISZ(transpilers, tools, logika, codegen, phantom),
   jvmIvyDeps = ISZ()
 )
 
