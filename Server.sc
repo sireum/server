@@ -38,7 +38,7 @@ trait Module extends CrossJvmJsJitPack {
   final override def artifactName = "server"
 
   final override def jvmDeps =
-    if (isSourceDep) Seq(phantomObject)
+    if (isSourceDep) Seq(phantomObject, proyekObject)
     else Seq()
 
   final override def jsDeps = Seq()
@@ -55,7 +55,8 @@ trait Module extends CrossJvmJsJitPack {
       jpLatest(isCross = true, "sireum", "tools"),
       jpLatest(isCross = true, "sireum", "logika"),
       jpLatest(isCross = true, "sireum", "hamr-codegen"),
-      jpLatest(isCross = true, "sireum", "phantom")
+      jpLatest(isCross = true, "sireum", "phantom"),
+      jpLatest(isCross = true, "sireum", "proyek")
     )
 
   final override def deps =
@@ -90,6 +91,8 @@ trait Module extends CrossJvmJsJitPack {
   def hamrCodegenObject: CrossJvmJsPublish
 
   def phantomObject: JvmPublish
+
+  def proyekObject: JvmPublish
 
   def testObject: CrossJvmJsPublish
 }
