@@ -38,13 +38,19 @@ val server = "server"
 
 val homeDir = Os.slashDir.up.canon
 
-val (serverShared, serverJvm) = moduleSharedJvm(
+val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseId = server,
   baseDir = homeDir,
   sharedDeps = sharedId(logika),
   sharedIvyDeps = ISZ(),
   jvmDeps = ISZ(transpilers, tools, logika, codegen, phantom, proyek),
-  jvmIvyDeps = ISZ()
+  jvmIvyDeps = ISZ(),
+  pubOpt = pub(
+    desc = "Sireum Server",
+    url = "github.com/sireum/server",
+    licenses = org.sireum.project.ProjectUtil.bsd2,
+    devs = ISZ(robby)
+  )
 )
 
 val project = Project.empty + serverShared + serverJvm
