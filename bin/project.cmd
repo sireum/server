@@ -48,7 +48,7 @@ val (serverShared, serverJvm) = moduleSharedJvmPub(
   pubOpt = pub(
     desc = "Sireum Server",
     url = "github.com/sireum/server",
-    licenses = org.sireum.project.ProjectUtil.bsd2,
+    licenses = bsd2,
     devs = ISZ(robby)
   )
 )
