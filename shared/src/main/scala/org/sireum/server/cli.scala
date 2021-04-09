@@ -37,6 +37,7 @@ object cli {
     description = "Sireum server",
     header = "Sireum Server",
     usage = "<option>*",
+    usageDescOpt = None(),
     opts = ISZ(
       Opt(name = "message", longKey = "message", shortKey = Some('m'),
         tpe = Type.Choice("ServerMessage", None(), ISZ("msgpack", "json")),
