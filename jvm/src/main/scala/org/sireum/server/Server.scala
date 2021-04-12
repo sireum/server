@@ -32,8 +32,9 @@ import org.sireum.server.service.Service
 
 object Server {
 
-  def run(isMsgPack: B, numOfLogikaWorkers: Z): Z = {
+  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z): Z = {
     val server = Server(
+      version,
       isMsgPack,
       MSZ(
         Ext.logikaService(numOfLogikaWorkers)
@@ -45,7 +46,6 @@ object Server {
   @ext("ServerExt") object Ext {
     def readInput(): String = $
     def writeOutput(s: String): Unit = $
-    def version: String = $
     def pause(): Unit = $
     def logikaService(numOfThreads: Z): Service = $
   }
@@ -67,7 +67,7 @@ object Server {
   }
 }
 
-@datatype class Server(isMsgPack: B, services: MSZ[Service]) {
+@datatype class Server(version: String, isMsgPack: B, services: MSZ[Service]) {
   val serverAPI: ServerAPI = if (isMsgPack) MsgPackServerAPI() else JsonServerAPI()
   def run(): Z = {
     for (i <- services.indices) {
@@ -116,7 +116,7 @@ object Server {
   }
 
   def handleVersion(): Unit = {
-    serverAPI.sendRespond(protocol.Version.Response(Server.Ext.version))
+    serverAPI.sendRespond(protocol.Version.Response(version))
   }
 
   def retrieveRequest(): Option[protocol.Request] = {

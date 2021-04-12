@@ -72,8 +72,6 @@ object ServerExt {
     System.out.flush()
   }
 
-  def version: String = $internal.Macro.version
-
   def pause(): Unit = Thread.sleep(pauseTime)
 
   def logikaService(numOfThreads: Z): Service = {

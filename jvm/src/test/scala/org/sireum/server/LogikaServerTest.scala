@@ -83,7 +83,7 @@ class LogikaServerTest extends TestSuite {
   def test(isMsgPack: B, freqs: ISZ[String] => Seq[Request])(implicit line: sourcecode.Line): Unit = {
     class ServerThread extends Thread {
       override def run(): Unit = {
-        Server.run(isMsgPack, 1)
+        Server.run("test", isMsgPack, 1)
       }
     }
 
