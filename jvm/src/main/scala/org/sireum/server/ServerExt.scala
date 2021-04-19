@@ -43,7 +43,7 @@ object ServerExt {
       if (b == '\n') {
         return new Predef.String(baos.toByteArray, "UTF-8")
       } else if (i < prefixSize) {
-        if (prefix(i) == b) {
+        if (prefix.charAt(i) == b) {
           baos.write(b)
         } else {
           while (b >= 0 && b != '\n') {
