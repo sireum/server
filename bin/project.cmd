@@ -18,11 +18,11 @@ exit /B %errorlevel%
 
 import org.sireum._
 import org.sireum.project.ProjectUtil._
-import org.sireum.project.{JSON, Project}
+import org.sireum.project.Project
 
 val tipe = "slang-tipe"
 
-val transpilers = "transpilers-c"
+val anvil = "anvil"
 
 val tools = "tools"
 
@@ -43,7 +43,7 @@ val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseDir = homeDir,
   sharedDeps = sharedId(logika),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(transpilers, tools, logika, codegen, phantom, proyek),
+  jvmDeps = ISZ(anvil, tools, logika, codegen, phantom, proyek),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",

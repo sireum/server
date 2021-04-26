@@ -38,7 +38,7 @@ trait Module extends CrossJvmJsJitPack {
   final override def artifactName = "server"
 
   final override def jvmDeps =
-    if (isSourceDep) Seq(phantomObject, proyekObject)
+    if (isSourceDep) Seq(phantomObject, proyekObject, anvilObject)
     else Seq()
 
   final override def jsDeps = Seq()
@@ -51,7 +51,7 @@ trait Module extends CrossJvmJsJitPack {
     if (isSourceDep) Agg.empty
     else Agg(
       jpLatest(isCross = true, "sireum", "alir"),
-      jpLatest(isCross = true, "sireum", "transpilers", "c"),
+      jpLatest(isCross = true, "sireum", "anvil"),
       jpLatest(isCross = true, "sireum", "tools"),
       jpLatest(isCross = true, "sireum", "logika"),
       jpLatest(isCross = true, "sireum", "hamr-codegen"),
@@ -60,7 +60,7 @@ trait Module extends CrossJvmJsJitPack {
     )
 
   final override def deps =
-    if (isSourceDep) Seq(alirObject, transpilersCObject, toolsObject, logikaObject, hamrCodegenObject)
+    if (isSourceDep) Seq(alirObject, toolsObject, logikaObject, hamrCodegenObject)
     else Seq()
 
   final override def testDeps =
@@ -82,13 +82,13 @@ trait Module extends CrossJvmJsJitPack {
 
   def alirObject: CrossJvmJsPublish
 
-  def transpilersCObject: CrossJvmJsPublish
-
   def toolsObject: CrossJvmJsPublish
 
   def logikaObject: CrossJvmJsPublish
   
   def hamrCodegenObject: CrossJvmJsPublish
+
+  def anvilObject: JvmPublish
 
   def phantomObject: JvmPublish
 
