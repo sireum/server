@@ -913,6 +913,7 @@ object JSON {
         case org.sireum.lang.ast.MethodMode.Method => "Method"
         case org.sireum.lang.ast.MethodMode.Spec => "Spec"
         case org.sireum.lang.ast.MethodMode.Ext => "Ext"
+        case org.sireum.lang.ast.MethodMode.Just => "Just"
         case org.sireum.lang.ast.MethodMode.Constructor => "Constructor"
         case org.sireum.lang.ast.MethodMode.Copy => "Copy"
         case org.sireum.lang.ast.MethodMode.Extractor => "Extractor"
