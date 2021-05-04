@@ -104,7 +104,7 @@ object Server {
           if (!found && tries < maxTries) {
             tries = tries + 1
             if (tries < maxTries) {
-              ServerExt.pause()
+              Server.Ext.pause()
             }
           }
         }
