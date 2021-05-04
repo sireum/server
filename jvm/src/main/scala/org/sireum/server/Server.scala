@@ -92,7 +92,7 @@ object Server {
     req match {
       case _: protocol.Terminate => return F
       case _: protocol.Version.Request => handleVersion()
-      case _ =>
+      case _: protocol.Cancel =>
         var found = F
         val maxTries = 3
         var tries = 0
@@ -101,15 +101,22 @@ object Server {
             found = T
             service.handle(req)
           }
-          if (!found) {
+          if (!found && tries < maxTries) {
+            tries = tries + 1
             if (tries < maxTries) {
-
-              tries = tries + 1
-            } else {
-              serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
-                "server", s"Unimplemented request handler for: $req")))
+              ServerExt.pause()
             }
           }
+        }
+      case _ =>
+        var found = F
+        for (service <- services if !found && service.canHandle(req)) {
+          found = T
+          service.handle(req)
+        }
+        if (!found) {
+          serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
+            "server", s"Unimplemented request handler for: $req")))
         }
     }
     return T
