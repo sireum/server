@@ -828,7 +828,9 @@ object MsgPack {
     def write_logikaStateClaimLetApply(o: org.sireum.logika.State.Claim.Let.Apply): Unit = {
       writer.writeZ(Constants._logikaStateClaimLetApply)
       write_logikaStateValueSym(o.sym)
-      writer.writeISZ(o.name, writer.writeString _)
+      writer.writeB(o.isLocal)
+      writer.writeISZ(o.context, writer.writeString _)
+      writer.writeString(o.id)
       writer.writeISZ(o.args, write_logikaStateValue _)
     }
 
@@ -2226,9 +2228,11 @@ object MsgPack {
         reader.expectZ(Constants._logikaStateClaimLetApply)
       }
       val sym = read_logikaStateValueSym()
-      val name = reader.readISZ(reader.readString _)
+      val isLocal = reader.readB()
+      val context = reader.readISZ(reader.readString _)
+      val id = reader.readString()
       val args = reader.readISZ(read_logikaStateValue _)
-      return org.sireum.logika.State.Claim.Let.Apply(sym, name, args)
+      return org.sireum.logika.State.Claim.Let.Apply(sym, isLocal, context, id, args)
     }
 
     def read_logikaStateClaimLetIApply(): org.sireum.logika.State.Claim.Let.IApply = {

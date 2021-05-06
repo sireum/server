@@ -770,7 +770,9 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.State.Claim.Let.Apply""""),
         ("sym", print_logikaStateValueSym(o.sym)),
-        ("name", printISZ(T, o.name, printString _)),
+        ("isLocal", printB(o.isLocal)),
+        ("context", printISZ(T, o.context, printString _)),
+        ("id", printString(o.id)),
         ("args", printISZ(F, o.args, print_logikaStateValue _))
       ))
     }
@@ -2541,13 +2543,19 @@ object JSON {
       parser.parseObjectKey("sym")
       val sym = parse_logikaStateValueSym()
       parser.parseObjectNext()
-      parser.parseObjectKey("name")
-      val name = parser.parseISZ(parser.parseString _)
+      parser.parseObjectKey("isLocal")
+      val isLocal = parser.parseB()
+      parser.parseObjectNext()
+      parser.parseObjectKey("context")
+      val context = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("id")
+      val id = parser.parseString()
       parser.parseObjectNext()
       parser.parseObjectKey("args")
       val args = parser.parseISZ(parse_logikaStateValue _)
       parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Let.Apply(sym, name, args)
+      return org.sireum.logika.State.Claim.Let.Apply(sym, isLocal, context, id, args)
     }
 
     def parse_logikaStateClaimLetIApply(): org.sireum.logika.State.Claim.Let.IApply = {
