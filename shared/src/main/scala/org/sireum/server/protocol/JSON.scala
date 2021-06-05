@@ -110,7 +110,8 @@ object JSON {
         ("logikaEnabled", printB(o.logikaEnabled)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
-        ("content", printString(o.content))
+        ("content", printString(o.content)),
+        ("line", printZ(o.line))
       ))
     }
 
@@ -1198,7 +1199,10 @@ object JSON {
       parser.parseObjectKey("content")
       val content = parser.parseString()
       parser.parseObjectNext()
-      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content)
+      parser.parseObjectKey("line")
+      val line = parser.parseZ()
+      parser.parseObjectNext()
+      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content, line)
     }
 
     def parseLogikaVerifyStart(): Logika.Verify.Start = {

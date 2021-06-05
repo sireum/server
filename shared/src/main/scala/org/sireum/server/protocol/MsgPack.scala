@@ -283,6 +283,7 @@ object MsgPack {
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
+      writer.writeZ(o.line)
     }
 
     def writeLogikaVerifyStart(o: Logika.Verify.Start): Unit = {
@@ -1179,7 +1180,8 @@ object MsgPack {
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
-      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content)
+      val line = reader.readZ()
+      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content, line)
     }
 
     def readLogikaVerifyStart(): Logika.Verify.Start = {

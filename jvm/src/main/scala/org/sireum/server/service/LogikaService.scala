@@ -307,17 +307,17 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, ISZ(), None(), ""))
+  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, ISZ(), None(), "", 0))
 
   def checkScript(req: Slang.CheckScript, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
       scriptCache = new ScriptCache(req)
     }
     val config = defaultConfig
-    logika.Logika.checkFile(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
+    logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
         config.intBitWidth, config.simplifiedQuery, reporter), reporter, !req.isBackground, hasLogika,
-      logika.Logika.defaultPlugins)
+      logika.Logika.defaultPlugins, req.line)
   }
 }
 

@@ -27,7 +27,7 @@ class LogikaServerTest extends TestSuite {
            |
            |def foo(): Unit = {
            |  bar()
-           |}""".stripMargin)))
+           |}""".stripMargin, 0)))
 
     * - test(T, id => Seq(
       CheckScript(F, T, id, Some("script.cmd"),
@@ -54,28 +54,28 @@ class LogikaServerTest extends TestSuite {
            |
            |import org.sireum._
            |
-           |assert(T)""".stripMargin)))
+           |assert(T)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
       CheckScript(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(F)""".stripMargin)))
+           |assert(F)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
       CheckScript(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(T)""".stripMargin)))
+           |assert(T)""".stripMargin, 0)))
 
     * - test(F, id => Seq(
       CheckScript(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(T)""".stripMargin),
+           |assert(T)""".stripMargin, 0),
       Cancel(id)))
 
   }

@@ -68,7 +68,8 @@ object Slang {
                               val logikaEnabled: B,
                               val id: ISZ[String],
                               val uriOpt: Option[String],
-                              val content: String) extends Request
+                              val content: String,
+                              val line: Z) extends Request
 
 }
 
