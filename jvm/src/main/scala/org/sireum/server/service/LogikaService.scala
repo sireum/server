@@ -317,7 +317,7 @@ object LogikaService {
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
         config.intBitWidth, config.simplifiedQuery, reporter), reporter, !req.isBackground, hasLogika,
-      logika.Logika.defaultPlugins, req.line)
+      logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
   }
 }
 
