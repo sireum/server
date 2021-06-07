@@ -222,9 +222,9 @@ object LogikaService {
       case _ => "unsupported"
     }
     def z3Path(home: String): Option[Os.Path] = {
-      val r = (Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3"))
+      val r = Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
       if (r.exists) {
-        return Some(r)
+        return Some(r.canon)
       }
       return None()
     }
@@ -260,9 +260,9 @@ object LogikaService {
       case _ => "unsupported"
     }
     def cvc4Path(home: String): Option[Os.Path] = {
-      val r = (Os.path(home) / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4"))
+      val r = Os.path(home) / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
       if (r.exists) {
-        return Some(r)
+        return Some(r.canon)
       }
       return None()
     }
