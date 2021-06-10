@@ -45,12 +45,12 @@ object LogikaService {
             val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
             val startTime = extension.Time.currentMillis
             var cancelled = true
-            val (hasSireum, compactFirstLine, text) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
+            val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
             val hasLogika = req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
             try {
               serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
               extension.Cancel.handleCancellable { () =>
-                checkScript(req(content = text), reporter, hasLogika)
+                checkScript(req, reporter, hasLogika)
                 cancelled = false
               }
             } catch {
