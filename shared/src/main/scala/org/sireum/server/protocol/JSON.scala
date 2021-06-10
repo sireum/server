@@ -63,6 +63,7 @@ object JSON {
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
         case o: Logika.Verify.Halted => return printLogikaVerifyHalted(o)
         case o: Logika.Verify.Smt2Query => return printLogikaVerifySmt2Query(o)
+        case o: Logika.Verify.Info => return printLogikaVerifyInfo(o)
       }
     }
 
@@ -174,6 +175,26 @@ object JSON {
         ("pos", printPosition(o.pos)),
         ("timeInMs", printZ(o.timeInMs)),
         ("result", print_logikaSmt2QueryResult(o.result))
+      ))
+    }
+
+    @pure def printLogikaVerifyInfo(o: Logika.Verify.Info): ST = {
+      return printObject(ISZ(
+        ("type", st""""Logika.Verify.Info""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("pos", printPosition(o.pos)),
+        ("kind", printLogikaVerifyInfoKindType(o.kind)),
+        ("message", printString(o.message))
+      ))
+    }
+
+    @pure def printLogikaVerifyInfoKindType(o: Logika.Verify.Info.Kind.Type): ST = {
+      val value: String = o match {
+        case Logika.Verify.Info.Kind.Verified => "Verified"
+      }
+      return printObject(ISZ(
+        ("type", printString("Logika.Verify.Info.Kind")),
+        ("value", printString(value))
       ))
     }
 
@@ -1080,7 +1101,7 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
@@ -1090,7 +1111,8 @@ object JSON {
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
         case "Logika.Verify.Halted" => val r = parseLogikaVerifyHaltedT(T); return r
         case "Logika.Verify.Smt2Query" => val r = parseLogikaVerifySmt2QueryT(T); return r
-        case _ => val r = parseLogikaVerifySmt2QueryT(T); return r
+        case "Logika.Verify.Info" => val r = parseLogikaVerifyInfoT(T); return r
+        case _ => val r = parseLogikaVerifyInfoT(T); return r
       }
     }
 
@@ -1353,6 +1375,51 @@ object JSON {
       val result = parse_logikaSmt2QueryResult()
       parser.parseObjectNext()
       return Logika.Verify.Smt2Query(id, pos, timeInMs, result)
+    }
+
+    def parseLogikaVerifyInfo(): Logika.Verify.Info = {
+      val r = parseLogikaVerifyInfoT(F)
+      return r
+    }
+
+    def parseLogikaVerifyInfoT(typeParsed: B): Logika.Verify.Info = {
+      if (!typeParsed) {
+        parser.parseObjectType("Logika.Verify.Info")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("pos")
+      val pos = parser.parsePosition()
+      parser.parseObjectNext()
+      parser.parseObjectKey("kind")
+      val kind = parseLogikaVerifyInfoKindType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("message")
+      val message = parser.parseString()
+      parser.parseObjectNext()
+      return Logika.Verify.Info(id, pos, kind, message)
+    }
+
+    def parseLogikaVerifyInfoKindType(): Logika.Verify.Info.Kind.Type = {
+      val r = parseLogikaVerifyInfoKindT(F)
+      return r
+    }
+
+    def parseLogikaVerifyInfoKindT(typeParsed: B): Logika.Verify.Info.Kind.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("Logika.Verify.Info.Kind")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      Logika.Verify.Info.Kind.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for Logika.Verify.Info.Kind.")
+          return Logika.Verify.Info.Kind.byOrdinal(0).get
+      }
     }
 
     def parseorgsireumlogikaState(): org.sireum.logika.State = {
@@ -3411,6 +3478,24 @@ object JSON {
       return r
     }
     val r = to(s, fLogikaVerifySmt2Query _)
+    return r
+  }
+
+  def fromLogikaVerifyInfo(o: Logika.Verify.Info, isCompact: B): String = {
+    val st = Printer.printLogikaVerifyInfo(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toLogikaVerifyInfo(s: String): Either[Logika.Verify.Info, Json.ErrorMsg] = {
+    def fLogikaVerifyInfo(parser: Parser): Logika.Verify.Info = {
+      val r = parser.parseLogikaVerifyInfo()
+      return r
+    }
+    val r = to(s, fLogikaVerifyInfo _)
     return r
   }
 

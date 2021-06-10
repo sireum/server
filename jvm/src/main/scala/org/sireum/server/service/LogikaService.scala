@@ -168,6 +168,13 @@ object LogikaService {
       serverAPI.sendRespond(Logika.Verify.State(id, posOpt, s))
     }
 
+    override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type, message: String): Unit = {
+      val k: Logika.Verify.Info.Kind.Type = kind match {
+        case org.sireum.logika.Logika.Reporter.Info.Kind.Verified => Logika.Verify.Info.Kind.Verified
+      }
+      serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
+    }
+
     override def query(pos: Position, time: Z, r: logika.Smt2Query.Result): Unit = {
       numOfSmt2Calls = numOfSmt2Calls + 1
       smt2TimeMillis = smt2TimeMillis + r.timeMillis

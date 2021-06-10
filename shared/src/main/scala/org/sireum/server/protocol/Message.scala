@@ -44,7 +44,7 @@ import org.sireum.message.Message
 
 @datatype class Cancel(val id: ISZ[String]) extends Request
 
-@datatype class Timing(val id: ISZ[String], desc: String, timeInMs: Z) extends Response
+@datatype class Timing(val id: ISZ[String], val desc: String, val timeInMs: Z) extends Response
 
 @datatype class Report(val id: ISZ[String], val message: Message) extends Response
 
@@ -101,6 +101,14 @@ object Logika {
     @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
 
     @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val result: logika.Smt2Query.Result) extends Response
+
+    @datatype class Info(val id: ISZ[String], val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response
+
+    object Info {
+      @enum object Kind {
+        'Verified
+      }
+    }
 
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),
