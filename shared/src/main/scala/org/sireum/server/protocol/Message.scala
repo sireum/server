@@ -71,6 +71,27 @@ object Slang {
                               val content: String,
                               val line: Z) extends Request
 
+  object Rewrite {
+
+    @enum object Kind {
+      "InsertConstructorVals"
+      "RenumberProofSteps"
+      "ReplaceEnumSymbols"
+    }
+
+    @datatype class Request(val id: ISZ[String],
+                            val kind: Kind.Type,
+                            val isScript: B,
+                            val fileUriOpt: Option[String],
+                            val text: String) extends org.sireum.server.protocol.Request
+
+    @datatype class Response(val id: ISZ[String],
+                             val kind: Kind.Type,
+                             val message: Message,
+                             val newTextOpt: Option[String],
+                             val numOfRewrites: Z) extends org.sireum.server.protocol.Response
+
+  }
 }
 
 
@@ -106,7 +127,7 @@ object Logika {
 
     object Info {
       @enum object Kind {
-        'Verified
+        "Verified"
       }
     }
 

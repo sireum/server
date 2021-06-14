@@ -43,6 +43,7 @@ object JSON {
         case o: Cancel => return printCancel(o)
         case o: Version.Request => return printVersionRequest(o)
         case o: Slang.CheckScript => return printSlangCheckScript(o)
+        case o: Slang.Rewrite.Request => return printSlangRewriteRequest(o)
         case o: Logika.Verify.Config => return printLogikaVerifyConfig(o)
       }
     }
@@ -58,6 +59,7 @@ object JSON {
         case o: Timing => return printTiming(o)
         case o: Report => return printReport(o)
         case o: Version.Response => return printVersionResponse(o)
+        case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
         case o: Logika.Verify.Start => return printLogikaVerifyStart(o)
         case o: Logika.Verify.End => return printLogikaVerifyEnd(o)
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
@@ -113,6 +115,40 @@ object JSON {
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
         ("line", printZ(o.line))
+      ))
+    }
+
+    @pure def printSlangRewriteKindType(o: Slang.Rewrite.Kind.Type): ST = {
+      val value: String = o match {
+        case Slang.Rewrite.Kind.InsertConstructorVals => "InsertConstructorVals"
+        case Slang.Rewrite.Kind.RenumberProofSteps => "RenumberProofSteps"
+        case Slang.Rewrite.Kind.ReplaceEnumSymbols => "ReplaceEnumSymbols"
+      }
+      return printObject(ISZ(
+        ("type", printString("Slang.Rewrite.Kind")),
+        ("value", printString(value))
+      ))
+    }
+
+    @pure def printSlangRewriteRequest(o: Slang.Rewrite.Request): ST = {
+      return printObject(ISZ(
+        ("type", st""""Slang.Rewrite.Request""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("kind", printSlangRewriteKindType(o.kind)),
+        ("isScript", printB(o.isScript)),
+        ("fileUriOpt", printOption(T, o.fileUriOpt, printString _)),
+        ("text", printString(o.text))
+      ))
+    }
+
+    @pure def printSlangRewriteResponse(o: Slang.Rewrite.Response): ST = {
+      return printObject(ISZ(
+        ("type", st""""Slang.Rewrite.Response""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("kind", printSlangRewriteKindType(o.kind)),
+        ("message", printMessage(o.message)),
+        ("newTextOpt", printOption(T, o.newTextOpt, printString _)),
+        ("numOfRewrites", printZ(o.numOfRewrites))
       ))
     }
 
@@ -1077,12 +1113,13 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.CheckScript", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.CheckScript", "Slang.Rewrite.Request", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
         case "Version.Request" => val r = parseVersionRequestT(T); return r
         case "Slang.CheckScript" => val r = parseSlangCheckScriptT(T); return r
+        case "Slang.Rewrite.Request" => val r = parseSlangRewriteRequestT(T); return r
         case "Logika.Verify.Config" => val r = parseLogikaVerifyConfigT(T); return r
         case _ => val r = parseLogikaVerifyConfigT(T); return r
       }
@@ -1101,11 +1138,12 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Slang.Rewrite.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
         case "Version.Response" => val r = parseVersionResponseT(T); return r
+        case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
         case "Logika.Verify.Start" => val r = parseLogikaVerifyStartT(T); return r
         case "Logika.Verify.End" => val r = parseLogikaVerifyEndT(T); return r
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
@@ -1225,6 +1263,81 @@ object JSON {
       val line = parser.parseZ()
       parser.parseObjectNext()
       return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content, line)
+    }
+
+    def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
+      val r = parseSlangRewriteKindT(F)
+      return r
+    }
+
+    def parseSlangRewriteKindT(typeParsed: B): Slang.Rewrite.Kind.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("Slang.Rewrite.Kind")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      Slang.Rewrite.Kind.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for Slang.Rewrite.Kind.")
+          return Slang.Rewrite.Kind.byOrdinal(0).get
+      }
+    }
+
+    def parseSlangRewriteRequest(): Slang.Rewrite.Request = {
+      val r = parseSlangRewriteRequestT(F)
+      return r
+    }
+
+    def parseSlangRewriteRequestT(typeParsed: B): Slang.Rewrite.Request = {
+      if (!typeParsed) {
+        parser.parseObjectType("Slang.Rewrite.Request")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("kind")
+      val kind = parseSlangRewriteKindType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("isScript")
+      val isScript = parser.parseB()
+      parser.parseObjectNext()
+      parser.parseObjectKey("fileUriOpt")
+      val fileUriOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("text")
+      val text = parser.parseString()
+      parser.parseObjectNext()
+      return Slang.Rewrite.Request(id, kind, isScript, fileUriOpt, text)
+    }
+
+    def parseSlangRewriteResponse(): Slang.Rewrite.Response = {
+      val r = parseSlangRewriteResponseT(F)
+      return r
+    }
+
+    def parseSlangRewriteResponseT(typeParsed: B): Slang.Rewrite.Response = {
+      if (!typeParsed) {
+        parser.parseObjectType("Slang.Rewrite.Response")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("kind")
+      val kind = parseSlangRewriteKindType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("message")
+      val message = parser.parseMessage()
+      parser.parseObjectNext()
+      parser.parseObjectKey("newTextOpt")
+      val newTextOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("numOfRewrites")
+      val numOfRewrites = parser.parseZ()
+      parser.parseObjectNext()
+      return Slang.Rewrite.Response(id, kind, message, newTextOpt, numOfRewrites)
     }
 
     def parseLogikaVerifyStart(): Logika.Verify.Start = {
@@ -3370,6 +3483,42 @@ object JSON {
       return r
     }
     val r = to(s, fSlangCheckScript _)
+    return r
+  }
+
+  def fromSlangRewriteRequest(o: Slang.Rewrite.Request, isCompact: B): String = {
+    val st = Printer.printSlangRewriteRequest(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSlangRewriteRequest(s: String): Either[Slang.Rewrite.Request, Json.ErrorMsg] = {
+    def fSlangRewriteRequest(parser: Parser): Slang.Rewrite.Request = {
+      val r = parser.parseSlangRewriteRequest()
+      return r
+    }
+    val r = to(s, fSlangRewriteRequest _)
+    return r
+  }
+
+  def fromSlangRewriteResponse(o: Slang.Rewrite.Response, isCompact: B): String = {
+    val st = Printer.printSlangRewriteResponse(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSlangRewriteResponse(s: String): Either[Slang.Rewrite.Response, Json.ErrorMsg] = {
+    def fSlangRewriteResponse(parser: Parser): Slang.Rewrite.Response = {
+      val r = parser.parseSlangRewriteResponse()
+      return r
+    }
+    val r = to(s, fSlangRewriteResponse _)
     return r
   }
 

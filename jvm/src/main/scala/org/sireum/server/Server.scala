@@ -27,8 +27,8 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.protocol.{JSON, CustomMessagePack}
-import org.sireum.server.service.Service
+import org.sireum.server.protocol.{CustomMessagePack, JSON}
+import org.sireum.server.service.{Service, SlangService}
 
 object Server {
 
@@ -37,7 +37,8 @@ object Server {
       version,
       isMsgPack,
       MSZ(
-        Ext.logikaService(numOfLogikaWorkers)
+        Ext.logikaService(numOfLogikaWorkers),
+        SlangService()
       )
     )
     return server.run()
@@ -99,7 +100,7 @@ object Server {
         while (!found && tries < maxTries) {
           for (service <- services if !found && service.canHandle(req)) {
             found = T
-            service.handle(req)
+            service.handle(serverAPI, req)
           }
           if (!found && tries < maxTries) {
             tries = tries + 1
@@ -112,7 +113,7 @@ object Server {
         var found = F
         for (service <- services if !found && service.canHandle(req)) {
           found = T
-          service.handle(req)
+          service.handle(serverAPI, req)
         }
         if (!found) {
           serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),

@@ -365,7 +365,7 @@ class LogikaService(numOfThreads: Z) extends Service {
     }
   }
 
-  def handle(req: Request): Unit = {
+  def handle(serverAPI: server.ServerAPI, req: Request): Unit = {
     req match {
       case req: Cancel =>
         LogikaService.idMap.remove(req.id) match {

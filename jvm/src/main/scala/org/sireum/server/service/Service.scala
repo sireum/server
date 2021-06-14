@@ -32,6 +32,6 @@ import org.sireum.server.protocol
   def id: String
   def init(serverAPI: server.ServerAPI): Unit
   def canHandle(request: protocol.Request): B
-  def handle(request: protocol.Request): Unit
+  def handle(serverAPI: server.ServerAPI, request: protocol.Request): Unit
   def finalise(): Unit
 }
