@@ -68,7 +68,7 @@ object Server {
   }
 }
 
-@datatype class Server(version: String, isMsgPack: B, services: MSZ[Service]) {
+@datatype class Server(val version: String, val isMsgPack: B, val services: MSZ[Service]) {
   val serverAPI: ServerAPI = if (isMsgPack) MsgPackServerAPI() else JsonServerAPI()
   def run(): Z = {
     for (i <- services.indices) {
