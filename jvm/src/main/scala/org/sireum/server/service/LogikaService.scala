@@ -87,7 +87,7 @@ object LogikaService {
 
   class ScriptCache(val req: Slang.CheckScript,
                     val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
-                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2Impl.Cache {
+                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
     var _owned: Boolean = false
     var _ignore: B = F
 
@@ -322,8 +322,8 @@ object LogikaService {
     }
     val config = defaultConfig
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl.create(defaultConfig.smt2Configs, th, scriptCache, config.timeoutInMs, config.charBitWidth,
-        config.intBitWidth, config.simplifiedQuery, reporter), reporter, !req.isBackground, hasLogika,
+      logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs, config.charBitWidth, config.intBitWidth,
+        config.simplifiedQuery, reporter), scriptCache, reporter, !req.isBackground, hasLogika,
       logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
   }
 }
