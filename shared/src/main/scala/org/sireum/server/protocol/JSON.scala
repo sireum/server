@@ -910,7 +910,8 @@ object JSON {
         ("splitIf", printB(o.splitIf)),
         ("splitMatch", printB(o.splitMatch)),
         ("splitContract", printB(o.splitContract)),
-        ("simplifiedQuery", printB(o.simplifiedQuery))
+        ("simplifiedQuery", printB(o.simplifiedQuery)),
+        ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch))
       ))
     }
 
@@ -2934,7 +2935,10 @@ object JSON {
       parser.parseObjectKey("simplifiedQuery")
       val simplifiedQuery = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      parser.parseObjectKey("checkInfeasiblePatternMatch")
+      val checkInfeasiblePatternMatch = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

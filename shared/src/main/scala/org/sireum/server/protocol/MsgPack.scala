@@ -941,6 +941,7 @@ object MsgPack {
       writer.writeB(o.splitMatch)
       writer.writeB(o.splitContract)
       writer.writeB(o.simplifiedQuery)
+      writer.writeB(o.checkInfeasiblePatternMatch)
     }
 
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
@@ -2461,7 +2462,8 @@ object MsgPack {
       val splitMatch = reader.readB()
       val splitContract = reader.readB()
       val simplifiedQuery = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery)
+      val checkInfeasiblePatternMatch = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

@@ -150,6 +150,7 @@ object Logika {
       splitIf = F,
       splitMatch = F,
       simplifiedQuery = F,
+      checkInfeasiblePatternMatch = T,
     )
 
   }
