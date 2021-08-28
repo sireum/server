@@ -151,6 +151,7 @@ object Logika {
       splitMatch = F,
       simplifiedQuery = F,
       checkInfeasiblePatternMatch = T,
+      cvc4RLimit = 1000000
     )
 
   }

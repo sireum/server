@@ -942,6 +942,7 @@ object MsgPack {
       writer.writeB(o.splitContract)
       writer.writeB(o.simplifiedQuery)
       writer.writeB(o.checkInfeasiblePatternMatch)
+      writer.writeZ(o.cvc4RLimit)
     }
 
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
@@ -954,11 +955,13 @@ object MsgPack {
     def writeorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaZ3Config)
       writer.writeString(o.exe)
+      writer.writeISZ(o.otherOpts, writer.writeString _)
     }
 
     def writeorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaCvc4Config)
       writer.writeString(o.exe)
+      writer.writeISZ(o.otherOpts, writer.writeString _)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2463,7 +2466,8 @@ object MsgPack {
       val splitContract = reader.readB()
       val simplifiedQuery = reader.readB()
       val checkInfeasiblePatternMatch = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch)
+      val cvc4RLimit = reader.readZ()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -2489,7 +2493,8 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaZ3Config)
       }
       val exe = reader.readString()
-      return org.sireum.logika.Z3Config(exe)
+      val otherOpts = reader.readISZ(reader.readString _)
+      return org.sireum.logika.Z3Config(exe, otherOpts)
     }
 
     def readorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
@@ -2502,7 +2507,8 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaCvc4Config)
       }
       val exe = reader.readString()
-      return org.sireum.logika.Cvc4Config(exe)
+      val otherOpts = reader.readISZ(reader.readString _)
+      return org.sireum.logika.Cvc4Config(exe, otherOpts)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

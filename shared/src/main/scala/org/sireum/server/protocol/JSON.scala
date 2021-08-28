@@ -911,7 +911,8 @@ object JSON {
         ("splitMatch", printB(o.splitMatch)),
         ("splitContract", printB(o.splitContract)),
         ("simplifiedQuery", printB(o.simplifiedQuery)),
-        ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch))
+        ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
+        ("cvc4RLimit", printZ(o.cvc4RLimit))
       ))
     }
 
@@ -925,14 +926,16 @@ object JSON {
     @pure def printorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): ST = {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Z3Config""""),
-        ("exe", printString(o.exe))
+        ("exe", printString(o.exe)),
+        ("otherOpts", printISZ(T, o.otherOpts, printString _))
       ))
     }
 
     @pure def printorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): ST = {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Cvc4Config""""),
-        ("exe", printString(o.exe))
+        ("exe", printString(o.exe)),
+        ("otherOpts", printISZ(T, o.otherOpts, printString _))
       ))
     }
 
@@ -2938,7 +2941,10 @@ object JSON {
       parser.parseObjectKey("checkInfeasiblePatternMatch")
       val checkInfeasiblePatternMatch = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch)
+      parser.parseObjectKey("cvc4RLimit")
+      val cvc4RLimit = parser.parseZ()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -2962,7 +2968,10 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.logika.Z3Config(exe)
+      parser.parseObjectKey("otherOpts")
+      val otherOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      return org.sireum.logika.Z3Config(exe, otherOpts)
     }
 
     def parseorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
@@ -2977,7 +2986,10 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.logika.Cvc4Config(exe)
+      parser.parseObjectKey("otherOpts")
+      val otherOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      return org.sireum.logika.Cvc4Config(exe, otherOpts)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

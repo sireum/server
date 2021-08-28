@@ -32,6 +32,8 @@ import org.sireum.server.service.{Service, SlangService}
 
 object Server {
 
+  val logFile: Os.Path = Os.home / ".sireum-server.log"
+
   def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z): Z = {
     val server = Server(
       version,
@@ -58,6 +60,12 @@ object Server {
 
 @datatype class JsonServerAPI extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
+    resp match {
+      case resp: protocol.Report if resp.message.isInternalError =>
+        Server.logFile.writeAppend(resp.message.text)
+        Server.logFile.writeAppend("\n")
+      case _ =>
+    }
     Server.Ext.writeOutput(protocol.JSON.fromResponse(resp, T))
   }
 }
@@ -71,6 +79,7 @@ object Server {
 @datatype class Server(val version: String, val isMsgPack: B, val services: MSZ[Service]) {
   val serverAPI: ServerAPI = if (isMsgPack) MsgPackServerAPI() else JsonServerAPI()
   def run(): Z = {
+    Server.logFile.writeOver("")
     for (i <- services.indices) {
       services(i).init(serverAPI)
     }
