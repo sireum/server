@@ -955,13 +955,15 @@ object MsgPack {
     def writeorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaZ3Config)
       writer.writeString(o.exe)
-      writer.writeISZ(o.otherOpts, writer.writeString _)
+      writer.writeISZ(o.validOpts, writer.writeString _)
+      writer.writeISZ(o.satOpts, writer.writeString _)
     }
 
     def writeorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaCvc4Config)
       writer.writeString(o.exe)
-      writer.writeISZ(o.otherOpts, writer.writeString _)
+      writer.writeISZ(o.validOpts, writer.writeString _)
+      writer.writeISZ(o.satOpts, writer.writeString _)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2493,8 +2495,9 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaZ3Config)
       }
       val exe = reader.readString()
-      val otherOpts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.Z3Config(exe, otherOpts)
+      val validOpts = reader.readISZ(reader.readString _)
+      val satOpts = reader.readISZ(reader.readString _)
+      return org.sireum.logika.Z3Config(exe, validOpts, satOpts)
     }
 
     def readorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
@@ -2507,8 +2510,9 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaCvc4Config)
       }
       val exe = reader.readString()
-      val otherOpts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.Cvc4Config(exe, otherOpts)
+      val validOpts = reader.readISZ(reader.readString _)
+      val satOpts = reader.readISZ(reader.readString _)
+      return org.sireum.logika.Cvc4Config(exe, validOpts, satOpts)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

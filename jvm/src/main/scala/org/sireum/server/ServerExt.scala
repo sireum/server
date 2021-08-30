@@ -77,7 +77,8 @@ object ServerExt {
   def logikaService(numOfThreads: Z): Service = {
     LogikaService.setConfig(LogikaService._hint, LogikaService._smt2query,
       LogikaService.defaultConfig(smt2Configs = ISZ(
-        logika.Cvc4Config(LogikaService.cvc4Exe, ISZ()), logika.Z3Config(LogikaService.z3Exe, ISZ()))))
+        logika.Cvc4Config(LogikaService.cvc4Exe, ISZ("--full-saturate-quant"), ISZ()),
+        logika.Z3Config(LogikaService.z3Exe, ISZ(), ISZ()))))
     new service.LogikaService(numOfThreads)
   }
 }

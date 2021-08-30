@@ -927,7 +927,8 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Z3Config""""),
         ("exe", printString(o.exe)),
-        ("otherOpts", printISZ(T, o.otherOpts, printString _))
+        ("validOpts", printISZ(T, o.validOpts, printString _)),
+        ("satOpts", printISZ(T, o.satOpts, printString _))
       ))
     }
 
@@ -935,7 +936,8 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Cvc4Config""""),
         ("exe", printString(o.exe)),
-        ("otherOpts", printISZ(T, o.otherOpts, printString _))
+        ("validOpts", printISZ(T, o.validOpts, printString _)),
+        ("satOpts", printISZ(T, o.satOpts, printString _))
       ))
     }
 
@@ -2968,10 +2970,13 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
-      parser.parseObjectKey("otherOpts")
-      val otherOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectKey("validOpts")
+      val validOpts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.Z3Config(exe, otherOpts)
+      parser.parseObjectKey("satOpts")
+      val satOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      return org.sireum.logika.Z3Config(exe, validOpts, satOpts)
     }
 
     def parseorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
@@ -2986,10 +2991,13 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
-      parser.parseObjectKey("otherOpts")
-      val otherOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectKey("validOpts")
+      val validOpts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.Cvc4Config(exe, otherOpts)
+      parser.parseObjectKey("satOpts")
+      val satOpts = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      return org.sireum.logika.Cvc4Config(exe, validOpts, satOpts)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
