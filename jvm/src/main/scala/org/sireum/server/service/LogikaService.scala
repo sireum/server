@@ -314,7 +314,7 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, ISZ(), None(), "", 0))
+  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, 1, ISZ(), None(), "", 0))
 
   def checkScript(req: Slang.CheckScript, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.req.uriOpt != req.uriOpt) {
@@ -323,7 +323,7 @@ object LogikaService {
     val config = defaultConfig
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs, config.cvc4RLimit, config.charBitWidth,
-        config.intBitWidth, config.simplifiedQuery, reporter), scriptCache, reporter, if (!req.isBackground) 0 else 1,
+        config.intBitWidth, config.simplifiedQuery, reporter), scriptCache, reporter, req.par,
       hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
   }
 }

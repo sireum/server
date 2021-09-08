@@ -66,6 +66,7 @@ object Slang {
 
   @datatype class CheckScript(val isBackground: B,
                               val logikaEnabled: B,
+                              val par: Z,
                               val id: ISZ[String],
                               val uriOpt: Option[String],
                               val content: String,

@@ -289,6 +289,7 @@ object MsgPack {
       writer.writeZ(Constants.SlangCheckScript)
       writer.writeB(o.isBackground)
       writer.writeB(o.logikaEnabled)
+      writer.writeZ(o.par)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
@@ -1229,11 +1230,12 @@ object MsgPack {
       }
       val isBackground = reader.readB()
       val logikaEnabled = reader.readB()
+      val par = reader.readZ()
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
       val line = reader.readZ()
-      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content, line)
+      return Slang.CheckScript(isBackground, logikaEnabled, par, id, uriOpt, content, line)
     }
 
     def readSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {

@@ -111,6 +111,7 @@ object JSON {
         ("type", st""""Slang.CheckScript""""),
         ("isBackground", printB(o.isBackground)),
         ("logikaEnabled", printB(o.logikaEnabled)),
+        ("par", printZ(o.par)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
@@ -1256,6 +1257,9 @@ object JSON {
       parser.parseObjectKey("logikaEnabled")
       val logikaEnabled = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("par")
+      val par = parser.parseZ()
+      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
@@ -1268,7 +1272,7 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.CheckScript(isBackground, logikaEnabled, id, uriOpt, content, line)
+      return Slang.CheckScript(isBackground, logikaEnabled, par, id, uriOpt, content, line)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {

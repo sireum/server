@@ -15,7 +15,7 @@ class LogikaServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(T, id => Seq(
-      CheckScript(F, T, id, None(),
+      CheckScript(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
@@ -30,7 +30,7 @@ class LogikaServerTest extends TestSuite {
            |}""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, id, Some("script.cmd"),
+      CheckScript(F, T, 0, id, Some("script.cmd"),
         """::#! 2> /dev/null                                              #
            |@ 2>/dev/null # 2>nul & echo off & goto BOF                   #
            |if [ -f "$0.com" ] && [ "$0.com" -nt "$0" ]; then             #
@@ -57,21 +57,21 @@ class LogikaServerTest extends TestSuite {
            |assert(T)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, id, None(),
+      CheckScript(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(F)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, id, None(),
+      CheckScript(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin, 0)))
 
     * - test(F, id => Seq(
-      CheckScript(F, T, id, None(),
+      CheckScript(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
