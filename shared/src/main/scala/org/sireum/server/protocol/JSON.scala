@@ -902,6 +902,7 @@ object JSON {
         ("unroll", printB(o.unroll)),
         ("charBitWidth", printZ(o.charBitWidth)),
         ("intBitWidth", printZ(o.intBitWidth)),
+        ("useReal", printB(o.useReal)),
         ("logPc", printB(o.logPc)),
         ("logRawPc", printB(o.logRawPc)),
         ("logVc", printB(o.logVc)),
@@ -2914,6 +2915,9 @@ object JSON {
       parser.parseObjectKey("intBitWidth")
       val intBitWidth = parser.parseZ()
       parser.parseObjectNext()
+      parser.parseObjectKey("useReal")
+      val useReal = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("logPc")
       val logPc = parser.parseB()
       parser.parseObjectNext()
@@ -2950,7 +2954,7 @@ object JSON {
       parser.parseObjectKey("cvc4RLimit")
       val cvc4RLimit = parser.parseZ()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

@@ -932,6 +932,7 @@ object MsgPack {
       writer.writeB(o.unroll)
       writer.writeZ(o.charBitWidth)
       writer.writeZ(o.intBitWidth)
+      writer.writeB(o.useReal)
       writer.writeB(o.logPc)
       writer.writeB(o.logRawPc)
       writer.writeB(o.logVc)
@@ -2459,6 +2460,7 @@ object MsgPack {
       val unroll = reader.readB()
       val charBitWidth = reader.readZ()
       val intBitWidth = reader.readZ()
+      val useReal = reader.readB()
       val logPc = reader.readB()
       val logRawPc = reader.readB()
       val logVc = reader.readB()
@@ -2471,7 +2473,7 @@ object MsgPack {
       val simplifiedQuery = reader.readB()
       val checkInfeasiblePatternMatch = reader.readB()
       val cvc4RLimit = reader.readZ()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

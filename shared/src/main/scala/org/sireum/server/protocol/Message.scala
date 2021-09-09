@@ -141,6 +141,7 @@ object Logika {
       unroll = F,
       charBitWidth = 32,
       intBitWidth = 0,
+      useReal = F,
       logPc = F,
       logRawPc = F,
       logVc = F,
