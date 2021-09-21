@@ -4,7 +4,6 @@ import org.sireum._
 import org.sireum.server.protocol.CustomMessagePack
 import org.sireum.test._
 import org.sireum.server.protocol._
-import org.sireum.server.protocol.Slang.CheckScript
 
 import java.io._
 
@@ -15,7 +14,7 @@ class LogikaServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(T, id => Seq(
-      CheckScript(F, T, 0, id, None(),
+      Slang.Check.Script(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
@@ -30,7 +29,7 @@ class LogikaServerTest extends TestSuite {
            |}""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, 0, id, Some("script.cmd"),
+      Slang.Check.Script(F, T, 0, id, Some("script.cmd"),
         """::#! 2> /dev/null                                              #
            |@ 2>/dev/null # 2>nul & echo off & goto BOF                   #
            |if [ -f "$0.com" ] && [ "$0.com" -nt "$0" ]; then             #
@@ -57,21 +56,21 @@ class LogikaServerTest extends TestSuite {
            |assert(T)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, 0, id, None(),
+      Slang.Check.Script(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(F)""".stripMargin, 0)))
 
     * - test(T, id => Seq(
-      CheckScript(F, T, 0, id, None(),
+      Slang.Check.Script(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin, 0)))
 
     * - test(F, id => Seq(
-      CheckScript(F, T, 0, id, None(),
+      Slang.Check.Script(F, T, 0, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
@@ -83,7 +82,17 @@ class LogikaServerTest extends TestSuite {
   def test(isMsgPack: B, freqs: ISZ[String] => Seq[Request])(implicit line: sourcecode.Line): Unit = {
     class ServerThread extends Thread {
       override def run(): Unit = {
-        Server.run("test", isMsgPack, 1)
+        val sireumHome = Os.path(Os.env("SIREUM_HOME").get)
+        val plat: String = Os.kind match {
+          case Os.Kind.Win => "win"
+          case Os.Kind.Linux => "linux"
+          case Os.Kind.LinuxArm => "linux/arm"
+          case Os.Kind.Mac => "mac"
+          case _ => "unsupported"
+        }
+        val javaHome = sireumHome / "bin" / plat / "java"
+        val scalaHome = sireumHome / "bin" / "scala"
+        Server.run("test", isMsgPack, 1, javaHome, scalaHome, sireumHome, ISZ())
       }
     }
 

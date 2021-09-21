@@ -34,14 +34,19 @@ object Server {
 
   val logFile: Os.Path = Os.home / ".sireum-server.log"
 
-  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z): Z = {
+  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, javaHome: Os.Path, scalaHome: Os.Path,
+          sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
     val server = Server(
       version,
       isMsgPack,
       MSZ(
         Ext.logikaService(numOfLogikaWorkers),
         SlangService()
-      )
+      ),
+      javaHome,
+      scalaHome,
+      sireumHome,
+      defaultVersions
     )
     return server.run()
   }
@@ -55,10 +60,17 @@ object Server {
 }
 
 @datatype trait ServerAPI {
+  def sireumHome: Os.Path
+  def scalaHome: Os.Path
+  def javaHome: Os.Path
+  def defaultVersions: ISZ[(String, String)]
   def sendRespond(resp: protocol.Response): Unit
 }
 
-@datatype class JsonServerAPI extends ServerAPI {
+@datatype class JsonServerAPI(val javaHome: Os.Path,
+                              val scalaHome: Os.Path,
+                              val sireumHome: Os.Path,
+                              val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
     resp match {
       case resp: protocol.Report if resp.message.isInternalError =>
@@ -70,14 +82,25 @@ object Server {
   }
 }
 
-@datatype class MsgPackServerAPI extends ServerAPI {
+@datatype class MsgPackServerAPI(val javaHome: Os.Path,
+                                 val scalaHome: Os.Path,
+                                 val sireumHome: Os.Path,
+                                 val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
     Server.Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
   }
 }
 
-@datatype class Server(val version: String, val isMsgPack: B, val services: MSZ[Service]) {
-  val serverAPI: ServerAPI = if (isMsgPack) MsgPackServerAPI() else JsonServerAPI()
+@datatype class Server(val version: String,
+                       val isMsgPack: B,
+                       val services: MSZ[Service],
+                       val javaHome: Os.Path,
+                       val scalaHome: Os.Path,
+                       val sireumHome: Os.Path,
+                       val defaultVersions: ISZ[(String, String)]) {
+  val serverAPI: ServerAPI =
+    if (isMsgPack) MsgPackServerAPI(javaHome, scalaHome, sireumHome, defaultVersions)
+    else JsonServerAPI(javaHome, scalaHome, sireumHome, defaultVersions)
   def run(): Z = {
     Server.logFile.writeOver("")
     for (i <- services.indices) {

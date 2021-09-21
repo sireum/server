@@ -64,13 +64,34 @@ object Version {
 
 object Slang {
 
-  @datatype class CheckScript(val isBackground: B,
-                              val logikaEnabled: B,
-                              val par: Z,
-                              val id: ISZ[String],
-                              val uriOpt: Option[String],
-                              val content: String,
-                              val line: Z) extends Request
+  @datatype trait Check extends Request {
+    def isBackground: B
+
+    def par: Z
+
+    def line: Z
+  }
+
+  object Check {
+
+    @datatype class Script(val isBackground: B,
+                           val logikaEnabled: B,
+                           val par: Z,
+                           val id: ISZ[String],
+                           val uriOpt: Option[String],
+                           val content: String,
+                           val line: Z) extends Check
+
+
+    @datatype class Project(val isBackground: B,
+                            val par: Z,
+                            val id: ISZ[String],
+                            val proyek: String,
+                            val files: HashSMap[String, String],
+                            val vfiles: ISZ[String],
+                            val line: Z) extends Check
+
+  }
 
   object Rewrite {
 

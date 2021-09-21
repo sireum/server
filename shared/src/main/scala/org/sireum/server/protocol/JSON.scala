@@ -42,7 +42,8 @@ object JSON {
         case o: Terminate => return printTerminate(o)
         case o: Cancel => return printCancel(o)
         case o: Version.Request => return printVersionRequest(o)
-        case o: Slang.CheckScript => return printSlangCheckScript(o)
+        case o: Slang.Check.Script => return printSlangCheckScript(o)
+        case o: Slang.Check.Project => return printSlangCheckProject(o)
         case o: Slang.Rewrite.Request => return printSlangRewriteRequest(o)
         case o: Logika.Verify.Config => return printLogikaVerifyConfig(o)
       }
@@ -106,15 +107,35 @@ object JSON {
       ))
     }
 
-    @pure def printSlangCheckScript(o: Slang.CheckScript): ST = {
+    @pure def printSlangCheck(o: Slang.Check): ST = {
+      o match {
+        case o: Slang.Check.Script => return printSlangCheckScript(o)
+        case o: Slang.Check.Project => return printSlangCheckProject(o)
+      }
+    }
+
+    @pure def printSlangCheckScript(o: Slang.Check.Script): ST = {
       return printObject(ISZ(
-        ("type", st""""Slang.CheckScript""""),
+        ("type", st""""Slang.Check.Script""""),
         ("isBackground", printB(o.isBackground)),
         ("logikaEnabled", printB(o.logikaEnabled)),
         ("par", printZ(o.par)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
+        ("line", printZ(o.line))
+      ))
+    }
+
+    @pure def printSlangCheckProject(o: Slang.Check.Project): ST = {
+      return printObject(ISZ(
+        ("type", st""""Slang.Check.Project""""),
+        ("isBackground", printB(o.isBackground)),
+        ("par", printZ(o.par)),
+        ("id", printISZ(T, o.id, printString _)),
+        ("proyek", printString(o.proyek)),
+        ("files", printHashSMap(T, o.files, printString _, printString _)),
+        ("vfiles", printISZ(T, o.vfiles, printString _)),
         ("line", printZ(o.line))
       ))
     }
@@ -1121,12 +1142,13 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.CheckScript", "Slang.Rewrite.Request", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
         case "Version.Request" => val r = parseVersionRequestT(T); return r
-        case "Slang.CheckScript" => val r = parseSlangCheckScriptT(T); return r
+        case "Slang.Check.Script" => val r = parseSlangCheckScriptT(T); return r
+        case "Slang.Check.Project" => val r = parseSlangCheckProjectT(T); return r
         case "Slang.Rewrite.Request" => val r = parseSlangRewriteRequestT(T); return r
         case "Logika.Verify.Config" => val r = parseLogikaVerifyConfigT(T); return r
         case _ => val r = parseLogikaVerifyConfigT(T); return r
@@ -1243,14 +1265,23 @@ object JSON {
       return Version.Response(version)
     }
 
-    def parseSlangCheckScript(): Slang.CheckScript = {
+    def parseSlangCheck(): Slang.Check = {
+      val t = parser.parseObjectTypes(ISZ("Slang.Check.Script", "Slang.Check.Project"))
+      t.native match {
+        case "Slang.Check.Script" => val r = parseSlangCheckScriptT(T); return r
+        case "Slang.Check.Project" => val r = parseSlangCheckProjectT(T); return r
+        case _ => val r = parseSlangCheckProjectT(T); return r
+      }
+    }
+
+    def parseSlangCheckScript(): Slang.Check.Script = {
       val r = parseSlangCheckScriptT(F)
       return r
     }
 
-    def parseSlangCheckScriptT(typeParsed: B): Slang.CheckScript = {
+    def parseSlangCheckScriptT(typeParsed: B): Slang.Check.Script = {
       if (!typeParsed) {
-        parser.parseObjectType("Slang.CheckScript")
+        parser.parseObjectType("Slang.Check.Script")
       }
       parser.parseObjectKey("isBackground")
       val isBackground = parser.parseB()
@@ -1273,7 +1304,40 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.CheckScript(isBackground, logikaEnabled, par, id, uriOpt, content, line)
+      return Slang.Check.Script(isBackground, logikaEnabled, par, id, uriOpt, content, line)
+    }
+
+    def parseSlangCheckProject(): Slang.Check.Project = {
+      val r = parseSlangCheckProjectT(F)
+      return r
+    }
+
+    def parseSlangCheckProjectT(typeParsed: B): Slang.Check.Project = {
+      if (!typeParsed) {
+        parser.parseObjectType("Slang.Check.Project")
+      }
+      parser.parseObjectKey("isBackground")
+      val isBackground = parser.parseB()
+      parser.parseObjectNext()
+      parser.parseObjectKey("par")
+      val par = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("proyek")
+      val proyek = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("files")
+      val files = parser.parseHashSMap(parser.parseString _, parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("vfiles")
+      val vfiles = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("line")
+      val line = parser.parseZ()
+      parser.parseObjectNext()
+      return Slang.Check.Project(isBackground, par, id, proyek, files, vfiles, line)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -3500,7 +3564,25 @@ object JSON {
     return r
   }
 
-  def fromSlangCheckScript(o: Slang.CheckScript, isCompact: B): String = {
+  def fromSlangCheck(o: Slang.Check, isCompact: B): String = {
+    val st = Printer.printSlangCheck(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSlangCheck(s: String): Either[Slang.Check, Json.ErrorMsg] = {
+    def fSlangCheck(parser: Parser): Slang.Check = {
+      val r = parser.parseSlangCheck()
+      return r
+    }
+    val r = to(s, fSlangCheck _)
+    return r
+  }
+
+  def fromSlangCheckScript(o: Slang.Check.Script, isCompact: B): String = {
     val st = Printer.printSlangCheckScript(o)
     if (isCompact) {
       return st.renderCompact
@@ -3509,12 +3591,30 @@ object JSON {
     }
   }
 
-  def toSlangCheckScript(s: String): Either[Slang.CheckScript, Json.ErrorMsg] = {
-    def fSlangCheckScript(parser: Parser): Slang.CheckScript = {
+  def toSlangCheckScript(s: String): Either[Slang.Check.Script, Json.ErrorMsg] = {
+    def fSlangCheckScript(parser: Parser): Slang.Check.Script = {
       val r = parser.parseSlangCheckScript()
       return r
     }
     val r = to(s, fSlangCheckScript _)
+    return r
+  }
+
+  def fromSlangCheckProject(o: Slang.Check.Project, isCompact: B): String = {
+    val st = Printer.printSlangCheckProject(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSlangCheckProject(s: String): Either[Slang.Check.Project, Json.ErrorMsg] = {
+    def fSlangCheckProject(parser: Parser): Slang.Check.Project = {
+      val r = parser.parseSlangCheckProject()
+      return r
+    }
+    val r = to(s, fSlangCheckProject _)
     return r
   }
 

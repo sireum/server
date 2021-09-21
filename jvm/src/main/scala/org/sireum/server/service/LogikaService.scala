@@ -26,6 +26,8 @@ package org.sireum.server.service
 
 import org.sireum._
 import org.sireum.message._
+import org.sireum.project.{DependencyManager, Project}
+import org.sireum.proyek.{LogikaProyek, Proyek}
 import org.sireum.server.ServerExt
 import org.sireum.server.protocol._
 
@@ -37,44 +39,70 @@ object LogikaService {
   class Thread(serverAPI: server.ServerAPI,
                terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
+      def check(req: Slang.Check, f: ReporterImpl => (B, B)): Unit = {
+        idMap.put(req.id, this)
+        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
+        var cancelled = false
+        var hasLogika = false
+        val startTime = extension.Time.currentMillis
+        serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
+        try {
+          val p = f(reporter)
+          hasLogika = p._1
+          cancelled = p._2
+        } catch {
+          case t: Throwable =>
+            cancelled = true
+            val baos = new ByteArrayOutputStream()
+            t.printStackTrace(new java.io.PrintStream(baos))
+            serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
+              s"""Internal error occurred:
+                 |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
+        } finally {
+          serverAPI.sendRespond(Logika.Verify.End(
+            isBackground = req.isBackground,
+            id = req.id,
+            wasCancelled = cancelled,
+            hasLogika = hasLogika,
+            isIllFormed = reporter.isIllFormed,
+            totalTimeMillis = extension.Time.currentMillis - startTime,
+            numOfSmt2Calls = reporter.numOfSmt2Calls,
+            smt2TimeMillis = reporter.smt2TimeMillis,
+            numOfInternalErrors = reporter.numOfInternalErrors,
+            numOfErrors = reporter.numOfErrors,
+            numOfWarnings = reporter.numOfWarnings
+          ))
+        }
+      }
+
       while (!terminated.get()) {
-        val req = try checkQueue.poll(ServerExt.pauseTime, TimeUnit.MILLISECONDS) catch { case _: InterruptedException => null }
+        val req = try checkQueue.poll(ServerExt.pauseTime, TimeUnit.MILLISECONDS) catch {
+          case _: InterruptedException => null
+        }
         if (req != null) {
-          idMap.put(req.id, this)
           try {
-            val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
-            val startTime = extension.Time.currentMillis
-            var cancelled = true
-            val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
-            val hasLogika = req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
-            try {
-              serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
-              extension.Cancel.handleCancellable { () =>
-                checkScript(req, reporter, hasLogika)
-                cancelled = false
-              }
-            } catch {
-              case t: Throwable =>
-                cancelled = true
-                val baos = new ByteArrayOutputStream()
-                t.printStackTrace(new java.io.PrintStream(baos))
-                serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
-                  s"""Internal error occurred:
-                     |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
-            } finally {
-              serverAPI.sendRespond(Logika.Verify.End(
-                isBackground = req.isBackground,
-                id = req.id,
-                wasCancelled = cancelled,
-                hasLogika = hasLogika,
-                isIllFormed = reporter.isIllFormed,
-                totalTimeMillis = extension.Time.currentMillis - startTime,
-                numOfSmt2Calls = reporter.numOfSmt2Calls,
-                smt2TimeMillis = reporter.smt2TimeMillis,
-                numOfInternalErrors = reporter.numOfInternalErrors,
-                numOfErrors = reporter.numOfErrors,
-                numOfWarnings = reporter.numOfWarnings
-              ))
+            req match {
+              case req: Slang.Check.Script =>
+                check(req, (reporter: ReporterImpl) => {
+                  val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
+                  val hasLogika = req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
+                    req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
+                  var cancelled = true
+                  extension.Cancel.handleCancellable { () =>
+                    checkScript(req, reporter, hasLogika)
+                    cancelled = false
+                  }
+                  (hasLogika, cancelled)
+                })
+              case req: Slang.Check.Project =>
+                check(req, (reporter: ReporterImpl) => {
+                  var cancelled = true
+                  extension.Cancel.handleCancellable { () =>
+                    checkProgram(req, reporter)
+                    cancelled = false
+                  }
+                  (req.vfiles.nonEmpty, cancelled)
+                })
             }
           } finally {
             idMap.remove(req.id)
@@ -83,22 +111,83 @@ object LogikaService {
         }
       }
     }
+
+    def checkProgram(req: Slang.Check.Project, reporter: ReporterImpl): Unit = {
+      val key = req.proyek.value.intern
+      val root = org.sireum.Os.path(key)
+      var cache = proyekCache.get(key)
+      if (cache == null) {
+        Proyek.getProject(serverAPI.sireumHome, root, None(), None()) match {
+          case Some(prj) =>
+            Proyek.getVersions(prj, root, ISZ(), serverAPI.defaultVersions) match {
+              case Some(versions) =>
+                val dm = DependencyManager(
+                  project = prj,
+                  versions = versions,
+                  isJs = F,
+                  withSource = F,
+                  withDoc = F,
+                  javaHome = serverAPI.javaHome,
+                  scalaHome = serverAPI.scalaHome,
+                  sireumHome = serverAPI.sireumHome,
+                  cacheOpt = None()
+                )
+                cache = createCache(org.sireum.Some(org.sireum.Os.path(key).toUri), prj, Some(dm))
+              case _ =>
+                reporter.error(None(), "LogikaService", s"Could not load versions from ${root / "versions.properties"}")
+                return
+            }
+          case _ =>
+            reporter.error(None(), "LogikaService", s"Could not load project from ${root / "bin" / "project.cmd"}")
+            return
+        }
+        proyekCache.put(key, cache)
+      }
+      val thMapBox = MBox(cache.thMap)
+      LogikaProyek.run(
+        root = root,
+        project = cache.project,
+        dm = cache.dmOpt.get,
+        thMapBox = thMapBox,
+        config = defaultConfig,
+        cache = cache,
+        files = req.files,
+        vfiles = req.vfiles,
+        line = req.line,
+        par = req.par,
+        strictAliasing = T,
+        followSymLink = F,
+        all = F,
+        verify = req.vfiles.nonEmpty,
+        disableOutput = F,
+        verbose = T,
+        sanityCheck = F,
+        plugins = logika.Logika.defaultPlugins,
+        skipMethods = ISZ(),
+        skipTypes = ISZ(),
+        reporter = reporter
+      )
+      cache.thMap = thMapBox.value
+    }
   }
 
-  class ScriptCache(val req: Slang.CheckScript,
-                    val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
-                      new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
+  class FileCache(val uriOpt: Option[String],
+                  val project: Project,
+                  val dmOpt: Option[DependencyManager],
+                  var thMap: HashMap[String, lang.tipe.TypeHierarchy],
+                  val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
+                  new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
     var _owned: Boolean = false
     var _ignore: B = F
 
     override def $owned: Boolean = _owned
 
-    override def $owned_=(b: Boolean): ScriptCache = {
+    override def $owned_=(b: Boolean): FileCache = {
       _owned = b
       this
     }
 
-    override def $clone: ScriptCache = this
+    override def $clone: FileCache = this
 
     override def string: String = {
       return "Smt2Cache"
@@ -203,11 +292,11 @@ object LogikaService {
       _ignore = newIgnore
     }
 
-    override def setMessages(newMessages: ISZ[Message]): Unit = {
+    override def setMessages(newMessages: ISZ[Message]): Unit = synchronized {
       _messages = newMessages
     }
 
-    override def report(m: Message): Unit = {
+    override def report(m: Message): Unit = synchronized {
       if (!ignore) {
         m.level match {
           case Level.InternalError => numOfInternalErrors = numOfInternalErrors + 1
@@ -228,6 +317,7 @@ object LogikaService {
       case Os.Kind.Mac => "mac"
       case _ => "unsupported"
     }
+
     def z3Path(home: String): Option[Os.Path] = {
       val r = Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
       if (r.exists) {
@@ -235,6 +325,7 @@ object LogikaService {
       }
       return None()
     }
+
     def h(): String = {
       if (Os.kind == Os.Kind.Unsupported) {
         return "z3"
@@ -257,6 +348,7 @@ object LogikaService {
       }
       return "z3"
     }
+
     h()
   }
   val cvc4Exe: String = {
@@ -266,6 +358,7 @@ object LogikaService {
       case Os.Kind.Mac => "mac"
       case _ => "unsupported"
     }
+
     def cvc4Path(home: String): Option[Os.Path] = {
       val r = Os.path(home) / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
       if (r.exists) {
@@ -273,6 +366,7 @@ object LogikaService {
       }
       return None()
     }
+
     def h(): String = {
       if (Os.kind == Os.Kind.Unsupported) {
         return "cvc4"
@@ -295,9 +389,10 @@ object LogikaService {
       }
       return "cvc4"
     }
+
     h()
   }
-  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.CheckScript]()
+  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
@@ -314,11 +409,15 @@ object LogikaService {
     _defaultConfig = newConfig
   }
 
-  var scriptCache: ScriptCache = new ScriptCache(Slang.CheckScript(F, F, 1, ISZ(), None(), "", 0))
+  def createCache(uriOpt: Option[String], project: Project = Project.empty, dmOpt: Option[DependencyManager] = None()): FileCache =
+    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty)
 
-  def checkScript(req: Slang.CheckScript, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
-    if (scriptCache.req.uriOpt != req.uriOpt) {
-      scriptCache = new ScriptCache(req)
+  var scriptCache: FileCache = createCache(None())
+  val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
+
+  def checkScript(req: Slang.Check.Script, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
+    if (scriptCache.uriOpt != req.uriOpt) {
+      scriptCache = createCache(req.uriOpt)
     }
     val config = defaultConfig
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
@@ -350,7 +449,7 @@ class LogikaService(numOfThreads: Z) extends Service {
   def init(serverAPI: server.ServerAPI): Unit = {
     lang.FrontEnd.checkedLibraryReporter
     terminated.set(false)
-    threads = for (i <- z"0" until numOfThreads) yield new LogikaService.Thread(serverAPI, terminated)
+    threads = for (_ <- z"0" until numOfThreads) yield new LogikaService.Thread(serverAPI, terminated)
     for (t <- threads) {
       t.start()
     }
@@ -360,7 +459,7 @@ class LogikaService(numOfThreads: Z) extends Service {
     req match {
       case req: Cancel => return LogikaService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
-      case _: Slang.CheckScript => return T
+      case _: Slang.Check => return T
       case _ => return F
     }
   }
@@ -377,7 +476,7 @@ class LogikaService(numOfThreads: Z) extends Service {
           if (req.config.smt2Configs.isEmpty) req.config(smt2Configs = LogikaService.defaultConfig.smt2Configs)
           else req.config
         LogikaService.setConfig(req.hint, req.smt2query, config)
-      case req: Slang.CheckScript => LogikaService.checkQueue.add(req)
+      case req: Slang.Check => LogikaService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
   }
