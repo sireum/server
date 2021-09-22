@@ -41,7 +41,7 @@ object LogikaService {
     override def run(): Unit = {
       def check(req: Slang.Check, f: ReporterImpl => (B, B)): Unit = {
         idMap.put(req.id, this)
-        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, ISZ())
+        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
@@ -160,7 +160,7 @@ object LogikaService {
         all = F,
         verify = req.vfiles.nonEmpty,
         disableOutput = F,
-        verbose = T,
+        verbose = F,
         sanityCheck = F,
         plugins = logika.Logika.defaultPlugins,
         skipMethods = ISZ(),
@@ -203,7 +203,14 @@ object LogikaService {
     }
   }
 
-  class ReporterImpl(hint: B, smt2query: B, serverAPI: server.ServerAPI, id: ISZ[String], var _messages: ISZ[Message]) extends logika.Logika.Reporter {
+  class ReporterImpl(hint: B,
+                     smt2query: B,
+                     serverAPI: server.ServerAPI,
+                     id: ISZ[String],
+                     val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
+                     new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
+    import org.sireum.$internal.CollectionCompat.Converters._
+
     var _owned: Boolean = false
     var _ignore: B = F
     var isIllFormed: B = F
@@ -216,7 +223,7 @@ object LogikaService {
     override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
       other match {
         case other: ReporterImpl =>
-          _messages = _messages ++ other._messages
+          _messages.addAll(other._messages)
           isIllFormed = isIllFormed || other.isIllFormed
           numOfSmt2Calls = numOfSmt2Calls + other.numOfSmt2Calls
           smt2TimeMillis = smt2TimeMillis + other.smt2TimeMillis
@@ -277,11 +284,11 @@ object LogikaService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, serverAPI, id, ISZ())
+      return new ReporterImpl(hint, smt2query, serverAPI, id)
     }
 
     override def messages: ISZ[Message] = {
-      return _messages
+      return ISZ(_messages.asScala.toSeq: _*)
     }
 
     override def ignore: B = {
@@ -293,7 +300,10 @@ object LogikaService {
     }
 
     override def setMessages(newMessages: ISZ[Message]): Unit = synchronized {
-      _messages = newMessages
+      _messages.clear()
+      for (m <- newMessages) {
+        _messages.add(m)
+      }
     }
 
     override def report(m: Message): Unit = synchronized {
@@ -305,8 +315,50 @@ object LogikaService {
           case _ =>
         }
         serverAPI.sendRespond(Report(id, m))
+        _messages.add(m)
       }
-      super.report(m)
+    }
+
+    override def hasInternalError: B = {
+      for (m <- _messages.asScala) {
+        m.level match {
+          case Level.InternalError => return T
+          case _ =>
+        }
+      }
+      return F
+    }
+
+    override def hasError: B = {
+      for (m <- _messages.asScala if m.isError || m.isInternalError) {
+        return T
+      }
+      return F
+    }
+
+    override def hasWarning: B = {
+      for (m <- _messages.asScala if m.isWarning) {
+        return T
+      }
+      return F
+    }
+
+    override def hasIssue: B = {
+      for (m <- _messages.asScala if m.isError || m.isWarning || m.isInternalError) {
+        return T
+      }
+      return F
+    }
+
+    override def hasInfo: B = {
+      for (m <- _messages.asScala if m.isInfo) {
+        return T
+      }
+      return F
+    }
+
+    override def hasMessage: B = {
+      return !_messages.isEmpty
     }
   }
 
