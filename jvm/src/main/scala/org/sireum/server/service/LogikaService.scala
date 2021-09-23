@@ -299,14 +299,14 @@ object LogikaService {
       _ignore = newIgnore
     }
 
-    override def setMessages(newMessages: ISZ[Message]): Unit = synchronized {
+    override def setMessages(newMessages: ISZ[Message]): Unit = {
       _messages.clear()
       for (m <- newMessages) {
         _messages.add(m)
       }
     }
 
-    override def report(m: Message): Unit = synchronized {
+    override def report(m: Message): Unit = {
       if (!ignore) {
         m.level match {
           case Level.InternalError => numOfInternalErrors = numOfInternalErrors + 1
@@ -320,7 +320,7 @@ object LogikaService {
     }
 
     override def hasInternalError: B = {
-      for (m <- _messages.asScala) {
+      for (m <- _messages.iterator.asScala) {
         m.level match {
           case Level.InternalError => return T
           case _ =>
@@ -330,28 +330,28 @@ object LogikaService {
     }
 
     override def hasError: B = {
-      for (m <- _messages.asScala if m.isError || m.isInternalError) {
+      for (m <- _messages.iterator.asScala if m.isError || m.isInternalError) {
         return T
       }
       return F
     }
 
     override def hasWarning: B = {
-      for (m <- _messages.asScala if m.isWarning) {
+      for (m <- _messages.iterator.asScala if m.isWarning) {
         return T
       }
       return F
     }
 
     override def hasIssue: B = {
-      for (m <- _messages.asScala if m.isError || m.isWarning || m.isInternalError) {
+      for (m <- _messages.iterator.asScala if m.isError || m.isWarning || m.isInternalError) {
         return T
       }
       return F
     }
 
     override def hasInfo: B = {
-      for (m <- _messages.asScala if m.isInfo) {
+      for (m <- _messages.iterator.asScala if m.isInfo) {
         return T
       }
       return F
