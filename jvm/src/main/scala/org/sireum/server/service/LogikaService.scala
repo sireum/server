@@ -143,12 +143,12 @@ object LogikaService {
         }
         proyekCache.put(key, cache)
       }
-      val thMapBox = MBox(cache.thMap)
+      val mapBox = MBox2(cache.uriMap, cache.thMap)
       LogikaProyek.run(
         root = root,
         project = cache.project,
         dm = cache.dmOpt.get,
-        thMapBox = thMapBox,
+        mapBox = mapBox,
         config = defaultConfig,
         cache = cache,
         files = req.files,
@@ -167,13 +167,15 @@ object LogikaService {
         skipTypes = ISZ(),
         reporter = reporter
       )
-      cache.thMap = thMapBox.value
+      cache.uriMap = mapBox.value1
+      cache.thMap = mapBox.value2
     }
   }
 
   class FileCache(val uriOpt: Option[String],
                   val project: Project,
                   val dmOpt: Option[DependencyManager],
+                  var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                   var thMap: HashMap[String, lang.tipe.TypeHierarchy],
                   val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
                   new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
@@ -462,7 +464,7 @@ object LogikaService {
   }
 
   def createCache(uriOpt: Option[String], project: Project = Project.empty, dmOpt: Option[DependencyManager] = None()): FileCache =
-    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty)
+    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty, org.sireum.HashMap.empty)
 
   var scriptCache: FileCache = createCache(None())
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
