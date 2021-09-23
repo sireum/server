@@ -27,14 +27,14 @@ package org.sireum.server.service
 import org.sireum._
 import org.sireum.message._
 import org.sireum.project.{DependencyManager, Project}
-import org.sireum.proyek.{LogikaProyek, Proyek}
+import org.sireum.proyek.{Analysis, Proyek}
 import org.sireum.server.ServerExt
 import org.sireum.server.protocol._
 
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.TimeUnit
 
-object LogikaService {
+object AnalysisService {
 
   class Thread(serverAPI: server.ServerAPI,
                terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
@@ -144,7 +144,7 @@ object LogikaService {
         proyekCache.put(key, cache)
       }
       val mapBox = MBox2(cache.uriMap, cache.thMap)
-      LogikaProyek.run(
+      Analysis.run(
         root = root,
         project = cache.project,
         dm = cache.dmOpt.get,
@@ -481,20 +481,20 @@ object LogikaService {
   }
 }
 
-class LogikaService(numOfThreads: Z) extends Service {
+class AnalysisService(numOfThreads: Z) extends Service {
 
   val terminated = new _root_.java.util.concurrent.atomic.AtomicBoolean()
-  var threads: ISZ[LogikaService.Thread] = ISZ()
+  var threads: ISZ[AnalysisService.Thread] = ISZ()
   var _owned: Boolean = false
 
   override def $owned: Boolean = _owned
 
-  override def $owned_=(b: Boolean): LogikaService = {
+  override def $owned_=(b: Boolean): AnalysisService = {
     _owned = b
     this
   }
 
-  override def $clone: LogikaService = {
+  override def $clone: AnalysisService = {
     halt("Unsupported operation")
   }
 
@@ -503,7 +503,7 @@ class LogikaService(numOfThreads: Z) extends Service {
   def init(serverAPI: server.ServerAPI): Unit = {
     lang.FrontEnd.checkedLibraryReporter
     terminated.set(false)
-    threads = for (_ <- z"0" until numOfThreads) yield new LogikaService.Thread(serverAPI, terminated)
+    threads = for (_ <- z"0" until numOfThreads) yield new AnalysisService.Thread(serverAPI, terminated)
     for (t <- threads) {
       t.start()
     }
@@ -511,7 +511,7 @@ class LogikaService(numOfThreads: Z) extends Service {
 
   def canHandle(req: Request): B = {
     req match {
-      case req: Cancel => return LogikaService.idMap.containsKey(req.id)
+      case req: Cancel => return AnalysisService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
       case _: Slang.Check => return T
       case _ => return F
@@ -521,16 +521,16 @@ class LogikaService(numOfThreads: Z) extends Service {
   def handle(serverAPI: server.ServerAPI, req: Request): Unit = {
     req match {
       case req: Cancel =>
-        LogikaService.idMap.remove(req.id) match {
+        AnalysisService.idMap.remove(req.id) match {
           case t if t != null => t.interrupt()
           case _ =>
         }
       case req: Logika.Verify.Config =>
         val config: logika.Config =
-          if (req.config.smt2Configs.isEmpty) req.config(smt2Configs = LogikaService.defaultConfig.smt2Configs)
+          if (req.config.smt2Configs.isEmpty) req.config(smt2Configs = AnalysisService.defaultConfig.smt2Configs)
           else req.config
-        LogikaService.setConfig(req.hint, req.smt2query, config)
-      case req: Slang.Check => LogikaService.checkQueue.add(req)
+        AnalysisService.setConfig(req.hint, req.smt2query, config)
+      case req: Slang.Check => AnalysisService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
   }
@@ -542,5 +542,5 @@ class LogikaService(numOfThreads: Z) extends Service {
     }
   }
 
-  override def string: String = "LogikaService"
+  override def string: String = "AnalysisService"
 }

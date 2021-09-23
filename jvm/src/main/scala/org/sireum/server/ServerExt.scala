@@ -25,7 +25,7 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.service.{Service, LogikaService}
+import org.sireum.server.service.{Service, AnalysisService}
 
 import java.io.ByteArrayOutputStream
 
@@ -75,10 +75,10 @@ object ServerExt {
   def pause(): Unit = Thread.sleep(pauseTime)
 
   def logikaService(numOfThreads: Z): Service = {
-    LogikaService.setConfig(LogikaService._hint, LogikaService._smt2query,
-      LogikaService.defaultConfig(smt2Configs = ISZ(
-        logika.Cvc4Config(LogikaService.cvc4Exe, ISZ("--full-saturate-quant"), ISZ()),
-        logika.Z3Config(LogikaService.z3Exe, ISZ(), ISZ()))))
-    new service.LogikaService(numOfThreads)
+    AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query,
+      AnalysisService.defaultConfig(smt2Configs = ISZ(
+        logika.Cvc4Config(AnalysisService.cvc4Exe, ISZ("--full-saturate-quant"), ISZ()),
+        logika.Z3Config(AnalysisService.z3Exe, ISZ(), ISZ()))))
+    new service.AnalysisService(numOfThreads)
   }
 }
