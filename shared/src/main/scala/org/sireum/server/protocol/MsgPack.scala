@@ -966,6 +966,7 @@ object MsgPack {
       writer.writeB(o.simplifiedQuery)
       writer.writeB(o.checkInfeasiblePatternMatch)
       writer.writeZ(o.cvc4RLimit)
+      writer.writeString(o.fpRoundingMode)
     }
 
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
@@ -2527,7 +2528,8 @@ object MsgPack {
       val simplifiedQuery = reader.readB()
       val checkInfeasiblePatternMatch = reader.readB()
       val cvc4RLimit = reader.readZ()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
+      val fpRoundingMode = reader.readString()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit, fpRoundingMode)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

@@ -935,7 +935,8 @@ object JSON {
         ("splitContract", printB(o.splitContract)),
         ("simplifiedQuery", printB(o.simplifiedQuery)),
         ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
-        ("cvc4RLimit", printZ(o.cvc4RLimit))
+        ("cvc4RLimit", printZ(o.cvc4RLimit)),
+        ("fpRoundingMode", printString(o.fpRoundingMode))
       ))
     }
 
@@ -3018,7 +3019,10 @@ object JSON {
       parser.parseObjectKey("cvc4RLimit")
       val cvc4RLimit = parser.parseZ()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit)
+      parser.parseObjectKey("fpRoundingMode")
+      val fpRoundingMode = parser.parseString()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit, fpRoundingMode)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
