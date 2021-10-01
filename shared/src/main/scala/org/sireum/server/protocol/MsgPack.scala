@@ -386,7 +386,12 @@ object MsgPack {
       writer.writeISZ(o.id, writer.writeString _)
       writer.writePosition(o.pos)
       writer.writeZ(o.timeInMs)
-      write_logikaSmt2QueryResult(o.result)
+      writer.writeString(o.title)
+      write_logikaSmt2QueryResultKindType(o.kind)
+      writer.writeString(o.solverName)
+      writer.writeString(o.query)
+      writer.writeString(o.info)
+      writer.writeString(o.output)
     }
 
     def writeLogikaVerifyInfo(o: Logika.Verify.Info): Unit = {
@@ -1427,8 +1432,13 @@ object MsgPack {
       val id = reader.readISZ(reader.readString _)
       val pos = reader.readPosition()
       val timeInMs = reader.readZ()
-      val result = read_logikaSmt2QueryResult()
-      return Logika.Verify.Smt2Query(id, pos, timeInMs, result)
+      val title = reader.readString()
+      val kind = read_logikaSmt2QueryResultKindType()
+      val solverName = reader.readString()
+      val query = reader.readString()
+      val info = reader.readString()
+      val output = reader.readString()
+      return Logika.Verify.Smt2Query(id, pos, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def readLogikaVerifyInfo(): Logika.Verify.Info = {

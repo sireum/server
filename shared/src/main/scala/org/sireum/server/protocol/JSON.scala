@@ -232,7 +232,12 @@ object JSON {
         ("id", printISZ(T, o.id, printString _)),
         ("pos", printPosition(o.pos)),
         ("timeInMs", printZ(o.timeInMs)),
-        ("result", print_logikaSmt2QueryResult(o.result))
+        ("title", printString(o.title)),
+        ("kind", print_logikaSmt2QueryResultKindType(o.kind)),
+        ("solverName", printString(o.solverName)),
+        ("query", printString(o.query)),
+        ("info", printString(o.info)),
+        ("output", printString(o.output))
       ))
     }
 
@@ -1560,10 +1565,25 @@ object JSON {
       parser.parseObjectKey("timeInMs")
       val timeInMs = parser.parseZ()
       parser.parseObjectNext()
-      parser.parseObjectKey("result")
-      val result = parse_logikaSmt2QueryResult()
+      parser.parseObjectKey("title")
+      val title = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.Smt2Query(id, pos, timeInMs, result)
+      parser.parseObjectKey("kind")
+      val kind = parse_logikaSmt2QueryResultKindType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("solverName")
+      val solverName = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("query")
+      val query = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("info")
+      val info = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("output")
+      val output = parser.parseString()
+      parser.parseObjectNext()
+      return Logika.Verify.Smt2Query(id, pos, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def parseLogikaVerifyInfo(): Logika.Verify.Info = {

@@ -143,7 +143,9 @@ object Logika {
 
     @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
 
-    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val result: logika.Smt2Query.Result) extends Response
+    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val title: String,
+                              val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,
+                              val info: String, val output: String) extends Response
 
     @datatype class Info(val id: ISZ[String], val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response
 

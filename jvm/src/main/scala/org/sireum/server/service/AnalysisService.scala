@@ -41,7 +41,22 @@ object AnalysisService {
     override def run(): Unit = {
       def check(req: Slang.Check, f: ReporterImpl => (B, B)): Unit = {
         idMap.put(req.id, this)
-        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id)
+        val outputDirOpt: Option[Os.Path] = req match {
+          case req: Slang.Check.Project =>
+            val p = Os.path(req.proyek) / "out" / "logika"
+            (p / "smt2").mkdirAll()
+            val dirs = (p / "smt2").list
+            val max = 5
+            if (dirs.size >= max) {
+              val sdirs = ops.ISZOps(dirs).sortWith((p1: Os.Path, p2: Os.Path) => p1.lastModified < p2.lastModified)
+              for (i <- 0 until dirs.size - max + 1) {
+                sdirs(i).removeAll()
+              }
+            }
+            Some(Os.path(req.proyek) / "out" / "logika")
+          case _ => None()
+        }
+        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, outputDirOpt)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
@@ -209,6 +224,7 @@ object AnalysisService {
                      smt2query: B,
                      serverAPI: server.ServerAPI,
                      id: ISZ[String],
+                     outputDirOpt: Option[Os.Path],
                      val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
                      new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
@@ -244,7 +260,7 @@ object AnalysisService {
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, serverAPI, id, _messages)
+      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
@@ -273,11 +289,23 @@ object AnalysisService {
       serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
     }
 
-    override def query(pos: Position, time: Z, r: logika.Smt2Query.Result): Unit = {
+    override def query(pos: Position, title: String, time: Z, r: logika.Smt2Query.Result): Unit = {
       numOfSmt2Calls = numOfSmt2Calls + 1
       smt2TimeMillis = smt2TimeMillis + r.timeMillis
       if (smt2query) {
-        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, r))
+        val query: String = outputDirOpt match {
+          case Some(outputDir) =>
+            val d = outputDir / "smt2" / st"${(id, "-")}".render
+            d.mkdirAll()
+            @strictpure def replaceChar(c: C): C =
+              if (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c === '.')) c else '-'
+            val filename = s"$title-${extension.Time.currentMillis}.smt2"
+            val f = d / conversions.String.fromCis(for (c <- conversions.String.toCis(filename)) yield replaceChar(c))
+            f.writeOver(r.query)
+            f.canon.string
+          case _ => r.query
+        }
+        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, title, r.kind, r.solverName, query, r.info, r.output))
       }
     }
 
@@ -286,7 +314,7 @@ object AnalysisService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, serverAPI, id)
+      return new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt)
     }
 
     override def messages: ISZ[Message] = {
