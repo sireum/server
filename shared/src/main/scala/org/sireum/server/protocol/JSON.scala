@@ -42,6 +42,7 @@ object JSON {
         case o: Terminate => return printTerminate(o)
         case o: Cancel => return printCancel(o)
         case o: Version.Request => return printVersionRequest(o)
+        case o: Status.Request => return printStatusRequest(o)
         case o: Slang.Check.Script => return printSlangCheckScript(o)
         case o: Slang.Check.Project => return printSlangCheckProject(o)
         case o: Slang.Rewrite.Request => return printSlangRewriteRequest(o)
@@ -60,6 +61,7 @@ object JSON {
         case o: Timing => return printTiming(o)
         case o: Report => return printReport(o)
         case o: Version.Response => return printVersionResponse(o)
+        case o: Status.Response => return printStatusResponse(o)
         case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
         case o: Logika.Verify.Start => return printLogikaVerifyStart(o)
         case o: Logika.Verify.End => return printLogikaVerifyEnd(o)
@@ -104,6 +106,20 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Version.Response""""),
         ("version", printString(o.version))
+      ))
+    }
+
+    @pure def printStatusRequest(o: Status.Request): ST = {
+      return printObject(ISZ(
+        ("type", st""""Status.Request"""")
+      ))
+    }
+
+    @pure def printStatusResponse(o: Status.Response): ST = {
+      return printObject(ISZ(
+        ("type", st""""Status.Response""""),
+        ("totalMemory", printZ(o.totalMemory)),
+        ("freeMemory", printZ(o.freeMemory))
       ))
     }
 
@@ -948,7 +964,7 @@ object JSON {
     @pure def printorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): ST = {
       o match {
         case o: org.sireum.logika.Z3Config => return printorgsireumlogikaZ3Config(o)
-        case o: org.sireum.logika.Cvc4Config => return printorgsireumlogikaCvc4Config(o)
+        case o: org.sireum.logika.CvcConfig => return printorgsireumlogikaCvcConfig(o)
       }
     }
 
@@ -961,9 +977,9 @@ object JSON {
       ))
     }
 
-    @pure def printorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): ST = {
+    @pure def printorgsireumlogikaCvcConfig(o: org.sireum.logika.CvcConfig): ST = {
       return printObject(ISZ(
-        ("type", st""""org.sireum.logika.Cvc4Config""""),
+        ("type", st""""org.sireum.logika.CvcConfig""""),
         ("exe", printString(o.exe)),
         ("validOpts", printISZ(T, o.validOpts, printString _)),
         ("satOpts", printISZ(T, o.satOpts, printString _))
@@ -1148,11 +1164,12 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Status.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
         case "Version.Request" => val r = parseVersionRequestT(T); return r
+        case "Status.Request" => val r = parseStatusRequestT(T); return r
         case "Slang.Check.Script" => val r = parseSlangCheckScriptT(T); return r
         case "Slang.Check.Project" => val r = parseSlangCheckProjectT(T); return r
         case "Slang.Rewrite.Request" => val r = parseSlangRewriteRequestT(T); return r
@@ -1174,11 +1191,12 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Slang.Rewrite.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
         case "Version.Response" => val r = parseVersionResponseT(T); return r
+        case "Status.Response" => val r = parseStatusResponseT(T); return r
         case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
         case "Logika.Verify.Start" => val r = parseLogikaVerifyStartT(T); return r
         case "Logika.Verify.End" => val r = parseLogikaVerifyEndT(T); return r
@@ -1269,6 +1287,36 @@ object JSON {
       val version = parser.parseString()
       parser.parseObjectNext()
       return Version.Response(version)
+    }
+
+    def parseStatusRequest(): Status.Request = {
+      val r = parseStatusRequestT(F)
+      return r
+    }
+
+    def parseStatusRequestT(typeParsed: B): Status.Request = {
+      if (!typeParsed) {
+        parser.parseObjectType("Status.Request")
+      }
+      return Status.Request()
+    }
+
+    def parseStatusResponse(): Status.Response = {
+      val r = parseStatusResponseT(F)
+      return r
+    }
+
+    def parseStatusResponseT(typeParsed: B): Status.Response = {
+      if (!typeParsed) {
+        parser.parseObjectType("Status.Response")
+      }
+      parser.parseObjectKey("totalMemory")
+      val totalMemory = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("freeMemory")
+      val freeMemory = parser.parseZ()
+      parser.parseObjectNext()
+      return Status.Response(totalMemory, freeMemory)
     }
 
     def parseSlangCheck(): Slang.Check = {
@@ -3046,11 +3094,11 @@ object JSON {
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
-      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.Z3Config", "org.sireum.logika.Cvc4Config"))
+      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.Z3Config", "org.sireum.logika.CvcConfig"))
       t.native match {
         case "org.sireum.logika.Z3Config" => val r = parseorgsireumlogikaZ3ConfigT(T); return r
-        case "org.sireum.logika.Cvc4Config" => val r = parseorgsireumlogikaCvc4ConfigT(T); return r
-        case _ => val r = parseorgsireumlogikaCvc4ConfigT(T); return r
+        case "org.sireum.logika.CvcConfig" => val r = parseorgsireumlogikaCvcConfigT(T); return r
+        case _ => val r = parseorgsireumlogikaCvcConfigT(T); return r
       }
     }
 
@@ -3075,14 +3123,14 @@ object JSON {
       return org.sireum.logika.Z3Config(exe, validOpts, satOpts)
     }
 
-    def parseorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
-      val r = parseorgsireumlogikaCvc4ConfigT(F)
+    def parseorgsireumlogikaCvcConfig(): org.sireum.logika.CvcConfig = {
+      val r = parseorgsireumlogikaCvcConfigT(F)
       return r
     }
 
-    def parseorgsireumlogikaCvc4ConfigT(typeParsed: B): org.sireum.logika.Cvc4Config = {
+    def parseorgsireumlogikaCvcConfigT(typeParsed: B): org.sireum.logika.CvcConfig = {
       if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.Cvc4Config")
+        parser.parseObjectType("org.sireum.logika.CvcConfig")
       }
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
@@ -3093,7 +3141,7 @@ object JSON {
       parser.parseObjectKey("satOpts")
       val satOpts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.Cvc4Config(exe, validOpts, satOpts)
+      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
@@ -3585,6 +3633,42 @@ object JSON {
       return r
     }
     val r = to(s, fVersionResponse _)
+    return r
+  }
+
+  def fromStatusRequest(o: Status.Request, isCompact: B): String = {
+    val st = Printer.printStatusRequest(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toStatusRequest(s: String): Either[Status.Request, Json.ErrorMsg] = {
+    def fStatusRequest(parser: Parser): Status.Request = {
+      val r = parser.parseStatusRequest()
+      return r
+    }
+    val r = to(s, fStatusRequest _)
+    return r
+  }
+
+  def fromStatusResponse(o: Status.Response, isCompact: B): String = {
+    val st = Printer.printStatusResponse(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toStatusResponse(s: String): Either[Status.Response, Json.ErrorMsg] = {
+    def fStatusResponse(parser: Parser): Status.Response = {
+      val r = parser.parseStatusResponse()
+      return r
+    }
+    val r = to(s, fStatusResponse _)
     return r
   }
 
@@ -5028,8 +5112,8 @@ object JSON {
     return r
   }
 
-  def fromorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config, isCompact: B): String = {
-    val st = Printer.printorgsireumlogikaCvc4Config(o)
+  def fromorgsireumlogikaCvcConfig(o: org.sireum.logika.CvcConfig, isCompact: B): String = {
+    val st = Printer.printorgsireumlogikaCvcConfig(o)
     if (isCompact) {
       return st.renderCompact
     } else {
@@ -5037,12 +5121,12 @@ object JSON {
     }
   }
 
-  def toorgsireumlogikaCvc4Config(s: String): Either[org.sireum.logika.Cvc4Config, Json.ErrorMsg] = {
-    def forgsireumlogikaCvc4Config(parser: Parser): org.sireum.logika.Cvc4Config = {
-      val r = parser.parseorgsireumlogikaCvc4Config()
+  def toorgsireumlogikaCvcConfig(s: String): Either[org.sireum.logika.CvcConfig, Json.ErrorMsg] = {
+    def forgsireumlogikaCvcConfig(parser: Parser): org.sireum.logika.CvcConfig = {
+      val r = parser.parseorgsireumlogikaCvcConfig()
       return r
     }
-    val r = to(s, forgsireumlogikaCvc4Config _)
+    val r = to(s, forgsireumlogikaCvcConfig _)
     return r
   }
 

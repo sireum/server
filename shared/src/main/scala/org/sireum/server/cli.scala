@@ -42,9 +42,12 @@ object cli {
       Opt(name = "message", longKey = "message", shortKey = Some('m'),
         tpe = Type.Choice("ServerMessage", None(), ISZ("msgpack", "json")),
         description = "Message format"),
-      Opt(name = "logika", longKey = "logika", shortKey = Some('l'),
+      Opt(name = "threads", longKey = "threads", shortKey = Some('t'),
         tpe = Type.Num(None(), 1, Some(1), None()),
-        description = "Number of Logika workers")
+        description = "Number of analysis threads"),
+      Opt(name = "noInputCache", longKey = "no-input-cache", shortKey = Some('i'),
+        tpe = Type.Flag(F),
+        description = "Disable file symbol table cache")
     ),
     groups = ISZ()
   )

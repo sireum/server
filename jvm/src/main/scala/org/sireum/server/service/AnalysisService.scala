@@ -25,6 +25,7 @@
 package org.sireum.server.service
 
 import org.sireum._
+import org.sireum.logika.{CvcConfig, Smt2Config, Z3Config}
 import org.sireum.message._
 import org.sireum.project.{DependencyManager, Project}
 import org.sireum.proyek.{Analysis, Proyek}
@@ -87,6 +88,7 @@ object AnalysisService {
             numOfErrors = reporter.numOfErrors,
             numOfWarnings = reporter.numOfWarnings
           ))
+          serverAPI.reportStatus()
         }
       }
 
@@ -163,6 +165,8 @@ object AnalysisService {
         root = root,
         project = cache.project,
         dm = cache.dmOpt.get,
+        cacheInput = serverAPI.cacheInput,
+        cacheTypeHierarchy = T,
         mapBox = mapBox,
         config = defaultConfig,
         cache = cache,
@@ -185,6 +189,7 @@ object AnalysisService {
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
     }
+    System.gc()
   }
 
   class FileCache(val uriOpt: Option[String],
@@ -392,88 +397,6 @@ object AnalysisService {
     }
   }
 
-  val z3Exe: String = {
-    val platform: String = Os.kind match {
-      case Os.Kind.Win => "win"
-      case Os.Kind.Linux => "linux"
-      case Os.Kind.Mac => "mac"
-      case _ => "unsupported"
-    }
-
-    def z3Path(home: String): Option[Os.Path] = {
-      val r = Os.path(home) / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
-      if (r.exists) {
-        return Some(r.canon)
-      }
-      return None()
-    }
-
-    def h(): String = {
-      if (Os.kind == Os.Kind.Unsupported) {
-        return "z3"
-      }
-      Os.env("SIREUM_HOME") match {
-        case Some(home) =>
-          z3Path(home) match {
-            case Some(p) => return p.string
-            case _ =>
-          }
-        case _ =>
-      }
-      _root_.java.lang.System.getProperty("org.sireum.home") match {
-        case home if home != null =>
-          z3Path(home) match {
-            case Some(p) => return p.string
-            case _ =>
-          }
-        case _ =>
-      }
-      return "z3"
-    }
-
-    h()
-  }
-  val cvc4Exe: String = {
-    val platform: String = Os.kind match {
-      case Os.Kind.Win => "win"
-      case Os.Kind.Linux => "linux"
-      case Os.Kind.Mac => "mac"
-      case _ => "unsupported"
-    }
-
-    def cvc4Path(home: String): Option[Os.Path] = {
-      val r = Os.path(home) / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
-      if (r.exists) {
-        return Some(r.canon)
-      }
-      return None()
-    }
-
-    def h(): String = {
-      if (Os.kind == Os.Kind.Unsupported) {
-        return "cvc4"
-      }
-      Os.env("SIREUM_HOME") match {
-        case Some(home) =>
-          cvc4Path(home) match {
-            case Some(p) => return p.string
-            case _ =>
-          }
-        case _ =>
-      }
-      _root_.java.lang.System.getProperty("org.sireum.home") match {
-        case home if home != null =>
-          cvc4Path(home) match {
-            case Some(p) => return p.string
-            case _ =>
-          }
-        case _ =>
-      }
-      return "cvc4"
-    }
-
-    h()
-  }
   val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
@@ -506,6 +429,7 @@ object AnalysisService {
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs, config.cvc4RLimit,
         config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal, config.simplifiedQuery,
         reporter), scriptCache, reporter, req.par, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
+    System.gc()
   }
 }
 
@@ -554,10 +478,14 @@ class AnalysisService(numOfThreads: Z) extends Service {
           case _ =>
         }
       case req: Logika.Verify.Config =>
-        val config: logika.Config =
-          if (req.config.smt2Configs.isEmpty) req.config(smt2Configs = AnalysisService.defaultConfig.smt2Configs)
-          else req.config
-        AnalysisService.setConfig(req.hint, req.smt2query, config)
+        val smt2Configs: ISZ[Smt2Config] =
+          if (req.config.smt2Configs.isEmpty) AnalysisService.defaultConfig.smt2Configs
+          else req.config.smt2Configs
+        AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
+          for (c <- smt2Configs) yield c match {
+            case c: CvcConfig => c(exe = ServerExt.cvcExe(serverAPI.sireumHome).string)
+            case c: Z3Config => c(exe = ServerExt.z3Exe(serverAPI.sireumHome).string)
+          }))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }

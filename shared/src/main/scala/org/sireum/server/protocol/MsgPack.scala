@@ -48,175 +48,179 @@ object MsgPack {
 
     val VersionResponse: Z = -27
 
-    val SlangCheckScript: Z = -26
+    val StatusRequest: Z = -26
 
-    val SlangCheckProject: Z = -25
+    val StatusResponse: Z = -25
 
-    val SlangRewriteRequest: Z = -24
+    val SlangCheckScript: Z = -24
 
-    val SlangRewriteResponse: Z = -23
+    val SlangCheckProject: Z = -23
 
-    val LogikaVerifyStart: Z = -22
+    val SlangRewriteRequest: Z = -22
 
-    val LogikaVerifyEnd: Z = -21
+    val SlangRewriteResponse: Z = -21
 
-    val LogikaVerifyConfig: Z = -20
+    val LogikaVerifyStart: Z = -20
 
-    val LogikaVerifyState: Z = -19
+    val LogikaVerifyEnd: Z = -19
 
-    val LogikaVerifyHalted: Z = -18
+    val LogikaVerifyConfig: Z = -18
 
-    val LogikaVerifySmt2Query: Z = -17
+    val LogikaVerifyState: Z = -17
 
-    val LogikaVerifyInfo: Z = -16
+    val LogikaVerifyHalted: Z = -16
 
-    val orgsireumlogikaState: Z = -15
+    val LogikaVerifySmt2Query: Z = -15
 
-    val _logikaStateIFun: Z = -14
+    val LogikaVerifyInfo: Z = -14
 
-    val _logikaStateOFun: Z = -13
+    val orgsireumlogikaState: Z = -13
 
-    val _logikaStateValueUnit: Z = -12
+    val _logikaStateIFun: Z = -12
 
-    val _logikaStateValueB: Z = -11
+    val _logikaStateOFun: Z = -11
 
-    val _logikaStateValueZ: Z = -10
+    val _logikaStateValueUnit: Z = -10
 
-    val _logikaStateValueC: Z = -9
+    val _logikaStateValueB: Z = -9
 
-    val _logikaStateValueF32: Z = -8
+    val _logikaStateValueZ: Z = -8
 
-    val _logikaStateValueF64: Z = -7
+    val _logikaStateValueC: Z = -7
 
-    val _logikaStateValueR: Z = -6
+    val _logikaStateValueF32: Z = -6
 
-    val _logikaStateValueString: Z = -5
+    val _logikaStateValueF64: Z = -5
 
-    val _logikaStateValueRange: Z = -4
+    val _logikaStateValueR: Z = -4
 
-    val _logikaStateValueS8: Z = -3
+    val _logikaStateValueString: Z = -3
 
-    val _logikaStateValueS16: Z = -2
+    val _logikaStateValueRange: Z = -2
 
-    val _logikaStateValueS32: Z = -1
+    val _logikaStateValueS8: Z = -1
 
-    val _logikaStateValueS64: Z = 0
+    val _logikaStateValueS16: Z = 0
 
-    val _logikaStateValueU8: Z = 1
+    val _logikaStateValueS32: Z = 1
 
-    val _logikaStateValueU16: Z = 2
+    val _logikaStateValueS64: Z = 2
 
-    val _logikaStateValueU32: Z = 3
+    val _logikaStateValueU8: Z = 3
 
-    val _logikaStateValueU64: Z = 4
+    val _logikaStateValueU16: Z = 4
 
-    val _logikaStateValueEnum: Z = 5
+    val _logikaStateValueU32: Z = 5
 
-    val _logikaStateValueSym: Z = 6
+    val _logikaStateValueU64: Z = 6
 
-    val _logikaStateClaimLabel: Z = 7
+    val _logikaStateValueEnum: Z = 7
 
-    val _logikaStateClaimProp: Z = 8
+    val _logikaStateValueSym: Z = 8
 
-    val _logikaStateClaimAnd: Z = 9
+    val _logikaStateClaimLabel: Z = 9
 
-    val _logikaStateClaimOr: Z = 10
+    val _logikaStateClaimProp: Z = 10
 
-    val _logikaStateClaimImply: Z = 11
+    val _logikaStateClaimAnd: Z = 11
 
-    val _logikaStateClaimIf: Z = 12
+    val _logikaStateClaimOr: Z = 12
 
-    val _logikaStateClaimDefSeqLit: Z = 13
+    val _logikaStateClaimImply: Z = 13
 
-    val _logikaStateClaimDefSeqLitArg: Z = 14
+    val _logikaStateClaimIf: Z = 14
 
-    val _logikaStateClaimDefSeqStore: Z = 15
+    val _logikaStateClaimDefSeqLit: Z = 15
 
-    val _logikaStateClaimDefFieldStore: Z = 16
+    val _logikaStateClaimDefSeqLitArg: Z = 16
 
-    val _logikaStateClaimDefAdtLit: Z = 17
+    val _logikaStateClaimDefSeqStore: Z = 17
 
-    val _logikaStateClaimDefRandom: Z = 18
+    val _logikaStateClaimDefFieldStore: Z = 18
 
-    val _logikaStateClaimLetCurrentName: Z = 19
+    val _logikaStateClaimDefAdtLit: Z = 19
 
-    val _logikaStateClaimLetName: Z = 20
+    val _logikaStateClaimDefRandom: Z = 20
 
-    val _logikaStateClaimLetCurrentId: Z = 21
+    val _logikaStateClaimLetCurrentName: Z = 21
 
-    val _logikaStateClaimLetId: Z = 22
+    val _logikaStateClaimLetName: Z = 22
 
-    val _logikaStateClaimLetEq: Z = 23
+    val _logikaStateClaimLetCurrentId: Z = 23
 
-    val _logikaStateClaimLetTypeTest: Z = 24
+    val _logikaStateClaimLetId: Z = 24
 
-    val _logikaStateClaimLetQuantVarId: Z = 25
+    val _logikaStateClaimLetEq: Z = 25
 
-    val _logikaStateClaimLetQuantVarSym: Z = 26
+    val _logikaStateClaimLetTypeTest: Z = 26
 
-    val _logikaStateClaimLetQuant: Z = 27
+    val _logikaStateClaimLetQuantVarId: Z = 27
 
-    val _logikaStateClaimLetIte: Z = 28
+    val _logikaStateClaimLetQuantVarSym: Z = 28
 
-    val _logikaStateClaimLetBinary: Z = 29
+    val _logikaStateClaimLetQuant: Z = 29
 
-    val _logikaStateClaimLetUnary: Z = 30
+    val _logikaStateClaimLetIte: Z = 30
 
-    val _logikaStateClaimLetSeqLookup: Z = 31
+    val _logikaStateClaimLetBinary: Z = 31
 
-    val _logikaStateClaimLetSeqInBound: Z = 32
+    val _logikaStateClaimLetUnary: Z = 32
 
-    val _logikaStateClaimLetFieldLookup: Z = 33
+    val _logikaStateClaimLetSeqLookup: Z = 33
 
-    val _logikaStateClaimLetProofFunApply: Z = 34
+    val _logikaStateClaimLetSeqInBound: Z = 34
 
-    val _logikaStateClaimLetApply: Z = 35
+    val _logikaStateClaimLetFieldLookup: Z = 35
 
-    val _logikaStateClaimLetIApply: Z = 36
+    val _logikaStateClaimLetProofFunApply: Z = 36
 
-    val _logikaStateClaimLetTupleLit: Z = 37
+    val _logikaStateClaimLetApply: Z = 37
 
-    val _logikaStateClaimLetAnd: Z = 38
+    val _logikaStateClaimLetIApply: Z = 38
 
-    val _logikaStateClaimLetOr: Z = 39
+    val _logikaStateClaimLetTupleLit: Z = 39
 
-    val _logikaStateClaimLetImply: Z = 40
+    val _logikaStateClaimLetAnd: Z = 40
 
-    val _logikaStateProofFun: Z = 41
+    val _logikaStateClaimLetOr: Z = 41
 
-    val orgsireumlogikaConfig: Z = 42
+    val _logikaStateClaimLetImply: Z = 42
 
-    val orgsireumlogikaZ3Config: Z = 43
+    val _logikaStateProofFun: Z = 43
 
-    val orgsireumlogikaCvc4Config: Z = 44
+    val orgsireumlogikaConfig: Z = 44
 
-    val orgsireumlogikaLoopId: Z = 45
+    val orgsireumlogikaZ3Config: Z = 45
 
-    val _logikaSmt2QueryResult: Z = 46
+    val orgsireumlogikaCvcConfig: Z = 46
 
-    val _langastTypedName: Z = 47
+    val orgsireumlogikaLoopId: Z = 47
 
-    val _langastTypedTuple: Z = 48
+    val _logikaSmt2QueryResult: Z = 48
 
-    val _langastTypedFun: Z = 49
+    val _langastTypedName: Z = 49
 
-    val _langastTypedTypeVar: Z = 50
+    val _langastTypedTuple: Z = 50
 
-    val _langastTypedPackage: Z = 51
+    val _langastTypedFun: Z = 51
 
-    val _langastTypedObject: Z = 52
+    val _langastTypedTypeVar: Z = 52
 
-    val _langastTypedEnum: Z = 53
+    val _langastTypedPackage: Z = 53
 
-    val _langastTypedMethod: Z = 54
+    val _langastTypedObject: Z = 54
 
-    val _langastTypedMethods: Z = 55
+    val _langastTypedEnum: Z = 55
 
-    val _langastTypedFact: Z = 56
+    val _langastTypedMethod: Z = 56
 
-    val _langastTypedTheorem: Z = 57
+    val _langastTypedMethods: Z = 57
 
-    val _langastTypedInv: Z = 58
+    val _langastTypedFact: Z = 58
+
+    val _langastTypedTheorem: Z = 59
+
+    val _langastTypedInv: Z = 60
 
   }
 
@@ -235,6 +239,7 @@ object MsgPack {
         case o: Terminate => writeTerminate(o)
         case o: Cancel => writeCancel(o)
         case o: Version.Request => writeVersionRequest(o)
+        case o: Status.Request => writeStatusRequest(o)
         case o: Slang.Check.Script => writeSlangCheckScript(o)
         case o: Slang.Check.Project => writeSlangCheckProject(o)
         case o: Slang.Rewrite.Request => writeSlangRewriteRequest(o)
@@ -251,6 +256,7 @@ object MsgPack {
         case o: Timing => writeTiming(o)
         case o: Report => writeReport(o)
         case o: Version.Response => writeVersionResponse(o)
+        case o: Status.Response => writeStatusResponse(o)
         case o: Slang.Rewrite.Response => writeSlangRewriteResponse(o)
         case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
         case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
@@ -286,6 +292,16 @@ object MsgPack {
     def writeVersionResponse(o: Version.Response): Unit = {
       writer.writeZ(Constants.VersionResponse)
       writer.writeString(o.version)
+    }
+
+    def writeStatusRequest(o: Status.Request): Unit = {
+      writer.writeZ(Constants.StatusRequest)
+    }
+
+    def writeStatusResponse(o: Status.Response): Unit = {
+      writer.writeZ(Constants.StatusResponse)
+      writer.writeZ(o.totalMemory)
+      writer.writeZ(o.freeMemory)
     }
 
     def writeSlangCheck(o: Slang.Check): Unit = {
@@ -977,7 +993,7 @@ object MsgPack {
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
       o match {
         case o: org.sireum.logika.Z3Config => writeorgsireumlogikaZ3Config(o)
-        case o: org.sireum.logika.Cvc4Config => writeorgsireumlogikaCvc4Config(o)
+        case o: org.sireum.logika.CvcConfig => writeorgsireumlogikaCvcConfig(o)
       }
     }
 
@@ -988,8 +1004,8 @@ object MsgPack {
       writer.writeISZ(o.satOpts, writer.writeString _)
     }
 
-    def writeorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config): Unit = {
-      writer.writeZ(Constants.orgsireumlogikaCvc4Config)
+    def writeorgsireumlogikaCvcConfig(o: org.sireum.logika.CvcConfig): Unit = {
+      writer.writeZ(Constants.orgsireumlogikaCvcConfig)
       writer.writeString(o.exe)
       writer.writeISZ(o.validOpts, writer.writeString _)
       writer.writeISZ(o.satOpts, writer.writeString _)
@@ -1137,6 +1153,7 @@ object MsgPack {
         case Constants.Terminate => val r = readTerminateT(T); return r
         case Constants.Cancel => val r = readCancelT(T); return r
         case Constants.VersionRequest => val r = readVersionRequestT(T); return r
+        case Constants.StatusRequest => val r = readStatusRequestT(T); return r
         case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
         case Constants.SlangCheckProject => val r = readSlangCheckProjectT(T); return r
         case Constants.SlangRewriteRequest => val r = readSlangRewriteRequestT(T); return r
@@ -1167,6 +1184,7 @@ object MsgPack {
         case Constants.Timing => val r = readTimingT(T); return r
         case Constants.Report => val r = readReportT(T); return r
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
+        case Constants.StatusResponse => val r = readStatusResponseT(T); return r
         case Constants.SlangRewriteResponse => val r = readSlangRewriteResponseT(T); return r
         case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
         case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
@@ -1246,6 +1264,32 @@ object MsgPack {
       }
       val version = reader.readString()
       return Version.Response(version)
+    }
+
+    def readStatusRequest(): Status.Request = {
+      val r = readStatusRequestT(F)
+      return r
+    }
+
+    def readStatusRequestT(typeParsed: B): Status.Request = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.StatusRequest)
+      }
+      return Status.Request()
+    }
+
+    def readStatusResponse(): Status.Response = {
+      val r = readStatusResponseT(F)
+      return r
+    }
+
+    def readStatusResponseT(typeParsed: B): Status.Response = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.StatusResponse)
+      }
+      val totalMemory = reader.readZ()
+      val freeMemory = reader.readZ()
+      return Status.Response(totalMemory, freeMemory)
     }
 
     def readSlangCheck(): Slang.Check = {
@@ -2547,10 +2591,10 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.orgsireumlogikaZ3Config => val r = readorgsireumlogikaZ3ConfigT(T); return r
-        case Constants.orgsireumlogikaCvc4Config => val r = readorgsireumlogikaCvc4ConfigT(T); return r
+        case Constants.orgsireumlogikaCvcConfig => val r = readorgsireumlogikaCvcConfigT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of org.sireum.logika.Smt2Config.")
-          val r = readorgsireumlogikaCvc4ConfigT(T)
+          val r = readorgsireumlogikaCvcConfigT(T)
           return r
       }
     }
@@ -2570,19 +2614,19 @@ object MsgPack {
       return org.sireum.logika.Z3Config(exe, validOpts, satOpts)
     }
 
-    def readorgsireumlogikaCvc4Config(): org.sireum.logika.Cvc4Config = {
-      val r = readorgsireumlogikaCvc4ConfigT(F)
+    def readorgsireumlogikaCvcConfig(): org.sireum.logika.CvcConfig = {
+      val r = readorgsireumlogikaCvcConfigT(F)
       return r
     }
 
-    def readorgsireumlogikaCvc4ConfigT(typeParsed: B): org.sireum.logika.Cvc4Config = {
+    def readorgsireumlogikaCvcConfigT(typeParsed: B): org.sireum.logika.CvcConfig = {
       if (!typeParsed) {
-        reader.expectZ(Constants.orgsireumlogikaCvc4Config)
+        reader.expectZ(Constants.orgsireumlogikaCvcConfig)
       }
       val exe = reader.readString()
       val validOpts = reader.readISZ(reader.readString _)
       val satOpts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.Cvc4Config(exe, validOpts, satOpts)
+      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
@@ -2949,6 +2993,36 @@ object MsgPack {
       return r
     }
     val r = to(data, fVersionResponse _)
+    return r
+  }
+
+  def fromStatusRequest(o: Status.Request, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeStatusRequest(o)
+    return w.result
+  }
+
+  def toStatusRequest(data: ISZ[U8]): Either[Status.Request, MessagePack.ErrorMsg] = {
+    def fStatusRequest(reader: Reader): Status.Request = {
+      val r = reader.readStatusRequest()
+      return r
+    }
+    val r = to(data, fStatusRequest _)
+    return r
+  }
+
+  def fromStatusResponse(o: Status.Response, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeStatusResponse(o)
+    return w.result
+  }
+
+  def toStatusResponse(data: ISZ[U8]): Either[Status.Response, MessagePack.ErrorMsg] = {
+    def fStatusResponse(reader: Reader): Status.Response = {
+      val r = reader.readStatusResponse()
+      return r
+    }
+    val r = to(data, fStatusResponse _)
     return r
   }
 
@@ -4152,18 +4226,18 @@ object MsgPack {
     return r
   }
 
-  def fromorgsireumlogikaCvc4Config(o: org.sireum.logika.Cvc4Config, pooling: B): ISZ[U8] = {
+  def fromorgsireumlogikaCvcConfig(o: org.sireum.logika.CvcConfig, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeorgsireumlogikaCvc4Config(o)
+    w.writeorgsireumlogikaCvcConfig(o)
     return w.result
   }
 
-  def toorgsireumlogikaCvc4Config(data: ISZ[U8]): Either[org.sireum.logika.Cvc4Config, MessagePack.ErrorMsg] = {
-    def forgsireumlogikaCvc4Config(reader: Reader): org.sireum.logika.Cvc4Config = {
-      val r = reader.readorgsireumlogikaCvc4Config()
+  def toorgsireumlogikaCvcConfig(data: ISZ[U8]): Either[org.sireum.logika.CvcConfig, MessagePack.ErrorMsg] = {
+    def forgsireumlogikaCvcConfig(reader: Reader): org.sireum.logika.CvcConfig = {
+      val r = reader.readorgsireumlogikaCvcConfig()
       return r
     }
-    val r = to(data, forgsireumlogikaCvc4Config _)
+    val r = to(data, forgsireumlogikaCvcConfig _)
     return r
   }
 

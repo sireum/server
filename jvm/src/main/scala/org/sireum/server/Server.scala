@@ -34,13 +34,14 @@ object Server {
 
   val logFile: Os.Path = Os.home / ".sireum-server.log"
 
-  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, javaHome: Os.Path, scalaHome: Os.Path,
+  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, javaHome: Os.Path, scalaHome: Os.Path,
           sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
     val server = Server(
       version,
       isMsgPack,
+      cacheInput,
       MSZ(
-        Ext.logikaService(numOfLogikaWorkers),
+        Ext.analysisService(sireumHome, numOfLogikaWorkers),
         SlangService()
       ),
       javaHome,
@@ -55,19 +56,33 @@ object Server {
     def readInput(): String = $
     def writeOutput(s: String): Unit = $
     def pause(): Unit = $
-    def logikaService(numOfThreads: Z): Service = $
+    def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = $
+    def totalMemory: Z = $
+    def freeMemory: Z = $
+    def gc(): Unit = $
   }
 }
 
 @datatype trait ServerAPI {
+  def cacheInput: B
   def sireumHome: Os.Path
   def scalaHome: Os.Path
   def javaHome: Os.Path
   def defaultVersions: ISZ[(String, String)]
   def sendRespond(resp: protocol.Response): Unit
+  def totalMemory: Z = {
+    return Server.Ext.totalMemory
+  }
+  def freeMemory: Z = {
+    return Server.Ext.freeMemory
+  }
+  def reportStatus(): Unit = {
+    sendRespond(protocol.Status.Response(totalMemory, freeMemory))
+  }
 }
 
-@datatype class JsonServerAPI(val javaHome: Os.Path,
+@datatype class JsonServerAPI(val cacheInput: B,
+                              val javaHome: Os.Path,
                               val scalaHome: Os.Path,
                               val sireumHome: Os.Path,
                               val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
@@ -82,7 +97,8 @@ object Server {
   }
 }
 
-@datatype class MsgPackServerAPI(val javaHome: Os.Path,
+@datatype class MsgPackServerAPI(val cacheInput: B,
+                                 val javaHome: Os.Path,
                                  val scalaHome: Os.Path,
                                  val sireumHome: Os.Path,
                                  val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
@@ -93,14 +109,15 @@ object Server {
 
 @datatype class Server(val version: String,
                        val isMsgPack: B,
+                       val cacheInput: B,
                        val services: MSZ[Service],
                        val javaHome: Os.Path,
                        val scalaHome: Os.Path,
                        val sireumHome: Os.Path,
                        val defaultVersions: ISZ[(String, String)]) {
   val serverAPI: ServerAPI =
-    if (isMsgPack) MsgPackServerAPI(javaHome, scalaHome, sireumHome, defaultVersions)
-    else JsonServerAPI(javaHome, scalaHome, sireumHome, defaultVersions)
+    if (isMsgPack) MsgPackServerAPI(cacheInput, javaHome, scalaHome, sireumHome, defaultVersions)
+    else JsonServerAPI(cacheInput, javaHome, scalaHome, sireumHome, defaultVersions)
   def run(): Z = {
     Server.logFile.writeOver("")
     for (i <- services.indices) {
@@ -125,6 +142,7 @@ object Server {
     req match {
       case _: protocol.Terminate => return F
       case _: protocol.Version.Request => handleVersion()
+      case _: protocol.Status.Request => handleStatus()
       case _: protocol.Cancel =>
         var found = F
         val maxTries = 3
@@ -157,6 +175,11 @@ object Server {
 
   def handleVersion(): Unit = {
     serverAPI.sendRespond(protocol.Version.Response(version))
+  }
+
+  def handleStatus(): Unit = {
+    serverAPI.sendRespond(protocol.Status.Response(Server.Ext.totalMemory, Server.Ext.freeMemory))
+    Server.Ext.gc()
   }
 
   def retrieveRequest(): Option[protocol.Request] = {

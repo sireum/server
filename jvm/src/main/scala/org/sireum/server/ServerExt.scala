@@ -31,6 +31,12 @@ import java.io.ByteArrayOutputStream
 
 object ServerExt {
   val pauseTime: Long = 200
+  val platform: String = Os.kind match {
+    case Os.Kind.Win => "win"
+    case Os.Kind.Linux => "linux"
+    case Os.Kind.Mac => "mac"
+    case _ => "unsupported"
+  }
   var prefix: Predef.String = ""
 
   def readInput(): String = try {
@@ -74,11 +80,21 @@ object ServerExt {
 
   def pause(): Unit = Thread.sleep(pauseTime)
 
-  def logikaService(numOfThreads: Z): Service = {
+  def cvcExe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
+
+  def z3Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
+
+  def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
     AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query,
       AnalysisService.defaultConfig(smt2Configs = ISZ(
-        logika.Cvc4Config(AnalysisService.cvc4Exe, ISZ("--full-saturate-quant"), ISZ()),
-        logika.Z3Config(AnalysisService.z3Exe, ISZ(), ISZ()))))
+        logika.CvcConfig(cvcExe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ()),
+        logika.Z3Config(z3Exe(sireumHome).string, ISZ(), ISZ()))))
     new service.AnalysisService(numOfThreads)
   }
+
+  def totalMemory: Z = _root_.java.lang.Runtime.getRuntime.totalMemory
+
+  def freeMemory: Z = _root_.java.lang.Runtime.getRuntime.freeMemory
+
+  def gc(): Unit = System.gc()
 }

@@ -62,6 +62,19 @@ object Version {
 }
 
 
+object Status {
+
+  @datatype class Request extends org.sireum.server.protocol.Request {
+    @strictpure def id: ISZ[String] = ISZ()
+  }
+
+  @datatype class Response(val totalMemory: Z, val freeMemory: Z) extends org.sireum.server.protocol.Response {
+    @strictpure def id: ISZ[String] = ISZ()
+  }
+
+}
+
+
 object Slang {
 
   @datatype trait Check extends Request {
