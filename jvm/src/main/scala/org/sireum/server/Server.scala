@@ -34,12 +34,13 @@ object Server {
 
   val logFile: Os.Path = Os.home / ".sireum-server.log"
 
-  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, javaHome: Os.Path, scalaHome: Os.Path,
-          sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
+  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, cacheType: B, javaHome: Os.Path,
+          scalaHome: Os.Path, sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
     val server = Server(
       version,
       isMsgPack,
       cacheInput,
+      cacheType,
       MSZ(
         Ext.analysisService(sireumHome, numOfLogikaWorkers),
         SlangService()
@@ -65,6 +66,7 @@ object Server {
 
 @datatype trait ServerAPI {
   def cacheInput: B
+  def cacheType: B
   def sireumHome: Os.Path
   def scalaHome: Os.Path
   def javaHome: Os.Path
@@ -82,6 +84,7 @@ object Server {
 }
 
 @datatype class JsonServerAPI(val cacheInput: B,
+                              val cacheType: B,
                               val javaHome: Os.Path,
                               val scalaHome: Os.Path,
                               val sireumHome: Os.Path,
@@ -98,6 +101,7 @@ object Server {
 }
 
 @datatype class MsgPackServerAPI(val cacheInput: B,
+                                 val cacheType: B,
                                  val javaHome: Os.Path,
                                  val scalaHome: Os.Path,
                                  val sireumHome: Os.Path,
@@ -110,16 +114,18 @@ object Server {
 @datatype class Server(val version: String,
                        val isMsgPack: B,
                        val cacheInput: B,
+                       val cacheType: B,
                        val services: MSZ[Service],
                        val javaHome: Os.Path,
                        val scalaHome: Os.Path,
                        val sireumHome: Os.Path,
                        val defaultVersions: ISZ[(String, String)]) {
   val serverAPI: ServerAPI =
-    if (isMsgPack) MsgPackServerAPI(cacheInput, javaHome, scalaHome, sireumHome, defaultVersions)
-    else JsonServerAPI(cacheInput, javaHome, scalaHome, sireumHome, defaultVersions)
+    if (isMsgPack) MsgPackServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
+    else JsonServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
   def run(): Z = {
     Server.logFile.writeOver("")
+    val (_, _) = lang.FrontEnd.checkedLibraryReporter
     for (i <- services.indices) {
       services(i).init(serverAPI)
     }

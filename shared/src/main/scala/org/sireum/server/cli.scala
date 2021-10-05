@@ -42,12 +42,15 @@ object cli {
       Opt(name = "message", longKey = "message", shortKey = Some('m'),
         tpe = Type.Choice("ServerMessage", None(), ISZ("msgpack", "json")),
         description = "Message format"),
-      Opt(name = "threads", longKey = "threads", shortKey = Some('t'),
-        tpe = Type.Num(None(), 1, Some(1), None()),
-        description = "Number of analysis threads"),
       Opt(name = "noInputCache", longKey = "no-input-cache", shortKey = Some('i'),
         tpe = Type.Flag(F),
-        description = "Disable file symbol table cache")
+        description = "Disable file input caching"),
+      Opt(name = "noTypeCache", longKey = "no-type-cache", shortKey = Some('t'),
+        tpe = Type.Flag(F),
+        description = "Disable type information caching"),
+      Opt(name = "workers", longKey = "workers", shortKey = Some('w'),
+        tpe = Type.Num(None(), 1, Some(1), None()),
+        description = "Number of analysis thread workers"),
     ),
     groups = ISZ()
   )

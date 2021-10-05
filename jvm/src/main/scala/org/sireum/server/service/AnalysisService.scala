@@ -166,7 +166,7 @@ object AnalysisService {
         project = cache.project,
         dm = cache.dmOpt.get,
         cacheInput = serverAPI.cacheInput,
-        cacheTypeHierarchy = T,
+        cacheTypeHierarchy = serverAPI.cacheType,
         mapBox = mapBox,
         config = defaultConfig,
         cache = cache,
