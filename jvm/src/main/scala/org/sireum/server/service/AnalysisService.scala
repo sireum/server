@@ -455,7 +455,11 @@ class AnalysisService(numOfThreads: Z) extends Service {
   def init(serverAPI: server.ServerAPI): Unit = {
     lang.FrontEnd.checkedLibraryReporter
     terminated.set(false)
-    threads = for (_ <- z"0" until numOfThreads) yield new AnalysisService.Thread(serverAPI, terminated)
+    threads = for (_ <- z"0" until numOfThreads) yield {
+      val t = new AnalysisService.Thread(serverAPI, terminated)
+      t.setDaemon(true)
+      t
+    }
     for (t <- threads) {
       t.start()
     }
