@@ -35,28 +35,34 @@ import org.sireum.message.Message
 }
 
 @datatype class Terminate extends Request {
-  @strictpure def id: ISZ[String] = ISZ()
+  @strictpure override def id: ISZ[String] = ISZ()
 }
 
 @datatype trait Response {
-  def id: ISZ[String]
+  @pure def id: ISZ[String]
+  @pure def posOpt: Option[Position]
 }
 
 @datatype class Cancel(val id: ISZ[String]) extends Request
 
-@datatype class Timing(val id: ISZ[String], val desc: String, val timeInMs: Z) extends Response
+@datatype class Timing(val id: ISZ[String], val desc: String, val timeInMs: Z) extends Response {
+  @strictpure override def posOpt: Option[Position] = None()
+}
 
-@datatype class Report(val id: ISZ[String], val message: Message) extends Response
+@datatype class Report(val id: ISZ[String], val message: Message) extends Response {
+  @strictpure override def posOpt: Option[Position] = None()
+}
 
 
 object Version {
 
   @datatype class Request extends org.sireum.server.protocol.Request {
-    @strictpure def id: ISZ[String] = ISZ()
+    @strictpure override def id: ISZ[String] = ISZ()
   }
 
   @datatype class Response(val version: String) extends org.sireum.server.protocol.Response {
-    @strictpure def id: ISZ[String] = ISZ()
+    @strictpure override def id: ISZ[String] = ISZ()
+    @strictpure override def posOpt: Option[Position] = None()
   }
 
 }
@@ -65,11 +71,12 @@ object Version {
 object Status {
 
   @datatype class Request extends org.sireum.server.protocol.Request {
-    @strictpure def id: ISZ[String] = ISZ()
+    @strictpure override def id: ISZ[String] = ISZ()
   }
 
   @datatype class Response(val totalMemory: Z, val freeMemory: Z) extends org.sireum.server.protocol.Response {
-    @strictpure def id: ISZ[String] = ISZ()
+    @strictpure override def id: ISZ[String] = ISZ()
+    @strictpure override def posOpt: Option[Position] = None()
   }
 
 }
@@ -124,7 +131,11 @@ object Slang {
                              val kind: Kind.Type,
                              val message: Message,
                              val newTextOpt: Option[String],
-                             val numOfRewrites: Z) extends org.sireum.server.protocol.Response
+                             val numOfRewrites: Z) extends org.sireum.server.protocol.Response {
+      @pure override def posOpt: Option[Position] = {
+        return message.posOpt
+      }
+    }
 
   }
 }
@@ -134,7 +145,9 @@ object Logika {
 
   object Verify {
 
-    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response
+    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response {
+      @strictpure override def posOpt: Option[Position] = None()
+    }
 
     @datatype class End(val isBackground: B,
                         val id: ISZ[String],
@@ -146,7 +159,9 @@ object Logika {
                         val smt2TimeMillis: Z,
                         val numOfInternalErrors: Z,
                         val numOfErrors: Z,
-                        val numOfWarnings: Z) extends Response
+                        val numOfWarnings: Z) extends Response {
+      @strictpure override def posOpt: Option[Position] = None()
+    }
 
     @datatype class Config(val hint: B, val smt2query: B, val config: logika.Config) extends Request {
       @strictpure def id: ISZ[String] = ISZ()
@@ -158,9 +173,17 @@ object Logika {
 
     @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val title: String,
                               val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,
-                              val info: String, val output: String) extends Response
+                              val info: String, val output: String) extends Response {
+      @pure override def posOpt: Option[Position] = {
+        return Some(pos)
+      }
+    }
 
-    @datatype class Info(val id: ISZ[String], val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response
+    @datatype class Info(val id: ISZ[String], val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response {
+      @pure override def posOpt: Option[Position] = {
+        return Some(pos)
+      }
+    }
 
     object Info {
       @enum object Kind {
