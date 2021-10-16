@@ -7,7 +7,7 @@ import org.sireum.server.protocol._
 
 import java.io._
 
-class LogikaServerTest extends TestSuite {
+class AnalysisServerTest extends TestSuite {
 
   val WAIT_THRESHOLD_IN_MILLIS: Int = 2 * 60 * 1000
 
@@ -171,11 +171,12 @@ class LogikaServerTest extends TestSuite {
           case Either.Left(response) =>
             oldOut.println(response)
             oldOut.flush()
-            if (response.isInstanceOf[protocol.Logika.Verify.End]) {
+            if (response.isInstanceOf[server.protocol.Analysis.End]) {
               foundEnd = T
             }
           case Either.Right(value) =>
             val text = value match {
+              case value: org.sireum.String => value.value
               case value: Predef.String => value
               case value: Json.ErrorMsg => value.message.value
             }

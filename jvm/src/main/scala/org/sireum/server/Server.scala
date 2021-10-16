@@ -32,7 +32,8 @@ import org.sireum.server.service.{Service, SlangService}
 
 object Server {
 
-  val logFile: Os.Path = Os.home / ".sireum-server.log"
+  val maxLogFileSize: Z = 1024 * 1024
+  val maxLogLineSize: Z = 256 - Server.Ext.timeStamp(T).size - Os.lineSep.size
 
   def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, cacheType: B, javaHome: Os.Path,
           scalaHome: Os.Path, sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
@@ -55,31 +56,66 @@ object Server {
 
   @ext("ServerExt") object Ext {
     def readInput(): String = $
+
     def writeOutput(s: String): Unit = $
+
     def pause(): Unit = $
+
     def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = $
+
     def totalMemory: Z = $
+
     def freeMemory: Z = $
+
     def gc(): Unit = $
+
+    def timeStamp(isRequest: B): String = $
   }
 }
 
 @datatype trait ServerAPI {
+  @memoize def logFile: Os.Path = {
+    return sireumHome / ".server.log"
+  }
+
   def cacheInput: B
+
   def cacheType: B
+
   def sireumHome: Os.Path
+
   def scalaHome: Os.Path
+
   def javaHome: Os.Path
+
   def defaultVersions: ISZ[(String, String)]
+
   def sendRespond(resp: protocol.Response): Unit
+
   def totalMemory: Z = {
     return Server.Ext.totalMemory
   }
+
   def freeMemory: Z = {
     return Server.Ext.freeMemory
   }
+
   def reportStatus(): Unit = {
     sendRespond(protocol.Status.Response(totalMemory, freeMemory))
+  }
+
+  def log(isRequest: B, text: String): Unit = {
+    if (logFile.size > Server.maxLogFileSize) {
+      logFile.writeOver("")
+    }
+    logFile.writeAppend(Server.Ext.timeStamp(isRequest))
+    val textOps = ops.StringOps(text)
+    if (text.size > Server.maxLogLineSize) {
+      logFile.writeAppend(textOps.substring(0, Server.maxLogLineSize))
+    } else {
+      logFile.writeAppend(text)
+    }
+    logFile.writeAppend(Os.lineSep)
   }
 }
 
@@ -90,13 +126,12 @@ object Server {
                               val sireumHome: Os.Path,
                               val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
+    val respString = protocol.JSON.fromResponse(resp, T)
     resp match {
-      case resp: protocol.Report if resp.message.isInternalError =>
-        Server.logFile.writeAppend(resp.message.text)
-        Server.logFile.writeAppend("\n")
-      case _ =>
+      case _: protocol.Status.Response =>
+      case _ => log(F, respString)
     }
-    Server.Ext.writeOutput(protocol.JSON.fromResponse(resp, T))
+    Server.Ext.writeOutput(respString)
   }
 }
 
@@ -107,32 +142,43 @@ object Server {
                                  val sireumHome: Os.Path,
                                  val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
-    Server.Ext.writeOutput(protocol.CustomMessagePack.fromResponse(resp))
+    val respString = protocol.CustomMessagePack.fromResponse(resp)
+    resp match {
+      case _: protocol.Status.Response =>
+      case _ => log(F, respString)
+    }
+    Server.Ext.writeOutput(respString)
   }
 }
 
-@datatype class Server(val version: String,
-                       val isMsgPack: B,
-                       val cacheInput: B,
-                       val cacheType: B,
-                       val services: MSZ[Service],
-                       val javaHome: Os.Path,
-                       val scalaHome: Os.Path,
-                       val sireumHome: Os.Path,
-                       val defaultVersions: ISZ[(String, String)]) {
+@record class Server(val version: String,
+                     val isMsgPack: B,
+                     val cacheInput: B,
+                     val cacheType: B,
+                     val services: MSZ[Service],
+                     val javaHome: Os.Path,
+                     val scalaHome: Os.Path,
+                     val sireumHome: Os.Path,
+                     val defaultVersions: ISZ[(String, String)]) {
   val serverAPI: ServerAPI =
     if (isMsgPack) MsgPackServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
     else JsonServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
+
   def run(): Z = {
-    Server.logFile.writeOver("")
+    serverAPI.logFile.writeOver("")
+    serverAPI.log(F, s"Initializing runtime library")
     val (_, _) = lang.FrontEnd.checkedLibraryReporter
     for (i <- services.indices) {
+      serverAPI.log(F, s"Initializing service ${services(i).id}")
       services(i).init(serverAPI)
     }
+    serverAPI.log(F, s"Serving")
     extension.Cancel.cancellable(serveLoop _)
     for (i <- services.indices) {
+      serverAPI.log(F, s"Finalizing service ${services(i).id}")
       services(i).finalise()
     }
+    serverAPI.log(F, s"Shutdown")
     return 0
   }
 
@@ -190,22 +236,39 @@ object Server {
 
   def retrieveRequest(): Option[protocol.Request] = {
     val input = Server.Ext.readInput()
+    var shouldLog: B = F
     //println(s"'$input'")
-    if (isMsgPack) {
+    val r: Option[protocol.Request] = if (isMsgPack) {
       CustomMessagePack.toRequest(input) match {
-        case Either.Left(r) => return Some(r)
+        case Either.Left(req) =>
+          req match {
+            case _: protocol.Status.Request =>
+            case _ => shouldLog = T
+          }
+          Some(req)
         case Either.Right(err) =>
+          shouldLog = T
           reportError(ISZ(), err, input)
-          return None()
+          None()
       }
     } else {
       JSON.toRequest(input) match {
-        case Either.Left(r) => return Some(r)
+        case Either.Left(req) =>
+          req match {
+            case _: protocol.Status.Request =>
+            case _ => shouldLog = T
+          }
+          Some(req)
         case Either.Right(err) =>
+          shouldLog = T
           reportError(ISZ(), err.message, input)
-          return None()
+          None()
       }
     }
+    if (shouldLog) {
+      serverAPI.log(T, input)
+    }
+    return r
   }
 
   def reportError(id: ISZ[String], msg: String, input: String): Unit = {

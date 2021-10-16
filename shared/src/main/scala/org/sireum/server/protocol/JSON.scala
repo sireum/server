@@ -63,8 +63,8 @@ object JSON {
         case o: Version.Response => return printVersionResponse(o)
         case o: Status.Response => return printStatusResponse(o)
         case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
-        case o: Logika.Verify.Start => return printLogikaVerifyStart(o)
-        case o: Logika.Verify.End => return printLogikaVerifyEnd(o)
+        case o: Analysis.Start => return printAnalysisStart(o)
+        case o: Analysis.End => return printAnalysisEnd(o)
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
         case o: Logika.Verify.Halted => return printLogikaVerifyHalted(o)
         case o: Logika.Verify.Smt2Query => return printLogikaVerifySmt2Query(o)
@@ -190,17 +190,17 @@ object JSON {
       ))
     }
 
-    @pure def printLogikaVerifyStart(o: Logika.Verify.Start): ST = {
+    @pure def printAnalysisStart(o: Analysis.Start): ST = {
       return printObject(ISZ(
-        ("type", st""""Logika.Verify.Start""""),
+        ("type", st""""Analysis.Start""""),
         ("id", printISZ(T, o.id, printString _)),
         ("currentTimeMillis", printZ(o.currentTimeMillis))
       ))
     }
 
-    @pure def printLogikaVerifyEnd(o: Logika.Verify.End): ST = {
+    @pure def printAnalysisEnd(o: Analysis.End): ST = {
       return printObject(ISZ(
-        ("type", st""""Logika.Verify.End""""),
+        ("type", st""""Analysis.End""""),
         ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
         ("wasCancelled", printB(o.wasCancelled)),
@@ -1191,15 +1191,15 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Logika.Verify.Start", "Logika.Verify.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.End", "Logika.Verify.State", "Logika.Verify.Halted", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
         case "Version.Response" => val r = parseVersionResponseT(T); return r
         case "Status.Response" => val r = parseStatusResponseT(T); return r
         case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
-        case "Logika.Verify.Start" => val r = parseLogikaVerifyStartT(T); return r
-        case "Logika.Verify.End" => val r = parseLogikaVerifyEndT(T); return r
+        case "Analysis.Start" => val r = parseAnalysisStartT(T); return r
+        case "Analysis.End" => val r = parseAnalysisEndT(T); return r
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
         case "Logika.Verify.Halted" => val r = parseLogikaVerifyHaltedT(T); return r
         case "Logika.Verify.Smt2Query" => val r = parseLogikaVerifySmt2QueryT(T); return r
@@ -1469,14 +1469,14 @@ object JSON {
       return Slang.Rewrite.Response(id, kind, message, newTextOpt, numOfRewrites)
     }
 
-    def parseLogikaVerifyStart(): Logika.Verify.Start = {
-      val r = parseLogikaVerifyStartT(F)
+    def parseAnalysisStart(): Analysis.Start = {
+      val r = parseAnalysisStartT(F)
       return r
     }
 
-    def parseLogikaVerifyStartT(typeParsed: B): Logika.Verify.Start = {
+    def parseAnalysisStartT(typeParsed: B): Analysis.Start = {
       if (!typeParsed) {
-        parser.parseObjectType("Logika.Verify.Start")
+        parser.parseObjectType("Analysis.Start")
       }
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
@@ -1484,17 +1484,17 @@ object JSON {
       parser.parseObjectKey("currentTimeMillis")
       val currentTimeMillis = parser.parseZ()
       parser.parseObjectNext()
-      return Logika.Verify.Start(id, currentTimeMillis)
+      return Analysis.Start(id, currentTimeMillis)
     }
 
-    def parseLogikaVerifyEnd(): Logika.Verify.End = {
-      val r = parseLogikaVerifyEndT(F)
+    def parseAnalysisEnd(): Analysis.End = {
+      val r = parseAnalysisEndT(F)
       return r
     }
 
-    def parseLogikaVerifyEndT(typeParsed: B): Logika.Verify.End = {
+    def parseAnalysisEndT(typeParsed: B): Analysis.End = {
       if (!typeParsed) {
-        parser.parseObjectType("Logika.Verify.End")
+        parser.parseObjectType("Analysis.End")
       }
       parser.parseObjectKey("isBackground")
       val isBackground = parser.parseB()
@@ -1529,7 +1529,7 @@ object JSON {
       parser.parseObjectKey("numOfWarnings")
       val numOfWarnings = parser.parseZ()
       parser.parseObjectNext()
-      return Logika.Verify.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
     }
 
     def parseLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -3762,8 +3762,8 @@ object JSON {
     return r
   }
 
-  def fromLogikaVerifyStart(o: Logika.Verify.Start, isCompact: B): String = {
-    val st = Printer.printLogikaVerifyStart(o)
+  def fromAnalysisStart(o: Analysis.Start, isCompact: B): String = {
+    val st = Printer.printAnalysisStart(o)
     if (isCompact) {
       return st.renderCompact
     } else {
@@ -3771,17 +3771,17 @@ object JSON {
     }
   }
 
-  def toLogikaVerifyStart(s: String): Either[Logika.Verify.Start, Json.ErrorMsg] = {
-    def fLogikaVerifyStart(parser: Parser): Logika.Verify.Start = {
-      val r = parser.parseLogikaVerifyStart()
+  def toAnalysisStart(s: String): Either[Analysis.Start, Json.ErrorMsg] = {
+    def fAnalysisStart(parser: Parser): Analysis.Start = {
+      val r = parser.parseAnalysisStart()
       return r
     }
-    val r = to(s, fLogikaVerifyStart _)
+    val r = to(s, fAnalysisStart _)
     return r
   }
 
-  def fromLogikaVerifyEnd(o: Logika.Verify.End, isCompact: B): String = {
-    val st = Printer.printLogikaVerifyEnd(o)
+  def fromAnalysisEnd(o: Analysis.End, isCompact: B): String = {
+    val st = Printer.printAnalysisEnd(o)
     if (isCompact) {
       return st.renderCompact
     } else {
@@ -3789,12 +3789,12 @@ object JSON {
     }
   }
 
-  def toLogikaVerifyEnd(s: String): Either[Logika.Verify.End, Json.ErrorMsg] = {
-    def fLogikaVerifyEnd(parser: Parser): Logika.Verify.End = {
-      val r = parser.parseLogikaVerifyEnd()
+  def toAnalysisEnd(s: String): Either[Analysis.End, Json.ErrorMsg] = {
+    def fAnalysisEnd(parser: Parser): Analysis.End = {
+      val r = parser.parseAnalysisEnd()
       return r
     }
-    val r = to(s, fLogikaVerifyEnd _)
+    val r = to(s, fAnalysisEnd _)
     return r
   }
 

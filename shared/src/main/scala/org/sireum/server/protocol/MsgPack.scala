@@ -60,9 +60,9 @@ object MsgPack {
 
     val SlangRewriteResponse: Z = -21
 
-    val LogikaVerifyStart: Z = -20
+    val AnalysisStart: Z = -20
 
-    val LogikaVerifyEnd: Z = -19
+    val AnalysisEnd: Z = -19
 
     val LogikaVerifyConfig: Z = -18
 
@@ -258,8 +258,8 @@ object MsgPack {
         case o: Version.Response => writeVersionResponse(o)
         case o: Status.Response => writeStatusResponse(o)
         case o: Slang.Rewrite.Response => writeSlangRewriteResponse(o)
-        case o: Logika.Verify.Start => writeLogikaVerifyStart(o)
-        case o: Logika.Verify.End => writeLogikaVerifyEnd(o)
+        case o: Analysis.Start => writeAnalysisStart(o)
+        case o: Analysis.End => writeAnalysisEnd(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Halted => writeLogikaVerifyHalted(o)
         case o: Logika.Verify.Smt2Query => writeLogikaVerifySmt2Query(o)
@@ -355,14 +355,14 @@ object MsgPack {
       writer.writeZ(o.numOfRewrites)
     }
 
-    def writeLogikaVerifyStart(o: Logika.Verify.Start): Unit = {
-      writer.writeZ(Constants.LogikaVerifyStart)
+    def writeAnalysisStart(o: Analysis.Start): Unit = {
+      writer.writeZ(Constants.AnalysisStart)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeZ(o.currentTimeMillis)
     }
 
-    def writeLogikaVerifyEnd(o: Logika.Verify.End): Unit = {
-      writer.writeZ(Constants.LogikaVerifyEnd)
+    def writeAnalysisEnd(o: Analysis.End): Unit = {
+      writer.writeZ(Constants.AnalysisEnd)
       writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeB(o.wasCancelled)
@@ -1186,8 +1186,8 @@ object MsgPack {
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
         case Constants.StatusResponse => val r = readStatusResponseT(T); return r
         case Constants.SlangRewriteResponse => val r = readSlangRewriteResponseT(T); return r
-        case Constants.LogikaVerifyStart => val r = readLogikaVerifyStartT(T); return r
-        case Constants.LogikaVerifyEnd => val r = readLogikaVerifyEndT(T); return r
+        case Constants.AnalysisStart => val r = readAnalysisStartT(T); return r
+        case Constants.AnalysisEnd => val r = readAnalysisEndT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifyHalted => val r = readLogikaVerifyHaltedT(T); return r
         case Constants.LogikaVerifySmt2Query => val r = readLogikaVerifySmt2QueryT(T); return r
@@ -1382,28 +1382,28 @@ object MsgPack {
       return Slang.Rewrite.Response(id, kind, message, newTextOpt, numOfRewrites)
     }
 
-    def readLogikaVerifyStart(): Logika.Verify.Start = {
-      val r = readLogikaVerifyStartT(F)
+    def readAnalysisStart(): Analysis.Start = {
+      val r = readAnalysisStartT(F)
       return r
     }
 
-    def readLogikaVerifyStartT(typeParsed: B): Logika.Verify.Start = {
+    def readAnalysisStartT(typeParsed: B): Analysis.Start = {
       if (!typeParsed) {
-        reader.expectZ(Constants.LogikaVerifyStart)
+        reader.expectZ(Constants.AnalysisStart)
       }
       val id = reader.readISZ(reader.readString _)
       val currentTimeMillis = reader.readZ()
-      return Logika.Verify.Start(id, currentTimeMillis)
+      return Analysis.Start(id, currentTimeMillis)
     }
 
-    def readLogikaVerifyEnd(): Logika.Verify.End = {
-      val r = readLogikaVerifyEndT(F)
+    def readAnalysisEnd(): Analysis.End = {
+      val r = readAnalysisEndT(F)
       return r
     }
 
-    def readLogikaVerifyEndT(typeParsed: B): Logika.Verify.End = {
+    def readAnalysisEndT(typeParsed: B): Analysis.End = {
       if (!typeParsed) {
-        reader.expectZ(Constants.LogikaVerifyEnd)
+        reader.expectZ(Constants.AnalysisEnd)
       }
       val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
@@ -1416,7 +1416,7 @@ object MsgPack {
       val numOfInternalErrors = reader.readZ()
       val numOfErrors = reader.readZ()
       val numOfWarnings = reader.readZ()
-      return Logika.Verify.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -3101,33 +3101,33 @@ object MsgPack {
     return r
   }
 
-  def fromLogikaVerifyStart(o: Logika.Verify.Start, pooling: B): ISZ[U8] = {
+  def fromAnalysisStart(o: Analysis.Start, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeLogikaVerifyStart(o)
+    w.writeAnalysisStart(o)
     return w.result
   }
 
-  def toLogikaVerifyStart(data: ISZ[U8]): Either[Logika.Verify.Start, MessagePack.ErrorMsg] = {
-    def fLogikaVerifyStart(reader: Reader): Logika.Verify.Start = {
-      val r = reader.readLogikaVerifyStart()
+  def toAnalysisStart(data: ISZ[U8]): Either[Analysis.Start, MessagePack.ErrorMsg] = {
+    def fAnalysisStart(reader: Reader): Analysis.Start = {
+      val r = reader.readAnalysisStart()
       return r
     }
-    val r = to(data, fLogikaVerifyStart _)
+    val r = to(data, fAnalysisStart _)
     return r
   }
 
-  def fromLogikaVerifyEnd(o: Logika.Verify.End, pooling: B): ISZ[U8] = {
+  def fromAnalysisEnd(o: Analysis.End, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
-    w.writeLogikaVerifyEnd(o)
+    w.writeAnalysisEnd(o)
     return w.result
   }
 
-  def toLogikaVerifyEnd(data: ISZ[U8]): Either[Logika.Verify.End, MessagePack.ErrorMsg] = {
-    def fLogikaVerifyEnd(reader: Reader): Logika.Verify.End = {
-      val r = reader.readLogikaVerifyEnd()
+  def toAnalysisEnd(data: ISZ[U8]): Either[Analysis.End, MessagePack.ErrorMsg] = {
+    def fAnalysisEnd(reader: Reader): Analysis.End = {
+      val r = reader.readAnalysisEnd()
       return r
     }
-    val r = to(data, fLogikaVerifyEnd _)
+    val r = to(data, fAnalysisEnd _)
     return r
   }
 

@@ -140,28 +140,32 @@ object Slang {
   }
 }
 
+object Analysis {
+
+  @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response {
+    @strictpure override def posOpt: Option[Position] = None()
+  }
+
+  @datatype class End(val isBackground: B,
+                      val id: ISZ[String],
+                      val wasCancelled: B,
+                      val isIllFormed: B,
+                      val hasLogika: B,
+                      val totalTimeMillis: Z,
+                      val numOfSmt2Calls: Z,
+                      val smt2TimeMillis: Z,
+                      val numOfInternalErrors: Z,
+                      val numOfErrors: Z,
+                      val numOfWarnings: Z) extends Response {
+    @strictpure override def posOpt: Option[Position] = None()
+  }
+
+}
+
 
 object Logika {
 
   object Verify {
-
-    @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response {
-      @strictpure override def posOpt: Option[Position] = None()
-    }
-
-    @datatype class End(val isBackground: B,
-                        val id: ISZ[String],
-                        val wasCancelled: B,
-                        val isIllFormed: B,
-                        val hasLogika: B,
-                        val totalTimeMillis: Z,
-                        val numOfSmt2Calls: Z,
-                        val smt2TimeMillis: Z,
-                        val numOfInternalErrors: Z,
-                        val numOfErrors: Z,
-                        val numOfWarnings: Z) extends Response {
-      @strictpure override def posOpt: Option[Position] = None()
-    }
 
     @datatype class Config(val hint: B, val smt2query: B, val config: logika.Config) extends Request {
       @strictpure def id: ISZ[String] = ISZ()

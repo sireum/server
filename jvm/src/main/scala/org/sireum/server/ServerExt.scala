@@ -97,4 +97,7 @@ object ServerExt {
   def freeMemory: Z = _root_.java.lang.Runtime.getRuntime.freeMemory
 
   def gc(): Unit = System.gc()
+
+  def timeStamp(isRequest: B): String =
+    _root_.java.time.format.DateTimeFormatter.ofPattern(s"HHmmss ${if (isRequest) "<"else ">"} ").format(_root_.java.time.LocalDateTime.now)
 }

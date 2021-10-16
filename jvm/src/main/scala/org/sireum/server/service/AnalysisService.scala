@@ -61,7 +61,7 @@ object AnalysisService {
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
-        serverAPI.sendRespond(Logika.Verify.Start(req.id, startTime))
+        serverAPI.sendRespond(server.protocol.Analysis.Start(req.id, startTime))
         try {
           val p = f(reporter)
           hasLogika = p._1
@@ -75,7 +75,7 @@ object AnalysisService {
               s"""Internal error occurred:
                  |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
         } finally {
-          serverAPI.sendRespond(Logika.Verify.End(
+          serverAPI.sendRespond(server.protocol.Analysis.End(
             isBackground = req.isBackground,
             id = req.id,
             wasCancelled = cancelled,
@@ -450,7 +450,7 @@ class AnalysisService(numOfThreads: Z) extends Service {
     halt("Unsupported operation")
   }
 
-  @strictpure def id: String = "logika"
+  @strictpure def id: String = "analysis"
 
   def init(serverAPI: server.ServerAPI): Unit = {
     lang.FrontEnd.checkedLibraryReporter
@@ -467,7 +467,8 @@ class AnalysisService(numOfThreads: Z) extends Service {
 
   def canHandle(req: Request): B = {
     req match {
-      case req: Cancel => return AnalysisService.idMap.containsKey(req.id)
+      case req: Cancel =>
+        return AnalysisService.checkQueue.removeIf(_.id == req.id) || AnalysisService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
       case _: Slang.Check => return T
       case _ => return F
