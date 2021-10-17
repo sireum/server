@@ -179,7 +179,7 @@ object AnalysisService {
         all = F,
         verify = req.vfiles.nonEmpty,
         disableOutput = F,
-        verbose = F,
+        verbose = serverAPI.isVerbose,
         sanityCheck = F,
         plugins = logika.Logika.defaultPlugins,
         skipMethods = ISZ(),

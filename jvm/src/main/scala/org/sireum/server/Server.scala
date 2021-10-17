@@ -35,13 +35,15 @@ object Server {
   val maxLogFileSize: Z = 1024 * 1024
   val maxLogLineSize: Z = 256 - Server.Ext.timeStamp(T).size - Os.lineSep.size
 
-  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, cacheType: B, javaHome: Os.Path,
-          scalaHome: Os.Path, sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
+  def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, cacheType: B, log: B, verbose: B,
+          javaHome: Os.Path, scalaHome: Os.Path, sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
     val server = Server(
       version,
       isMsgPack,
       cacheInput,
       cacheType,
+      log,
+      verbose,
       MSZ(
         Ext.analysisService(sireumHome, numOfLogikaWorkers),
         SlangService()
@@ -70,6 +72,8 @@ object Server {
     def gc(): Unit = $
 
     def timeStamp(isRequest: B): String = $
+
+    def log(file: Os.Path, content: String): Unit = $
   }
 }
 
@@ -81,6 +85,10 @@ object Server {
   def cacheInput: B
 
   def cacheType: B
+
+  def isLogEnabled: B
+
+  def isVerbose: B
 
   def sireumHome: Os.Path
 
@@ -105,22 +113,22 @@ object Server {
   }
 
   def log(isRequest: B, text: String): Unit = {
+    if (!isLogEnabled) {
+      return
+    }
     if (logFile.size > Server.maxLogFileSize) {
-      logFile.writeOver("")
+      Server.Ext.log(logFile, "")
     }
-    logFile.writeAppend(Server.Ext.timeStamp(isRequest))
     val textOps = ops.StringOps(text)
-    if (text.size > Server.maxLogLineSize) {
-      logFile.writeAppend(textOps.substring(0, Server.maxLogLineSize))
-    } else {
-      logFile.writeAppend(text)
-    }
-    logFile.writeAppend(Os.lineSep)
+    val content: String = if (text.size > Server.maxLogLineSize) textOps.substring(0, Server.maxLogLineSize) else text
+    Server.Ext.log(logFile, s"${Server.Ext.timeStamp(isRequest)}$content${Os.lineSep}")
   }
 }
 
 @datatype class JsonServerAPI(val cacheInput: B,
                               val cacheType: B,
+                              val isLogEnabled: B,
+                              val isVerbose: B,
                               val javaHome: Os.Path,
                               val scalaHome: Os.Path,
                               val sireumHome: Os.Path,
@@ -137,6 +145,8 @@ object Server {
 
 @datatype class MsgPackServerAPI(val cacheInput: B,
                                  val cacheType: B,
+                                 val isLogEnabled: B,
+                                 val isVerbose: B,
                                  val javaHome: Os.Path,
                                  val scalaHome: Os.Path,
                                  val sireumHome: Os.Path,
@@ -155,30 +165,32 @@ object Server {
                      val isMsgPack: B,
                      val cacheInput: B,
                      val cacheType: B,
+                     val log: B,
+                     val verbose: B,
                      val services: MSZ[Service],
                      val javaHome: Os.Path,
                      val scalaHome: Os.Path,
                      val sireumHome: Os.Path,
                      val defaultVersions: ISZ[(String, String)]) {
   val serverAPI: ServerAPI =
-    if (isMsgPack) MsgPackServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
-    else JsonServerAPI(cacheInput, cacheType, javaHome, scalaHome, sireumHome, defaultVersions)
+    if (isMsgPack) MsgPackServerAPI(cacheInput, cacheType, log, verbose, javaHome, scalaHome, sireumHome, defaultVersions)
+    else JsonServerAPI(cacheInput, cacheType, log, verbose, javaHome, scalaHome, sireumHome, defaultVersions)
 
   def run(): Z = {
-    serverAPI.logFile.writeOver("")
-    serverAPI.log(F, s"Initializing runtime library")
+    serverAPI.logFile.removeAll()
+    serverAPI.log(F, s"Initializing runtime library ...")
     val (_, _) = lang.FrontEnd.checkedLibraryReporter
     for (i <- services.indices) {
-      serverAPI.log(F, s"Initializing service ${services(i).id}")
+      serverAPI.log(F, s"Initializing service: ${services(i).id} ...")
       services(i).init(serverAPI)
     }
-    serverAPI.log(F, s"Serving")
+    serverAPI.log(F, s"Serving ...")
     extension.Cancel.cancellable(serveLoop _)
     for (i <- services.indices) {
-      serverAPI.log(F, s"Finalizing service ${services(i).id}")
+      serverAPI.log(F, s"Finalizing service: ${services(i).id} ...")
       services(i).finalise()
     }
-    serverAPI.log(F, s"Shutdown")
+    serverAPI.log(F, s"Shutdown ...")
     return 0
   }
 

@@ -100,4 +100,8 @@ object ServerExt {
 
   def timeStamp(isRequest: B): String =
     _root_.java.time.format.DateTimeFormatter.ofPattern(s"HHmmss ${if (isRequest) "<"else ">"} ").format(_root_.java.time.LocalDateTime.now)
+
+  def log(file: Os.Path, content: String): Unit = synchronized {
+    file.writeAppend(content)
+  }
 }

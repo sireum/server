@@ -92,7 +92,7 @@ class AnalysisServerTest extends TestSuite {
         }
         val javaHome = sireumHome / "bin" / plat / "java"
         val scalaHome = sireumHome / "bin" / "scala"
-        Server.run("test", isMsgPack, 1, F, F, javaHome, scalaHome, sireumHome, ISZ())
+        Server.run("test", isMsgPack, 1, F, F, F, F, javaHome, scalaHome, sireumHome, ISZ())
       }
     }
 
