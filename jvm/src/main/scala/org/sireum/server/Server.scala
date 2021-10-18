@@ -177,7 +177,7 @@ object Server {
     else JsonServerAPI(cacheInput, cacheType, log, verbose, javaHome, scalaHome, sireumHome, defaultVersions)
 
   def run(): Z = {
-    serverAPI.logFile.removeAll()
+    serverAPI.logFile.writeOver("")
     serverAPI.log(F, s"Initializing runtime library ...")
     val (_, _) = lang.FrontEnd.checkedLibraryReporter
     for (i <- services.indices) {
