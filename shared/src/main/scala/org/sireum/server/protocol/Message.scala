@@ -50,7 +50,7 @@ import org.sireum.message.Message
 }
 
 @datatype class Report(val id: ISZ[String], val message: Message) extends Response {
-  @strictpure override def posOpt: Option[Position] = None()
+  @strictpure override def posOpt: Option[Position] = message.posOpt
 }
 
 
