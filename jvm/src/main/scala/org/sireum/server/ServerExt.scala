@@ -80,7 +80,7 @@ object ServerExt {
 
   def pause(): Unit = Thread.sleep(pauseTime)
 
-  def cvcExe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
+  def cvcExe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc.exe" else "cvc")
 
   def z3Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
 

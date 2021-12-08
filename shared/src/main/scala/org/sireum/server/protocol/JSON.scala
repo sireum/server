@@ -956,7 +956,7 @@ object JSON {
         ("splitContract", printB(o.splitContract)),
         ("simplifiedQuery", printB(o.simplifiedQuery)),
         ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
-        ("cvc4RLimit", printZ(o.cvc4RLimit)),
+        ("cvcRLimit", printZ(o.cvcRLimit)),
         ("fpRoundingMode", printString(o.fpRoundingMode))
       ))
     }
@@ -3084,13 +3084,13 @@ object JSON {
       parser.parseObjectKey("checkInfeasiblePatternMatch")
       val checkInfeasiblePatternMatch = parser.parseB()
       parser.parseObjectNext()
-      parser.parseObjectKey("cvc4RLimit")
-      val cvc4RLimit = parser.parseZ()
+      parser.parseObjectKey("cvcRLimit")
+      val cvcRLimit = parser.parseZ()
       parser.parseObjectNext()
       parser.parseObjectKey("fpRoundingMode")
       val fpRoundingMode = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvc4RLimit, fpRoundingMode)
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

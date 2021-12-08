@@ -216,7 +216,7 @@ object Logika {
       splitMatch = F,
       simplifiedQuery = F,
       checkInfeasiblePatternMatch = T,
-      cvc4RLimit = 1000000,
+      cvcRLimit = 1000000,
       fpRoundingMode = "RNE"
     )
 
