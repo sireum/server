@@ -988,6 +988,7 @@ object MsgPack {
       writer.writeB(o.checkInfeasiblePatternMatch)
       writer.writeZ(o.cvcRLimit)
       writer.writeString(o.fpRoundingMode)
+      writer.writeB(o.caching)
     }
 
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
@@ -1028,6 +1029,7 @@ object MsgPack {
       writer.writeString(o.info)
       writer.writeString(o.output)
       writer.writeZ(o.timeMillis)
+      writer.writeB(o.cached)
     }
 
     def write_langastMethodModeType(o: org.sireum.lang.ast.MethodMode.Type): Unit = {
@@ -2583,7 +2585,8 @@ object MsgPack {
       val checkInfeasiblePatternMatch = reader.readB()
       val cvcRLimit = reader.readZ()
       val fpRoundingMode = reader.readString()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode)
+      val caching = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode, caching)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -2662,7 +2665,8 @@ object MsgPack {
       val info = reader.readString()
       val output = reader.readString()
       val timeMillis = reader.readZ()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis)
+      val cached = reader.readB()
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
     }
 
     def read_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {

@@ -169,7 +169,7 @@ object AnalysisService {
         cacheTypeHierarchy = serverAPI.cacheType,
         mapBox = mapBox,
         config = defaultConfig,
-        cache = cache,
+        cache = if (defaultConfig.caching) cache else logika.Smt2.NoCache(),
         files = req.files,
         vfiles = req.vfiles,
         line = req.line,
@@ -197,8 +197,8 @@ object AnalysisService {
                   val dmOpt: Option[DependencyManager],
                   var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                   var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                  val storage: java.util.Map[(Z, Predef.String), logika.Smt2Query.Result] =
-                  new java.util.concurrent.ConcurrentHashMap[(Z, Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
+                  val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
+                  new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
     var _owned: Boolean = false
     var _ignore: B = F
 
@@ -215,13 +215,13 @@ object AnalysisService {
       return "Smt2Cache"
     }
 
-    def get(isSat: B, query: String, timeoutInMs: Z): Option[logika.Smt2Query.Result] = {
-      val r = storage.get((timeoutInMs, query.value))
+    def get(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
+      val r = storage.get((args, query.value))
       return if (r == null) None() else Some(r)
     }
 
-    def set(isSat: B, query: String, timeoutInMs: Z, result: logika.Smt2Query.Result): Unit = {
-      storage.put((timeoutInMs, query.value), result)
+    def set(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
+      storage.put((args, query.value), result)
     }
   }
 
@@ -428,7 +428,9 @@ object AnalysisService {
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs, config.cvcRLimit,
         config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal, config.simplifiedQuery,
-        reporter), scriptCache, reporter, req.par, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
+        reporter),
+      if (config.caching) scriptCache else logika.Smt2.NoCache(),
+      reporter, req.par, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
     System.gc()
   }
 }

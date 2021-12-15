@@ -957,7 +957,8 @@ object JSON {
         ("simplifiedQuery", printB(o.simplifiedQuery)),
         ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
         ("cvcRLimit", printZ(o.cvcRLimit)),
-        ("fpRoundingMode", printString(o.fpRoundingMode))
+        ("fpRoundingMode", printString(o.fpRoundingMode)),
+        ("caching", printB(o.caching))
       ))
     }
 
@@ -1015,7 +1016,8 @@ object JSON {
         ("query", printString(o.query)),
         ("info", printString(o.info)),
         ("output", printString(o.output)),
-        ("timeMillis", printZ(o.timeMillis))
+        ("timeMillis", printZ(o.timeMillis)),
+        ("cached", printB(o.cached))
       ))
     }
 
@@ -3090,7 +3092,10 @@ object JSON {
       parser.parseObjectKey("fpRoundingMode")
       val fpRoundingMode = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode)
+      parser.parseObjectKey("caching")
+      val caching = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode, caching)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -3207,7 +3212,10 @@ object JSON {
       parser.parseObjectKey("timeMillis")
       val timeMillis = parser.parseZ()
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis)
+      parser.parseObjectKey("cached")
+      val cached = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
     }
 
     def parse_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {
