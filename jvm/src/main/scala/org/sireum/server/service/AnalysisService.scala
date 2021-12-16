@@ -163,6 +163,7 @@ object AnalysisService {
       val mapBox = MBox2(cache.uriMap, cache.thMap)
       Analysis.run(
         root = root,
+        outDirName = "out",
         project = cache.project,
         dm = cache.dmOpt.get,
         cacheInput = serverAPI.cacheInput,
