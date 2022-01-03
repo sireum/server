@@ -34,6 +34,8 @@ val phantom = "hamr-phantom"
 
 val proyek = "proyek"
 
+val parser = "parser"
+
 val server = "server"
 
 val homeDir = Os.slashDir.up.canon
@@ -43,7 +45,7 @@ val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseDir = homeDir,
   sharedDeps = sharedId(logika),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(anvil, tools, logika, codegen, phantom, proyek),
+  jvmDeps = ISZ(anvil, tools, logika, codegen, phantom, proyek, parser),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",
