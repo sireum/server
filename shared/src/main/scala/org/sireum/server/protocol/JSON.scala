@@ -518,12 +518,12 @@ object JSON {
         case o: org.sireum.logika.State.Claim.Or => return print_logikaStateClaimOr(o)
         case o: org.sireum.logika.State.Claim.Imply => return print_logikaStateClaimImply(o)
         case o: org.sireum.logika.State.Claim.If => return print_logikaStateClaimIf(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqLit => return print_logikaStateClaimDefSeqLit(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqStore => return print_logikaStateClaimDefSeqStore(o)
-        case o: org.sireum.logika.State.Claim.Def.FieldStore => return print_logikaStateClaimDefFieldStore(o)
-        case o: org.sireum.logika.State.Claim.Def.AdtLit => return print_logikaStateClaimDefAdtLit(o)
-        case o: org.sireum.logika.State.Claim.Def.Random => return print_logikaStateClaimDefRandom(o)
+        case o: org.sireum.logika.State.Claim.Let.AdtLit => return print_logikaStateClaimLetAdtLit(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqLit => return print_logikaStateClaimLetSeqLit(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentName => return print_logikaStateClaimLetCurrentName(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqStore => return print_logikaStateClaimLetSeqStore(o)
+        case o: org.sireum.logika.State.Claim.Let.FieldStore => return print_logikaStateClaimLetFieldStore(o)
+        case o: org.sireum.logika.State.Claim.Let.Random => return print_logikaStateClaimLetRandom(o)
         case o: org.sireum.logika.State.Claim.Let.Name => return print_logikaStateClaimLetName(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentId => return print_logikaStateClaimLetCurrentId(o)
         case o: org.sireum.logika.State.Claim.Let.Id => return print_logikaStateClaimLetId(o)
@@ -602,14 +602,14 @@ object JSON {
       ))
     }
 
-    @pure def print_logikaStateClaimDef(o: org.sireum.logika.State.Claim.Def): ST = {
+    @pure def print_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let): ST = {
       o match {
-        case o: org.sireum.logika.State.Claim.Def.SeqLit => return print_logikaStateClaimDefSeqLit(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqStore => return print_logikaStateClaimDefSeqStore(o)
-        case o: org.sireum.logika.State.Claim.Def.FieldStore => return print_logikaStateClaimDefFieldStore(o)
-        case o: org.sireum.logika.State.Claim.Def.AdtLit => return print_logikaStateClaimDefAdtLit(o)
-        case o: org.sireum.logika.State.Claim.Def.Random => return print_logikaStateClaimDefRandom(o)
+        case o: org.sireum.logika.State.Claim.Let.AdtLit => return print_logikaStateClaimLetAdtLit(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqLit => return print_logikaStateClaimLetSeqLit(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentName => return print_logikaStateClaimLetCurrentName(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqStore => return print_logikaStateClaimLetSeqStore(o)
+        case o: org.sireum.logika.State.Claim.Let.FieldStore => return print_logikaStateClaimLetFieldStore(o)
+        case o: org.sireum.logika.State.Claim.Let.Random => return print_logikaStateClaimLetRandom(o)
         case o: org.sireum.logika.State.Claim.Let.Name => return print_logikaStateClaimLetName(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentId => return print_logikaStateClaimLetCurrentId(o)
         case o: org.sireum.logika.State.Claim.Let.Id => return print_logikaStateClaimLetId(o)
@@ -632,81 +632,28 @@ object JSON {
       }
     }
 
-    @pure def print_logikaStateClaimDefSeqLit(o: org.sireum.logika.State.Claim.Def.SeqLit): ST = {
+    @pure def print_logikaStateClaimLetAdtLit(o: org.sireum.logika.State.Claim.Let.AdtLit): ST = {
       return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.SeqLit""""),
-        ("sym", print_logikaStateValueSym(o.sym)),
-        ("args", printISZ(F, o.args, print_logikaStateClaimDefSeqLitArg _))
-      ))
-    }
-
-    @pure def print_logikaStateClaimDefSeqLitArg(o: org.sireum.logika.State.Claim.Def.SeqLit.Arg): ST = {
-      return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.SeqLit.Arg""""),
-        ("index", print_logikaStateValue(o.index)),
-        ("value", print_logikaStateValue(o.value))
-      ))
-    }
-
-    @pure def print_logikaStateClaimDefSeqStore(o: org.sireum.logika.State.Claim.Def.SeqStore): ST = {
-      return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.SeqStore""""),
-        ("sym", print_logikaStateValueSym(o.sym)),
-        ("seq", print_logikaStateValue(o.seq)),
-        ("index", print_logikaStateValue(o.index)),
-        ("element", print_logikaStateValue(o.element))
-      ))
-    }
-
-    @pure def print_logikaStateClaimDefFieldStore(o: org.sireum.logika.State.Claim.Def.FieldStore): ST = {
-      return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.FieldStore""""),
-        ("sym", print_logikaStateValueSym(o.sym)),
-        ("adt", print_logikaStateValue(o.adt)),
-        ("id", printString(o.id)),
-        ("value", print_logikaStateValue(o.value))
-      ))
-    }
-
-    @pure def print_logikaStateClaimDefAdtLit(o: org.sireum.logika.State.Claim.Def.AdtLit): ST = {
-      return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.AdtLit""""),
+        ("type", st""""org.sireum.logika.State.Claim.Let.AdtLit""""),
         ("sym", print_logikaStateValueSym(o.sym)),
         ("args", printISZ(F, o.args, print_logikaStateValue _))
       ))
     }
 
-    @pure def print_logikaStateClaimDefRandom(o: org.sireum.logika.State.Claim.Def.Random): ST = {
+    @pure def print_logikaStateClaimLetSeqLit(o: org.sireum.logika.State.Claim.Let.SeqLit): ST = {
       return printObject(ISZ(
-        ("type", st""""org.sireum.logika.State.Claim.Def.Random""""),
+        ("type", st""""org.sireum.logika.State.Claim.Let.SeqLit""""),
         ("sym", print_logikaStateValueSym(o.sym)),
-        ("pos", printPosition(o.pos))
+        ("args", printISZ(F, o.args, print_logikaStateClaimLetSeqLitArg _))
       ))
     }
 
-    @pure def print_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let): ST = {
-      o match {
-        case o: org.sireum.logika.State.Claim.Let.CurrentName => return print_logikaStateClaimLetCurrentName(o)
-        case o: org.sireum.logika.State.Claim.Let.Name => return print_logikaStateClaimLetName(o)
-        case o: org.sireum.logika.State.Claim.Let.CurrentId => return print_logikaStateClaimLetCurrentId(o)
-        case o: org.sireum.logika.State.Claim.Let.Id => return print_logikaStateClaimLetId(o)
-        case o: org.sireum.logika.State.Claim.Let.Eq => return print_logikaStateClaimLetEq(o)
-        case o: org.sireum.logika.State.Claim.Let.TypeTest => return print_logikaStateClaimLetTypeTest(o)
-        case o: org.sireum.logika.State.Claim.Let.Quant => return print_logikaStateClaimLetQuant(o)
-        case o: org.sireum.logika.State.Claim.Let.Ite => return print_logikaStateClaimLetIte(o)
-        case o: org.sireum.logika.State.Claim.Let.Binary => return print_logikaStateClaimLetBinary(o)
-        case o: org.sireum.logika.State.Claim.Let.Unary => return print_logikaStateClaimLetUnary(o)
-        case o: org.sireum.logika.State.Claim.Let.SeqLookup => return print_logikaStateClaimLetSeqLookup(o)
-        case o: org.sireum.logika.State.Claim.Let.SeqInBound => return print_logikaStateClaimLetSeqInBound(o)
-        case o: org.sireum.logika.State.Claim.Let.FieldLookup => return print_logikaStateClaimLetFieldLookup(o)
-        case o: org.sireum.logika.State.Claim.Let.ProofFunApply => return print_logikaStateClaimLetProofFunApply(o)
-        case o: org.sireum.logika.State.Claim.Let.Apply => return print_logikaStateClaimLetApply(o)
-        case o: org.sireum.logika.State.Claim.Let.IApply => return print_logikaStateClaimLetIApply(o)
-        case o: org.sireum.logika.State.Claim.Let.TupleLit => return print_logikaStateClaimLetTupleLit(o)
-        case o: org.sireum.logika.State.Claim.Let.And => return print_logikaStateClaimLetAnd(o)
-        case o: org.sireum.logika.State.Claim.Let.Or => return print_logikaStateClaimLetOr(o)
-        case o: org.sireum.logika.State.Claim.Let.Imply => return print_logikaStateClaimLetImply(o)
-      }
+    @pure def print_logikaStateClaimLetSeqLitArg(o: org.sireum.logika.State.Claim.Let.SeqLit.Arg): ST = {
+      return printObject(ISZ(
+        ("type", st""""org.sireum.logika.State.Claim.Let.SeqLit.Arg""""),
+        ("index", print_logikaStateValue(o.index)),
+        ("value", print_logikaStateValue(o.value))
+      ))
     }
 
     @pure def print_logikaStateClaimLetCurrentName(o: org.sireum.logika.State.Claim.Let.CurrentName): ST = {
@@ -715,6 +662,34 @@ object JSON {
         ("sym", print_logikaStateValueSym(o.sym)),
         ("ids", printISZ(T, o.ids, printString _)),
         ("defPosOpt", printOption(F, o.defPosOpt, printPosition _))
+      ))
+    }
+
+    @pure def print_logikaStateClaimLetSeqStore(o: org.sireum.logika.State.Claim.Let.SeqStore): ST = {
+      return printObject(ISZ(
+        ("type", st""""org.sireum.logika.State.Claim.Let.SeqStore""""),
+        ("sym", print_logikaStateValueSym(o.sym)),
+        ("seq", print_logikaStateValue(o.seq)),
+        ("index", print_logikaStateValue(o.index)),
+        ("element", print_logikaStateValue(o.element))
+      ))
+    }
+
+    @pure def print_logikaStateClaimLetFieldStore(o: org.sireum.logika.State.Claim.Let.FieldStore): ST = {
+      return printObject(ISZ(
+        ("type", st""""org.sireum.logika.State.Claim.Let.FieldStore""""),
+        ("sym", print_logikaStateValueSym(o.sym)),
+        ("adt", print_logikaStateValue(o.adt)),
+        ("id", printString(o.id)),
+        ("value", print_logikaStateValue(o.value))
+      ))
+    }
+
+    @pure def print_logikaStateClaimLetRandom(o: org.sireum.logika.State.Claim.Let.Random): ST = {
+      return printObject(ISZ(
+        ("type", st""""org.sireum.logika.State.Claim.Let.Random""""),
+        ("sym", print_logikaStateValueSym(o.sym)),
+        ("pos", printPosition(o.pos))
       ))
     }
 
@@ -2165,7 +2140,7 @@ object JSON {
     }
 
     def parse_logikaStateClaim(): org.sireum.logika.State.Claim = {
-      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.State.Claim.Label", "org.sireum.logika.State.Claim.Prop", "org.sireum.logika.State.Claim.And", "org.sireum.logika.State.Claim.Or", "org.sireum.logika.State.Claim.Imply", "org.sireum.logika.State.Claim.If", "org.sireum.logika.State.Claim.Def.SeqLit", "org.sireum.logika.State.Claim.Def.SeqStore", "org.sireum.logika.State.Claim.Def.FieldStore", "org.sireum.logika.State.Claim.Def.AdtLit", "org.sireum.logika.State.Claim.Def.Random", "org.sireum.logika.State.Claim.Let.CurrentName", "org.sireum.logika.State.Claim.Let.Name", "org.sireum.logika.State.Claim.Let.CurrentId", "org.sireum.logika.State.Claim.Let.Id", "org.sireum.logika.State.Claim.Let.Eq", "org.sireum.logika.State.Claim.Let.TypeTest", "org.sireum.logika.State.Claim.Let.Quant", "org.sireum.logika.State.Claim.Let.Ite", "org.sireum.logika.State.Claim.Let.Binary", "org.sireum.logika.State.Claim.Let.Unary", "org.sireum.logika.State.Claim.Let.SeqLookup", "org.sireum.logika.State.Claim.Let.SeqInBound", "org.sireum.logika.State.Claim.Let.FieldLookup", "org.sireum.logika.State.Claim.Let.ProofFunApply", "org.sireum.logika.State.Claim.Let.Apply", "org.sireum.logika.State.Claim.Let.IApply", "org.sireum.logika.State.Claim.Let.TupleLit", "org.sireum.logika.State.Claim.Let.And", "org.sireum.logika.State.Claim.Let.Or", "org.sireum.logika.State.Claim.Let.Imply"))
+      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.State.Claim.Label", "org.sireum.logika.State.Claim.Prop", "org.sireum.logika.State.Claim.And", "org.sireum.logika.State.Claim.Or", "org.sireum.logika.State.Claim.Imply", "org.sireum.logika.State.Claim.If", "org.sireum.logika.State.Claim.Let.AdtLit", "org.sireum.logika.State.Claim.Let.SeqLit", "org.sireum.logika.State.Claim.Let.CurrentName", "org.sireum.logika.State.Claim.Let.SeqStore", "org.sireum.logika.State.Claim.Let.FieldStore", "org.sireum.logika.State.Claim.Let.Random", "org.sireum.logika.State.Claim.Let.Name", "org.sireum.logika.State.Claim.Let.CurrentId", "org.sireum.logika.State.Claim.Let.Id", "org.sireum.logika.State.Claim.Let.Eq", "org.sireum.logika.State.Claim.Let.TypeTest", "org.sireum.logika.State.Claim.Let.Quant", "org.sireum.logika.State.Claim.Let.Ite", "org.sireum.logika.State.Claim.Let.Binary", "org.sireum.logika.State.Claim.Let.Unary", "org.sireum.logika.State.Claim.Let.SeqLookup", "org.sireum.logika.State.Claim.Let.SeqInBound", "org.sireum.logika.State.Claim.Let.FieldLookup", "org.sireum.logika.State.Claim.Let.ProofFunApply", "org.sireum.logika.State.Claim.Let.Apply", "org.sireum.logika.State.Claim.Let.IApply", "org.sireum.logika.State.Claim.Let.TupleLit", "org.sireum.logika.State.Claim.Let.And", "org.sireum.logika.State.Claim.Let.Or", "org.sireum.logika.State.Claim.Let.Imply"))
       t.native match {
         case "org.sireum.logika.State.Claim.Label" => val r = parse_logikaStateClaimLabelT(T); return r
         case "org.sireum.logika.State.Claim.Prop" => val r = parse_logikaStateClaimPropT(T); return r
@@ -2173,12 +2148,12 @@ object JSON {
         case "org.sireum.logika.State.Claim.Or" => val r = parse_logikaStateClaimOrT(T); return r
         case "org.sireum.logika.State.Claim.Imply" => val r = parse_logikaStateClaimImplyT(T); return r
         case "org.sireum.logika.State.Claim.If" => val r = parse_logikaStateClaimIfT(T); return r
-        case "org.sireum.logika.State.Claim.Def.SeqLit" => val r = parse_logikaStateClaimDefSeqLitT(T); return r
-        case "org.sireum.logika.State.Claim.Def.SeqStore" => val r = parse_logikaStateClaimDefSeqStoreT(T); return r
-        case "org.sireum.logika.State.Claim.Def.FieldStore" => val r = parse_logikaStateClaimDefFieldStoreT(T); return r
-        case "org.sireum.logika.State.Claim.Def.AdtLit" => val r = parse_logikaStateClaimDefAdtLitT(T); return r
-        case "org.sireum.logika.State.Claim.Def.Random" => val r = parse_logikaStateClaimDefRandomT(T); return r
+        case "org.sireum.logika.State.Claim.Let.AdtLit" => val r = parse_logikaStateClaimLetAdtLitT(T); return r
+        case "org.sireum.logika.State.Claim.Let.SeqLit" => val r = parse_logikaStateClaimLetSeqLitT(T); return r
         case "org.sireum.logika.State.Claim.Let.CurrentName" => val r = parse_logikaStateClaimLetCurrentNameT(T); return r
+        case "org.sireum.logika.State.Claim.Let.SeqStore" => val r = parse_logikaStateClaimLetSeqStoreT(T); return r
+        case "org.sireum.logika.State.Claim.Let.FieldStore" => val r = parse_logikaStateClaimLetFieldStoreT(T); return r
+        case "org.sireum.logika.State.Claim.Let.Random" => val r = parse_logikaStateClaimLetRandomT(T); return r
         case "org.sireum.logika.State.Claim.Let.Name" => val r = parse_logikaStateClaimLetNameT(T); return r
         case "org.sireum.logika.State.Claim.Let.CurrentId" => val r = parse_logikaStateClaimLetCurrentIdT(T); return r
         case "org.sireum.logika.State.Claim.Let.Id" => val r = parse_logikaStateClaimLetIdT(T); return r
@@ -2316,15 +2291,15 @@ object JSON {
       return org.sireum.logika.State.Claim.If(cond, tClaims, fClaims)
     }
 
-    def parse_logikaStateClaimDef(): org.sireum.logika.State.Claim.Def = {
-      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.State.Claim.Def.SeqLit", "org.sireum.logika.State.Claim.Def.SeqStore", "org.sireum.logika.State.Claim.Def.FieldStore", "org.sireum.logika.State.Claim.Def.AdtLit", "org.sireum.logika.State.Claim.Def.Random", "org.sireum.logika.State.Claim.Let.CurrentName", "org.sireum.logika.State.Claim.Let.Name", "org.sireum.logika.State.Claim.Let.CurrentId", "org.sireum.logika.State.Claim.Let.Id", "org.sireum.logika.State.Claim.Let.Eq", "org.sireum.logika.State.Claim.Let.TypeTest", "org.sireum.logika.State.Claim.Let.Quant", "org.sireum.logika.State.Claim.Let.Ite", "org.sireum.logika.State.Claim.Let.Binary", "org.sireum.logika.State.Claim.Let.Unary", "org.sireum.logika.State.Claim.Let.SeqLookup", "org.sireum.logika.State.Claim.Let.SeqInBound", "org.sireum.logika.State.Claim.Let.FieldLookup", "org.sireum.logika.State.Claim.Let.ProofFunApply", "org.sireum.logika.State.Claim.Let.Apply", "org.sireum.logika.State.Claim.Let.IApply", "org.sireum.logika.State.Claim.Let.TupleLit", "org.sireum.logika.State.Claim.Let.And", "org.sireum.logika.State.Claim.Let.Or", "org.sireum.logika.State.Claim.Let.Imply"))
+    def parse_logikaStateClaimLet(): org.sireum.logika.State.Claim.Let = {
+      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.State.Claim.Let.AdtLit", "org.sireum.logika.State.Claim.Let.SeqLit", "org.sireum.logika.State.Claim.Let.CurrentName", "org.sireum.logika.State.Claim.Let.SeqStore", "org.sireum.logika.State.Claim.Let.FieldStore", "org.sireum.logika.State.Claim.Let.Random", "org.sireum.logika.State.Claim.Let.Name", "org.sireum.logika.State.Claim.Let.CurrentId", "org.sireum.logika.State.Claim.Let.Id", "org.sireum.logika.State.Claim.Let.Eq", "org.sireum.logika.State.Claim.Let.TypeTest", "org.sireum.logika.State.Claim.Let.Quant", "org.sireum.logika.State.Claim.Let.Ite", "org.sireum.logika.State.Claim.Let.Binary", "org.sireum.logika.State.Claim.Let.Unary", "org.sireum.logika.State.Claim.Let.SeqLookup", "org.sireum.logika.State.Claim.Let.SeqInBound", "org.sireum.logika.State.Claim.Let.FieldLookup", "org.sireum.logika.State.Claim.Let.ProofFunApply", "org.sireum.logika.State.Claim.Let.Apply", "org.sireum.logika.State.Claim.Let.IApply", "org.sireum.logika.State.Claim.Let.TupleLit", "org.sireum.logika.State.Claim.Let.And", "org.sireum.logika.State.Claim.Let.Or", "org.sireum.logika.State.Claim.Let.Imply"))
       t.native match {
-        case "org.sireum.logika.State.Claim.Def.SeqLit" => val r = parse_logikaStateClaimDefSeqLitT(T); return r
-        case "org.sireum.logika.State.Claim.Def.SeqStore" => val r = parse_logikaStateClaimDefSeqStoreT(T); return r
-        case "org.sireum.logika.State.Claim.Def.FieldStore" => val r = parse_logikaStateClaimDefFieldStoreT(T); return r
-        case "org.sireum.logika.State.Claim.Def.AdtLit" => val r = parse_logikaStateClaimDefAdtLitT(T); return r
-        case "org.sireum.logika.State.Claim.Def.Random" => val r = parse_logikaStateClaimDefRandomT(T); return r
+        case "org.sireum.logika.State.Claim.Let.AdtLit" => val r = parse_logikaStateClaimLetAdtLitT(T); return r
+        case "org.sireum.logika.State.Claim.Let.SeqLit" => val r = parse_logikaStateClaimLetSeqLitT(T); return r
         case "org.sireum.logika.State.Claim.Let.CurrentName" => val r = parse_logikaStateClaimLetCurrentNameT(T); return r
+        case "org.sireum.logika.State.Claim.Let.SeqStore" => val r = parse_logikaStateClaimLetSeqStoreT(T); return r
+        case "org.sireum.logika.State.Claim.Let.FieldStore" => val r = parse_logikaStateClaimLetFieldStoreT(T); return r
+        case "org.sireum.logika.State.Claim.Let.Random" => val r = parse_logikaStateClaimLetRandomT(T); return r
         case "org.sireum.logika.State.Claim.Let.Name" => val r = parse_logikaStateClaimLetNameT(T); return r
         case "org.sireum.logika.State.Claim.Let.CurrentId" => val r = parse_logikaStateClaimLetCurrentIdT(T); return r
         case "org.sireum.logika.State.Claim.Let.Id" => val r = parse_logikaStateClaimLetIdT(T); return r
@@ -2348,98 +2323,14 @@ object JSON {
       }
     }
 
-    def parse_logikaStateClaimDefSeqLit(): org.sireum.logika.State.Claim.Def.SeqLit = {
-      val r = parse_logikaStateClaimDefSeqLitT(F)
+    def parse_logikaStateClaimLetAdtLit(): org.sireum.logika.State.Claim.Let.AdtLit = {
+      val r = parse_logikaStateClaimLetAdtLitT(F)
       return r
     }
 
-    def parse_logikaStateClaimDefSeqLitT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqLit = {
+    def parse_logikaStateClaimLetAdtLitT(typeParsed: B): org.sireum.logika.State.Claim.Let.AdtLit = {
       if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.SeqLit")
-      }
-      parser.parseObjectKey("sym")
-      val sym = parse_logikaStateValueSym()
-      parser.parseObjectNext()
-      parser.parseObjectKey("args")
-      val args = parser.parseISZ(parse_logikaStateClaimDefSeqLitArg _)
-      parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.SeqLit(sym, args)
-    }
-
-    def parse_logikaStateClaimDefSeqLitArg(): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      val r = parse_logikaStateClaimDefSeqLitArgT(F)
-      return r
-    }
-
-    def parse_logikaStateClaimDefSeqLitArgT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.SeqLit.Arg")
-      }
-      parser.parseObjectKey("index")
-      val index = parse_logikaStateValue()
-      parser.parseObjectNext()
-      parser.parseObjectKey("value")
-      val value = parse_logikaStateValue()
-      parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.SeqLit.Arg(index, value)
-    }
-
-    def parse_logikaStateClaimDefSeqStore(): org.sireum.logika.State.Claim.Def.SeqStore = {
-      val r = parse_logikaStateClaimDefSeqStoreT(F)
-      return r
-    }
-
-    def parse_logikaStateClaimDefSeqStoreT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqStore = {
-      if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.SeqStore")
-      }
-      parser.parseObjectKey("sym")
-      val sym = parse_logikaStateValueSym()
-      parser.parseObjectNext()
-      parser.parseObjectKey("seq")
-      val seq = parse_logikaStateValue()
-      parser.parseObjectNext()
-      parser.parseObjectKey("index")
-      val index = parse_logikaStateValue()
-      parser.parseObjectNext()
-      parser.parseObjectKey("element")
-      val element = parse_logikaStateValue()
-      parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.SeqStore(sym, seq, index, element)
-    }
-
-    def parse_logikaStateClaimDefFieldStore(): org.sireum.logika.State.Claim.Def.FieldStore = {
-      val r = parse_logikaStateClaimDefFieldStoreT(F)
-      return r
-    }
-
-    def parse_logikaStateClaimDefFieldStoreT(typeParsed: B): org.sireum.logika.State.Claim.Def.FieldStore = {
-      if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.FieldStore")
-      }
-      parser.parseObjectKey("sym")
-      val sym = parse_logikaStateValueSym()
-      parser.parseObjectNext()
-      parser.parseObjectKey("adt")
-      val adt = parse_logikaStateValue()
-      parser.parseObjectNext()
-      parser.parseObjectKey("id")
-      val id = parser.parseString()
-      parser.parseObjectNext()
-      parser.parseObjectKey("value")
-      val value = parse_logikaStateValue()
-      parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.FieldStore(sym, adt, id, value)
-    }
-
-    def parse_logikaStateClaimDefAdtLit(): org.sireum.logika.State.Claim.Def.AdtLit = {
-      val r = parse_logikaStateClaimDefAdtLitT(F)
-      return r
-    }
-
-    def parse_logikaStateClaimDefAdtLitT(typeParsed: B): org.sireum.logika.State.Claim.Def.AdtLit = {
-      if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.AdtLit")
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.AdtLit")
       }
       parser.parseObjectKey("sym")
       val sym = parse_logikaStateValueSym()
@@ -2447,52 +2338,43 @@ object JSON {
       parser.parseObjectKey("args")
       val args = parser.parseISZ(parse_logikaStateValue _)
       parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.AdtLit(sym, args)
+      return org.sireum.logika.State.Claim.Let.AdtLit(sym, args)
     }
 
-    def parse_logikaStateClaimDefRandom(): org.sireum.logika.State.Claim.Def.Random = {
-      val r = parse_logikaStateClaimDefRandomT(F)
+    def parse_logikaStateClaimLetSeqLit(): org.sireum.logika.State.Claim.Let.SeqLit = {
+      val r = parse_logikaStateClaimLetSeqLitT(F)
       return r
     }
 
-    def parse_logikaStateClaimDefRandomT(typeParsed: B): org.sireum.logika.State.Claim.Def.Random = {
+    def parse_logikaStateClaimLetSeqLitT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqLit = {
       if (!typeParsed) {
-        parser.parseObjectType("org.sireum.logika.State.Claim.Def.Random")
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.SeqLit")
       }
       parser.parseObjectKey("sym")
       val sym = parse_logikaStateValueSym()
       parser.parseObjectNext()
-      parser.parseObjectKey("pos")
-      val pos = parser.parsePosition()
+      parser.parseObjectKey("args")
+      val args = parser.parseISZ(parse_logikaStateClaimLetSeqLitArg _)
       parser.parseObjectNext()
-      return org.sireum.logika.State.Claim.Def.Random(sym, pos)
+      return org.sireum.logika.State.Claim.Let.SeqLit(sym, args)
     }
 
-    def parse_logikaStateClaimLet(): org.sireum.logika.State.Claim.Let = {
-      val t = parser.parseObjectTypes(ISZ("org.sireum.logika.State.Claim.Let.CurrentName", "org.sireum.logika.State.Claim.Let.Name", "org.sireum.logika.State.Claim.Let.CurrentId", "org.sireum.logika.State.Claim.Let.Id", "org.sireum.logika.State.Claim.Let.Eq", "org.sireum.logika.State.Claim.Let.TypeTest", "org.sireum.logika.State.Claim.Let.Quant", "org.sireum.logika.State.Claim.Let.Ite", "org.sireum.logika.State.Claim.Let.Binary", "org.sireum.logika.State.Claim.Let.Unary", "org.sireum.logika.State.Claim.Let.SeqLookup", "org.sireum.logika.State.Claim.Let.SeqInBound", "org.sireum.logika.State.Claim.Let.FieldLookup", "org.sireum.logika.State.Claim.Let.ProofFunApply", "org.sireum.logika.State.Claim.Let.Apply", "org.sireum.logika.State.Claim.Let.IApply", "org.sireum.logika.State.Claim.Let.TupleLit", "org.sireum.logika.State.Claim.Let.And", "org.sireum.logika.State.Claim.Let.Or", "org.sireum.logika.State.Claim.Let.Imply"))
-      t.native match {
-        case "org.sireum.logika.State.Claim.Let.CurrentName" => val r = parse_logikaStateClaimLetCurrentNameT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Name" => val r = parse_logikaStateClaimLetNameT(T); return r
-        case "org.sireum.logika.State.Claim.Let.CurrentId" => val r = parse_logikaStateClaimLetCurrentIdT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Id" => val r = parse_logikaStateClaimLetIdT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Eq" => val r = parse_logikaStateClaimLetEqT(T); return r
-        case "org.sireum.logika.State.Claim.Let.TypeTest" => val r = parse_logikaStateClaimLetTypeTestT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Quant" => val r = parse_logikaStateClaimLetQuantT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Ite" => val r = parse_logikaStateClaimLetIteT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Binary" => val r = parse_logikaStateClaimLetBinaryT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Unary" => val r = parse_logikaStateClaimLetUnaryT(T); return r
-        case "org.sireum.logika.State.Claim.Let.SeqLookup" => val r = parse_logikaStateClaimLetSeqLookupT(T); return r
-        case "org.sireum.logika.State.Claim.Let.SeqInBound" => val r = parse_logikaStateClaimLetSeqInBoundT(T); return r
-        case "org.sireum.logika.State.Claim.Let.FieldLookup" => val r = parse_logikaStateClaimLetFieldLookupT(T); return r
-        case "org.sireum.logika.State.Claim.Let.ProofFunApply" => val r = parse_logikaStateClaimLetProofFunApplyT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Apply" => val r = parse_logikaStateClaimLetApplyT(T); return r
-        case "org.sireum.logika.State.Claim.Let.IApply" => val r = parse_logikaStateClaimLetIApplyT(T); return r
-        case "org.sireum.logika.State.Claim.Let.TupleLit" => val r = parse_logikaStateClaimLetTupleLitT(T); return r
-        case "org.sireum.logika.State.Claim.Let.And" => val r = parse_logikaStateClaimLetAndT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Or" => val r = parse_logikaStateClaimLetOrT(T); return r
-        case "org.sireum.logika.State.Claim.Let.Imply" => val r = parse_logikaStateClaimLetImplyT(T); return r
-        case _ => val r = parse_logikaStateClaimLetImplyT(T); return r
+    def parse_logikaStateClaimLetSeqLitArg(): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      val r = parse_logikaStateClaimLetSeqLitArgT(F)
+      return r
+    }
+
+    def parse_logikaStateClaimLetSeqLitArgT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.SeqLit.Arg")
       }
+      parser.parseObjectKey("index")
+      val index = parse_logikaStateValue()
+      parser.parseObjectNext()
+      parser.parseObjectKey("value")
+      val value = parse_logikaStateValue()
+      parser.parseObjectNext()
+      return org.sireum.logika.State.Claim.Let.SeqLit.Arg(index, value)
     }
 
     def parse_logikaStateClaimLetCurrentName(): org.sireum.logika.State.Claim.Let.CurrentName = {
@@ -2514,6 +2396,72 @@ object JSON {
       val defPosOpt = parser.parseOption(parser.parsePosition _)
       parser.parseObjectNext()
       return org.sireum.logika.State.Claim.Let.CurrentName(sym, ids, defPosOpt)
+    }
+
+    def parse_logikaStateClaimLetSeqStore(): org.sireum.logika.State.Claim.Let.SeqStore = {
+      val r = parse_logikaStateClaimLetSeqStoreT(F)
+      return r
+    }
+
+    def parse_logikaStateClaimLetSeqStoreT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqStore = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.SeqStore")
+      }
+      parser.parseObjectKey("sym")
+      val sym = parse_logikaStateValueSym()
+      parser.parseObjectNext()
+      parser.parseObjectKey("seq")
+      val seq = parse_logikaStateValue()
+      parser.parseObjectNext()
+      parser.parseObjectKey("index")
+      val index = parse_logikaStateValue()
+      parser.parseObjectNext()
+      parser.parseObjectKey("element")
+      val element = parse_logikaStateValue()
+      parser.parseObjectNext()
+      return org.sireum.logika.State.Claim.Let.SeqStore(sym, seq, index, element)
+    }
+
+    def parse_logikaStateClaimLetFieldStore(): org.sireum.logika.State.Claim.Let.FieldStore = {
+      val r = parse_logikaStateClaimLetFieldStoreT(F)
+      return r
+    }
+
+    def parse_logikaStateClaimLetFieldStoreT(typeParsed: B): org.sireum.logika.State.Claim.Let.FieldStore = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.FieldStore")
+      }
+      parser.parseObjectKey("sym")
+      val sym = parse_logikaStateValueSym()
+      parser.parseObjectNext()
+      parser.parseObjectKey("adt")
+      val adt = parse_logikaStateValue()
+      parser.parseObjectNext()
+      parser.parseObjectKey("id")
+      val id = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("value")
+      val value = parse_logikaStateValue()
+      parser.parseObjectNext()
+      return org.sireum.logika.State.Claim.Let.FieldStore(sym, adt, id, value)
+    }
+
+    def parse_logikaStateClaimLetRandom(): org.sireum.logika.State.Claim.Let.Random = {
+      val r = parse_logikaStateClaimLetRandomT(F)
+      return r
+    }
+
+    def parse_logikaStateClaimLetRandomT(typeParsed: B): org.sireum.logika.State.Claim.Let.Random = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.State.Claim.Let.Random")
+      }
+      parser.parseObjectKey("sym")
+      val sym = parse_logikaStateValueSym()
+      parser.parseObjectNext()
+      parser.parseObjectKey("pos")
+      val pos = parser.parsePosition()
+      parser.parseObjectNext()
+      return org.sireum.logika.State.Claim.Let.Random(sym, pos)
     }
 
     def parse_logikaStateClaimLetName(): org.sireum.logika.State.Claim.Let.Name = {
@@ -4490,132 +4438,6 @@ object JSON {
     return r
   }
 
-  def from_logikaStateClaimDef(o: org.sireum.logika.State.Claim.Def, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDef(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDef(s: String): Either[org.sireum.logika.State.Claim.Def, Json.ErrorMsg] = {
-    def f_logikaStateClaimDef(parser: Parser): org.sireum.logika.State.Claim.Def = {
-      val r = parser.parse_logikaStateClaimDef()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDef _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqLit(o: org.sireum.logika.State.Claim.Def.SeqLit, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefSeqLit(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefSeqLit(s: String): Either[org.sireum.logika.State.Claim.Def.SeqLit, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqLit(parser: Parser): org.sireum.logika.State.Claim.Def.SeqLit = {
-      val r = parser.parse_logikaStateClaimDefSeqLit()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefSeqLit _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqLitArg(o: org.sireum.logika.State.Claim.Def.SeqLit.Arg, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefSeqLitArg(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefSeqLitArg(s: String): Either[org.sireum.logika.State.Claim.Def.SeqLit.Arg, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqLitArg(parser: Parser): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      val r = parser.parse_logikaStateClaimDefSeqLitArg()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefSeqLitArg _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqStore(o: org.sireum.logika.State.Claim.Def.SeqStore, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefSeqStore(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefSeqStore(s: String): Either[org.sireum.logika.State.Claim.Def.SeqStore, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqStore(parser: Parser): org.sireum.logika.State.Claim.Def.SeqStore = {
-      val r = parser.parse_logikaStateClaimDefSeqStore()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefSeqStore _)
-    return r
-  }
-
-  def from_logikaStateClaimDefFieldStore(o: org.sireum.logika.State.Claim.Def.FieldStore, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefFieldStore(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefFieldStore(s: String): Either[org.sireum.logika.State.Claim.Def.FieldStore, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefFieldStore(parser: Parser): org.sireum.logika.State.Claim.Def.FieldStore = {
-      val r = parser.parse_logikaStateClaimDefFieldStore()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefFieldStore _)
-    return r
-  }
-
-  def from_logikaStateClaimDefAdtLit(o: org.sireum.logika.State.Claim.Def.AdtLit, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefAdtLit(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefAdtLit(s: String): Either[org.sireum.logika.State.Claim.Def.AdtLit, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefAdtLit(parser: Parser): org.sireum.logika.State.Claim.Def.AdtLit = {
-      val r = parser.parse_logikaStateClaimDefAdtLit()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefAdtLit _)
-    return r
-  }
-
-  def from_logikaStateClaimDefRandom(o: org.sireum.logika.State.Claim.Def.Random, isCompact: B): String = {
-    val st = Printer.print_logikaStateClaimDefRandom(o)
-    if (isCompact) {
-      return st.renderCompact
-    } else {
-      return st.render
-    }
-  }
-
-  def to_logikaStateClaimDefRandom(s: String): Either[org.sireum.logika.State.Claim.Def.Random, Json.ErrorMsg] = {
-    def f_logikaStateClaimDefRandom(parser: Parser): org.sireum.logika.State.Claim.Def.Random = {
-      val r = parser.parse_logikaStateClaimDefRandom()
-      return r
-    }
-    val r = to(s, f_logikaStateClaimDefRandom _)
-    return r
-  }
-
   def from_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let, isCompact: B): String = {
     val st = Printer.print_logikaStateClaimLet(o)
     if (isCompact) {
@@ -4634,6 +4456,60 @@ object JSON {
     return r
   }
 
+  def from_logikaStateClaimLetAdtLit(o: org.sireum.logika.State.Claim.Let.AdtLit, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetAdtLit(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetAdtLit(s: String): Either[org.sireum.logika.State.Claim.Let.AdtLit, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetAdtLit(parser: Parser): org.sireum.logika.State.Claim.Let.AdtLit = {
+      val r = parser.parse_logikaStateClaimLetAdtLit()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetAdtLit _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqLit(o: org.sireum.logika.State.Claim.Let.SeqLit, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetSeqLit(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetSeqLit(s: String): Either[org.sireum.logika.State.Claim.Let.SeqLit, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqLit(parser: Parser): org.sireum.logika.State.Claim.Let.SeqLit = {
+      val r = parser.parse_logikaStateClaimLetSeqLit()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetSeqLit _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqLitArg(o: org.sireum.logika.State.Claim.Let.SeqLit.Arg, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetSeqLitArg(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetSeqLitArg(s: String): Either[org.sireum.logika.State.Claim.Let.SeqLit.Arg, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqLitArg(parser: Parser): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      val r = parser.parse_logikaStateClaimLetSeqLitArg()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetSeqLitArg _)
+    return r
+  }
+
   def from_logikaStateClaimLetCurrentName(o: org.sireum.logika.State.Claim.Let.CurrentName, isCompact: B): String = {
     val st = Printer.print_logikaStateClaimLetCurrentName(o)
     if (isCompact) {
@@ -4649,6 +4525,60 @@ object JSON {
       return r
     }
     val r = to(s, f_logikaStateClaimLetCurrentName _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqStore(o: org.sireum.logika.State.Claim.Let.SeqStore, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetSeqStore(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetSeqStore(s: String): Either[org.sireum.logika.State.Claim.Let.SeqStore, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqStore(parser: Parser): org.sireum.logika.State.Claim.Let.SeqStore = {
+      val r = parser.parse_logikaStateClaimLetSeqStore()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetSeqStore _)
+    return r
+  }
+
+  def from_logikaStateClaimLetFieldStore(o: org.sireum.logika.State.Claim.Let.FieldStore, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetFieldStore(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetFieldStore(s: String): Either[org.sireum.logika.State.Claim.Let.FieldStore, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetFieldStore(parser: Parser): org.sireum.logika.State.Claim.Let.FieldStore = {
+      val r = parser.parse_logikaStateClaimLetFieldStore()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetFieldStore _)
+    return r
+  }
+
+  def from_logikaStateClaimLetRandom(o: org.sireum.logika.State.Claim.Let.Random, isCompact: B): String = {
+    val st = Printer.print_logikaStateClaimLetRandom(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def to_logikaStateClaimLetRandom(s: String): Either[org.sireum.logika.State.Claim.Let.Random, Json.ErrorMsg] = {
+    def f_logikaStateClaimLetRandom(parser: Parser): org.sireum.logika.State.Claim.Let.Random = {
+      val r = parser.parse_logikaStateClaimLetRandom()
+      return r
+    }
+    val r = to(s, f_logikaStateClaimLetRandom _)
     return r
   }
 

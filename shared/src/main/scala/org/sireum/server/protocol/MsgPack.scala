@@ -130,19 +130,19 @@ object MsgPack {
 
     val _logikaStateClaimIf: Z = 14
 
-    val _logikaStateClaimDefSeqLit: Z = 15
+    val _logikaStateClaimLetAdtLit: Z = 15
 
-    val _logikaStateClaimDefSeqLitArg: Z = 16
+    val _logikaStateClaimLetSeqLit: Z = 16
 
-    val _logikaStateClaimDefSeqStore: Z = 17
+    val _logikaStateClaimLetSeqLitArg: Z = 17
 
-    val _logikaStateClaimDefFieldStore: Z = 18
+    val _logikaStateClaimLetCurrentName: Z = 18
 
-    val _logikaStateClaimDefAdtLit: Z = 19
+    val _logikaStateClaimLetSeqStore: Z = 19
 
-    val _logikaStateClaimDefRandom: Z = 20
+    val _logikaStateClaimLetFieldStore: Z = 20
 
-    val _logikaStateClaimLetCurrentName: Z = 21
+    val _logikaStateClaimLetRandom: Z = 21
 
     val _logikaStateClaimLetName: Z = 22
 
@@ -619,12 +619,12 @@ object MsgPack {
         case o: org.sireum.logika.State.Claim.Or => write_logikaStateClaimOr(o)
         case o: org.sireum.logika.State.Claim.Imply => write_logikaStateClaimImply(o)
         case o: org.sireum.logika.State.Claim.If => write_logikaStateClaimIf(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqLit => write_logikaStateClaimDefSeqLit(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqStore => write_logikaStateClaimDefSeqStore(o)
-        case o: org.sireum.logika.State.Claim.Def.FieldStore => write_logikaStateClaimDefFieldStore(o)
-        case o: org.sireum.logika.State.Claim.Def.AdtLit => write_logikaStateClaimDefAdtLit(o)
-        case o: org.sireum.logika.State.Claim.Def.Random => write_logikaStateClaimDefRandom(o)
+        case o: org.sireum.logika.State.Claim.Let.AdtLit => write_logikaStateClaimLetAdtLit(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqLit => write_logikaStateClaimLetSeqLit(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentName => write_logikaStateClaimLetCurrentName(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqStore => write_logikaStateClaimLetSeqStore(o)
+        case o: org.sireum.logika.State.Claim.Let.FieldStore => write_logikaStateClaimLetFieldStore(o)
+        case o: org.sireum.logika.State.Claim.Let.Random => write_logikaStateClaimLetRandom(o)
         case o: org.sireum.logika.State.Claim.Let.Name => write_logikaStateClaimLetName(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentId => write_logikaStateClaimLetCurrentId(o)
         case o: org.sireum.logika.State.Claim.Let.Id => write_logikaStateClaimLetId(o)
@@ -691,14 +691,14 @@ object MsgPack {
       writer.writeISZ(o.fClaims, write_logikaStateClaim _)
     }
 
-    def write_logikaStateClaimDef(o: org.sireum.logika.State.Claim.Def): Unit = {
+    def write_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let): Unit = {
       o match {
-        case o: org.sireum.logika.State.Claim.Def.SeqLit => write_logikaStateClaimDefSeqLit(o)
-        case o: org.sireum.logika.State.Claim.Def.SeqStore => write_logikaStateClaimDefSeqStore(o)
-        case o: org.sireum.logika.State.Claim.Def.FieldStore => write_logikaStateClaimDefFieldStore(o)
-        case o: org.sireum.logika.State.Claim.Def.AdtLit => write_logikaStateClaimDefAdtLit(o)
-        case o: org.sireum.logika.State.Claim.Def.Random => write_logikaStateClaimDefRandom(o)
+        case o: org.sireum.logika.State.Claim.Let.AdtLit => write_logikaStateClaimLetAdtLit(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqLit => write_logikaStateClaimLetSeqLit(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentName => write_logikaStateClaimLetCurrentName(o)
+        case o: org.sireum.logika.State.Claim.Let.SeqStore => write_logikaStateClaimLetSeqStore(o)
+        case o: org.sireum.logika.State.Claim.Let.FieldStore => write_logikaStateClaimLetFieldStore(o)
+        case o: org.sireum.logika.State.Claim.Let.Random => write_logikaStateClaimLetRandom(o)
         case o: org.sireum.logika.State.Claim.Let.Name => write_logikaStateClaimLetName(o)
         case o: org.sireum.logika.State.Claim.Let.CurrentId => write_logikaStateClaimLetCurrentId(o)
         case o: org.sireum.logika.State.Claim.Let.Id => write_logikaStateClaimLetId(o)
@@ -721,69 +721,22 @@ object MsgPack {
       }
     }
 
-    def write_logikaStateClaimDefSeqLit(o: org.sireum.logika.State.Claim.Def.SeqLit): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefSeqLit)
-      write_logikaStateValueSym(o.sym)
-      writer.writeISZ(o.args, write_logikaStateClaimDefSeqLitArg _)
-    }
-
-    def write_logikaStateClaimDefSeqLitArg(o: org.sireum.logika.State.Claim.Def.SeqLit.Arg): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefSeqLitArg)
-      write_logikaStateValue(o.index)
-      write_logikaStateValue(o.value)
-    }
-
-    def write_logikaStateClaimDefSeqStore(o: org.sireum.logika.State.Claim.Def.SeqStore): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefSeqStore)
-      write_logikaStateValueSym(o.sym)
-      write_logikaStateValue(o.seq)
-      write_logikaStateValue(o.index)
-      write_logikaStateValue(o.element)
-    }
-
-    def write_logikaStateClaimDefFieldStore(o: org.sireum.logika.State.Claim.Def.FieldStore): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefFieldStore)
-      write_logikaStateValueSym(o.sym)
-      write_logikaStateValue(o.adt)
-      writer.writeString(o.id)
-      write_logikaStateValue(o.value)
-    }
-
-    def write_logikaStateClaimDefAdtLit(o: org.sireum.logika.State.Claim.Def.AdtLit): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefAdtLit)
+    def write_logikaStateClaimLetAdtLit(o: org.sireum.logika.State.Claim.Let.AdtLit): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetAdtLit)
       write_logikaStateValueSym(o.sym)
       writer.writeISZ(o.args, write_logikaStateValue _)
     }
 
-    def write_logikaStateClaimDefRandom(o: org.sireum.logika.State.Claim.Def.Random): Unit = {
-      writer.writeZ(Constants._logikaStateClaimDefRandom)
+    def write_logikaStateClaimLetSeqLit(o: org.sireum.logika.State.Claim.Let.SeqLit): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetSeqLit)
       write_logikaStateValueSym(o.sym)
-      writer.writePosition(o.pos)
+      writer.writeISZ(o.args, write_logikaStateClaimLetSeqLitArg _)
     }
 
-    def write_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let): Unit = {
-      o match {
-        case o: org.sireum.logika.State.Claim.Let.CurrentName => write_logikaStateClaimLetCurrentName(o)
-        case o: org.sireum.logika.State.Claim.Let.Name => write_logikaStateClaimLetName(o)
-        case o: org.sireum.logika.State.Claim.Let.CurrentId => write_logikaStateClaimLetCurrentId(o)
-        case o: org.sireum.logika.State.Claim.Let.Id => write_logikaStateClaimLetId(o)
-        case o: org.sireum.logika.State.Claim.Let.Eq => write_logikaStateClaimLetEq(o)
-        case o: org.sireum.logika.State.Claim.Let.TypeTest => write_logikaStateClaimLetTypeTest(o)
-        case o: org.sireum.logika.State.Claim.Let.Quant => write_logikaStateClaimLetQuant(o)
-        case o: org.sireum.logika.State.Claim.Let.Ite => write_logikaStateClaimLetIte(o)
-        case o: org.sireum.logika.State.Claim.Let.Binary => write_logikaStateClaimLetBinary(o)
-        case o: org.sireum.logika.State.Claim.Let.Unary => write_logikaStateClaimLetUnary(o)
-        case o: org.sireum.logika.State.Claim.Let.SeqLookup => write_logikaStateClaimLetSeqLookup(o)
-        case o: org.sireum.logika.State.Claim.Let.SeqInBound => write_logikaStateClaimLetSeqInBound(o)
-        case o: org.sireum.logika.State.Claim.Let.FieldLookup => write_logikaStateClaimLetFieldLookup(o)
-        case o: org.sireum.logika.State.Claim.Let.ProofFunApply => write_logikaStateClaimLetProofFunApply(o)
-        case o: org.sireum.logika.State.Claim.Let.Apply => write_logikaStateClaimLetApply(o)
-        case o: org.sireum.logika.State.Claim.Let.IApply => write_logikaStateClaimLetIApply(o)
-        case o: org.sireum.logika.State.Claim.Let.TupleLit => write_logikaStateClaimLetTupleLit(o)
-        case o: org.sireum.logika.State.Claim.Let.And => write_logikaStateClaimLetAnd(o)
-        case o: org.sireum.logika.State.Claim.Let.Or => write_logikaStateClaimLetOr(o)
-        case o: org.sireum.logika.State.Claim.Let.Imply => write_logikaStateClaimLetImply(o)
-      }
+    def write_logikaStateClaimLetSeqLitArg(o: org.sireum.logika.State.Claim.Let.SeqLit.Arg): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetSeqLitArg)
+      write_logikaStateValue(o.index)
+      write_logikaStateValue(o.value)
     }
 
     def write_logikaStateClaimLetCurrentName(o: org.sireum.logika.State.Claim.Let.CurrentName): Unit = {
@@ -791,6 +744,28 @@ object MsgPack {
       write_logikaStateValueSym(o.sym)
       writer.writeISZ(o.ids, writer.writeString _)
       writer.writeOption(o.defPosOpt, writer.writePosition _)
+    }
+
+    def write_logikaStateClaimLetSeqStore(o: org.sireum.logika.State.Claim.Let.SeqStore): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetSeqStore)
+      write_logikaStateValueSym(o.sym)
+      write_logikaStateValue(o.seq)
+      write_logikaStateValue(o.index)
+      write_logikaStateValue(o.element)
+    }
+
+    def write_logikaStateClaimLetFieldStore(o: org.sireum.logika.State.Claim.Let.FieldStore): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetFieldStore)
+      write_logikaStateValueSym(o.sym)
+      write_logikaStateValue(o.adt)
+      writer.writeString(o.id)
+      write_logikaStateValue(o.value)
+    }
+
+    def write_logikaStateClaimLetRandom(o: org.sireum.logika.State.Claim.Let.Random): Unit = {
+      writer.writeZ(Constants._logikaStateClaimLetRandom)
+      write_logikaStateValueSym(o.sym)
+      writer.writePosition(o.pos)
     }
 
     def write_logikaStateClaimLetName(o: org.sireum.logika.State.Claim.Let.Name): Unit = {
@@ -1901,12 +1876,12 @@ object MsgPack {
         case Constants._logikaStateClaimOr => val r = read_logikaStateClaimOrT(T); return r
         case Constants._logikaStateClaimImply => val r = read_logikaStateClaimImplyT(T); return r
         case Constants._logikaStateClaimIf => val r = read_logikaStateClaimIfT(T); return r
-        case Constants._logikaStateClaimDefSeqLit => val r = read_logikaStateClaimDefSeqLitT(T); return r
-        case Constants._logikaStateClaimDefSeqStore => val r = read_logikaStateClaimDefSeqStoreT(T); return r
-        case Constants._logikaStateClaimDefFieldStore => val r = read_logikaStateClaimDefFieldStoreT(T); return r
-        case Constants._logikaStateClaimDefAdtLit => val r = read_logikaStateClaimDefAdtLitT(T); return r
-        case Constants._logikaStateClaimDefRandom => val r = read_logikaStateClaimDefRandomT(T); return r
+        case Constants._logikaStateClaimLetAdtLit => val r = read_logikaStateClaimLetAdtLitT(T); return r
+        case Constants._logikaStateClaimLetSeqLit => val r = read_logikaStateClaimLetSeqLitT(T); return r
         case Constants._logikaStateClaimLetCurrentName => val r = read_logikaStateClaimLetCurrentNameT(T); return r
+        case Constants._logikaStateClaimLetSeqStore => val r = read_logikaStateClaimLetSeqStoreT(T); return r
+        case Constants._logikaStateClaimLetFieldStore => val r = read_logikaStateClaimLetFieldStoreT(T); return r
+        case Constants._logikaStateClaimLetRandom => val r = read_logikaStateClaimLetRandomT(T); return r
         case Constants._logikaStateClaimLetName => val r = read_logikaStateClaimLetNameT(T); return r
         case Constants._logikaStateClaimLetCurrentId => val r = read_logikaStateClaimLetCurrentIdT(T); return r
         case Constants._logikaStateClaimLetId => val r = read_logikaStateClaimLetIdT(T); return r
@@ -2031,135 +2006,16 @@ object MsgPack {
       return org.sireum.logika.State.Claim.If(cond, tClaims, fClaims)
     }
 
-    def read_logikaStateClaimDef(): org.sireum.logika.State.Claim.Def = {
-      val i = reader.curr
-      val t = reader.readZ()
-      t match {
-        case Constants._logikaStateClaimDefSeqLit => val r = read_logikaStateClaimDefSeqLitT(T); return r
-        case Constants._logikaStateClaimDefSeqStore => val r = read_logikaStateClaimDefSeqStoreT(T); return r
-        case Constants._logikaStateClaimDefFieldStore => val r = read_logikaStateClaimDefFieldStoreT(T); return r
-        case Constants._logikaStateClaimDefAdtLit => val r = read_logikaStateClaimDefAdtLitT(T); return r
-        case Constants._logikaStateClaimDefRandom => val r = read_logikaStateClaimDefRandomT(T); return r
-        case Constants._logikaStateClaimLetCurrentName => val r = read_logikaStateClaimLetCurrentNameT(T); return r
-        case Constants._logikaStateClaimLetName => val r = read_logikaStateClaimLetNameT(T); return r
-        case Constants._logikaStateClaimLetCurrentId => val r = read_logikaStateClaimLetCurrentIdT(T); return r
-        case Constants._logikaStateClaimLetId => val r = read_logikaStateClaimLetIdT(T); return r
-        case Constants._logikaStateClaimLetEq => val r = read_logikaStateClaimLetEqT(T); return r
-        case Constants._logikaStateClaimLetTypeTest => val r = read_logikaStateClaimLetTypeTestT(T); return r
-        case Constants._logikaStateClaimLetQuant => val r = read_logikaStateClaimLetQuantT(T); return r
-        case Constants._logikaStateClaimLetIte => val r = read_logikaStateClaimLetIteT(T); return r
-        case Constants._logikaStateClaimLetBinary => val r = read_logikaStateClaimLetBinaryT(T); return r
-        case Constants._logikaStateClaimLetUnary => val r = read_logikaStateClaimLetUnaryT(T); return r
-        case Constants._logikaStateClaimLetSeqLookup => val r = read_logikaStateClaimLetSeqLookupT(T); return r
-        case Constants._logikaStateClaimLetSeqInBound => val r = read_logikaStateClaimLetSeqInBoundT(T); return r
-        case Constants._logikaStateClaimLetFieldLookup => val r = read_logikaStateClaimLetFieldLookupT(T); return r
-        case Constants._logikaStateClaimLetProofFunApply => val r = read_logikaStateClaimLetProofFunApplyT(T); return r
-        case Constants._logikaStateClaimLetApply => val r = read_logikaStateClaimLetApplyT(T); return r
-        case Constants._logikaStateClaimLetIApply => val r = read_logikaStateClaimLetIApplyT(T); return r
-        case Constants._logikaStateClaimLetTupleLit => val r = read_logikaStateClaimLetTupleLitT(T); return r
-        case Constants._logikaStateClaimLetAnd => val r = read_logikaStateClaimLetAndT(T); return r
-        case Constants._logikaStateClaimLetOr => val r = read_logikaStateClaimLetOrT(T); return r
-        case Constants._logikaStateClaimLetImply => val r = read_logikaStateClaimLetImplyT(T); return r
-        case _ =>
-          reader.error(i, s"$t is not a valid type of org.sireum.logika.State.Claim.Def.")
-          val r = read_logikaStateClaimLetImplyT(T)
-          return r
-      }
-    }
-
-    def read_logikaStateClaimDefSeqLit(): org.sireum.logika.State.Claim.Def.SeqLit = {
-      val r = read_logikaStateClaimDefSeqLitT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefSeqLitT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqLit = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefSeqLit)
-      }
-      val sym = read_logikaStateValueSym()
-      val args = reader.readISZ(read_logikaStateClaimDefSeqLitArg _)
-      return org.sireum.logika.State.Claim.Def.SeqLit(sym, args)
-    }
-
-    def read_logikaStateClaimDefSeqLitArg(): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      val r = read_logikaStateClaimDefSeqLitArgT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefSeqLitArgT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefSeqLitArg)
-      }
-      val index = read_logikaStateValue()
-      val value = read_logikaStateValue()
-      return org.sireum.logika.State.Claim.Def.SeqLit.Arg(index, value)
-    }
-
-    def read_logikaStateClaimDefSeqStore(): org.sireum.logika.State.Claim.Def.SeqStore = {
-      val r = read_logikaStateClaimDefSeqStoreT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefSeqStoreT(typeParsed: B): org.sireum.logika.State.Claim.Def.SeqStore = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefSeqStore)
-      }
-      val sym = read_logikaStateValueSym()
-      val seq = read_logikaStateValue()
-      val index = read_logikaStateValue()
-      val element = read_logikaStateValue()
-      return org.sireum.logika.State.Claim.Def.SeqStore(sym, seq, index, element)
-    }
-
-    def read_logikaStateClaimDefFieldStore(): org.sireum.logika.State.Claim.Def.FieldStore = {
-      val r = read_logikaStateClaimDefFieldStoreT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefFieldStoreT(typeParsed: B): org.sireum.logika.State.Claim.Def.FieldStore = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefFieldStore)
-      }
-      val sym = read_logikaStateValueSym()
-      val adt = read_logikaStateValue()
-      val id = reader.readString()
-      val value = read_logikaStateValue()
-      return org.sireum.logika.State.Claim.Def.FieldStore(sym, adt, id, value)
-    }
-
-    def read_logikaStateClaimDefAdtLit(): org.sireum.logika.State.Claim.Def.AdtLit = {
-      val r = read_logikaStateClaimDefAdtLitT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefAdtLitT(typeParsed: B): org.sireum.logika.State.Claim.Def.AdtLit = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefAdtLit)
-      }
-      val sym = read_logikaStateValueSym()
-      val args = reader.readISZ(read_logikaStateValue _)
-      return org.sireum.logika.State.Claim.Def.AdtLit(sym, args)
-    }
-
-    def read_logikaStateClaimDefRandom(): org.sireum.logika.State.Claim.Def.Random = {
-      val r = read_logikaStateClaimDefRandomT(F)
-      return r
-    }
-
-    def read_logikaStateClaimDefRandomT(typeParsed: B): org.sireum.logika.State.Claim.Def.Random = {
-      if (!typeParsed) {
-        reader.expectZ(Constants._logikaStateClaimDefRandom)
-      }
-      val sym = read_logikaStateValueSym()
-      val pos = reader.readPosition()
-      return org.sireum.logika.State.Claim.Def.Random(sym, pos)
-    }
-
     def read_logikaStateClaimLet(): org.sireum.logika.State.Claim.Let = {
       val i = reader.curr
       val t = reader.readZ()
       t match {
+        case Constants._logikaStateClaimLetAdtLit => val r = read_logikaStateClaimLetAdtLitT(T); return r
+        case Constants._logikaStateClaimLetSeqLit => val r = read_logikaStateClaimLetSeqLitT(T); return r
         case Constants._logikaStateClaimLetCurrentName => val r = read_logikaStateClaimLetCurrentNameT(T); return r
+        case Constants._logikaStateClaimLetSeqStore => val r = read_logikaStateClaimLetSeqStoreT(T); return r
+        case Constants._logikaStateClaimLetFieldStore => val r = read_logikaStateClaimLetFieldStoreT(T); return r
+        case Constants._logikaStateClaimLetRandom => val r = read_logikaStateClaimLetRandomT(T); return r
         case Constants._logikaStateClaimLetName => val r = read_logikaStateClaimLetNameT(T); return r
         case Constants._logikaStateClaimLetCurrentId => val r = read_logikaStateClaimLetCurrentIdT(T); return r
         case Constants._logikaStateClaimLetId => val r = read_logikaStateClaimLetIdT(T); return r
@@ -2186,6 +2042,48 @@ object MsgPack {
       }
     }
 
+    def read_logikaStateClaimLetAdtLit(): org.sireum.logika.State.Claim.Let.AdtLit = {
+      val r = read_logikaStateClaimLetAdtLitT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetAdtLitT(typeParsed: B): org.sireum.logika.State.Claim.Let.AdtLit = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetAdtLit)
+      }
+      val sym = read_logikaStateValueSym()
+      val args = reader.readISZ(read_logikaStateValue _)
+      return org.sireum.logika.State.Claim.Let.AdtLit(sym, args)
+    }
+
+    def read_logikaStateClaimLetSeqLit(): org.sireum.logika.State.Claim.Let.SeqLit = {
+      val r = read_logikaStateClaimLetSeqLitT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetSeqLitT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqLit = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetSeqLit)
+      }
+      val sym = read_logikaStateValueSym()
+      val args = reader.readISZ(read_logikaStateClaimLetSeqLitArg _)
+      return org.sireum.logika.State.Claim.Let.SeqLit(sym, args)
+    }
+
+    def read_logikaStateClaimLetSeqLitArg(): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      val r = read_logikaStateClaimLetSeqLitArgT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetSeqLitArgT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetSeqLitArg)
+      }
+      val index = read_logikaStateValue()
+      val value = read_logikaStateValue()
+      return org.sireum.logika.State.Claim.Let.SeqLit.Arg(index, value)
+    }
+
     def read_logikaStateClaimLetCurrentName(): org.sireum.logika.State.Claim.Let.CurrentName = {
       val r = read_logikaStateClaimLetCurrentNameT(F)
       return r
@@ -2199,6 +2097,52 @@ object MsgPack {
       val ids = reader.readISZ(reader.readString _)
       val defPosOpt = reader.readOption(reader.readPosition _)
       return org.sireum.logika.State.Claim.Let.CurrentName(sym, ids, defPosOpt)
+    }
+
+    def read_logikaStateClaimLetSeqStore(): org.sireum.logika.State.Claim.Let.SeqStore = {
+      val r = read_logikaStateClaimLetSeqStoreT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetSeqStoreT(typeParsed: B): org.sireum.logika.State.Claim.Let.SeqStore = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetSeqStore)
+      }
+      val sym = read_logikaStateValueSym()
+      val seq = read_logikaStateValue()
+      val index = read_logikaStateValue()
+      val element = read_logikaStateValue()
+      return org.sireum.logika.State.Claim.Let.SeqStore(sym, seq, index, element)
+    }
+
+    def read_logikaStateClaimLetFieldStore(): org.sireum.logika.State.Claim.Let.FieldStore = {
+      val r = read_logikaStateClaimLetFieldStoreT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetFieldStoreT(typeParsed: B): org.sireum.logika.State.Claim.Let.FieldStore = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetFieldStore)
+      }
+      val sym = read_logikaStateValueSym()
+      val adt = read_logikaStateValue()
+      val id = reader.readString()
+      val value = read_logikaStateValue()
+      return org.sireum.logika.State.Claim.Let.FieldStore(sym, adt, id, value)
+    }
+
+    def read_logikaStateClaimLetRandom(): org.sireum.logika.State.Claim.Let.Random = {
+      val r = read_logikaStateClaimLetRandomT(F)
+      return r
+    }
+
+    def read_logikaStateClaimLetRandomT(typeParsed: B): org.sireum.logika.State.Claim.Let.Random = {
+      if (!typeParsed) {
+        reader.expectZ(Constants._logikaStateClaimLetRandom)
+      }
+      val sym = read_logikaStateValueSym()
+      val pos = reader.readPosition()
+      return org.sireum.logika.State.Claim.Let.Random(sym, pos)
     }
 
     def read_logikaStateClaimLetName(): org.sireum.logika.State.Claim.Let.Name = {
@@ -3705,111 +3649,6 @@ object MsgPack {
     return r
   }
 
-  def from_logikaStateClaimDef(o: org.sireum.logika.State.Claim.Def, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDef(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDef(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDef(reader: Reader): org.sireum.logika.State.Claim.Def = {
-      val r = reader.read_logikaStateClaimDef()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDef _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqLit(o: org.sireum.logika.State.Claim.Def.SeqLit, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefSeqLit(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefSeqLit(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.SeqLit, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqLit(reader: Reader): org.sireum.logika.State.Claim.Def.SeqLit = {
-      val r = reader.read_logikaStateClaimDefSeqLit()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefSeqLit _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqLitArg(o: org.sireum.logika.State.Claim.Def.SeqLit.Arg, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefSeqLitArg(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefSeqLitArg(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.SeqLit.Arg, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqLitArg(reader: Reader): org.sireum.logika.State.Claim.Def.SeqLit.Arg = {
-      val r = reader.read_logikaStateClaimDefSeqLitArg()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefSeqLitArg _)
-    return r
-  }
-
-  def from_logikaStateClaimDefSeqStore(o: org.sireum.logika.State.Claim.Def.SeqStore, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefSeqStore(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefSeqStore(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.SeqStore, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefSeqStore(reader: Reader): org.sireum.logika.State.Claim.Def.SeqStore = {
-      val r = reader.read_logikaStateClaimDefSeqStore()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefSeqStore _)
-    return r
-  }
-
-  def from_logikaStateClaimDefFieldStore(o: org.sireum.logika.State.Claim.Def.FieldStore, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefFieldStore(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefFieldStore(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.FieldStore, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefFieldStore(reader: Reader): org.sireum.logika.State.Claim.Def.FieldStore = {
-      val r = reader.read_logikaStateClaimDefFieldStore()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefFieldStore _)
-    return r
-  }
-
-  def from_logikaStateClaimDefAdtLit(o: org.sireum.logika.State.Claim.Def.AdtLit, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefAdtLit(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefAdtLit(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.AdtLit, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefAdtLit(reader: Reader): org.sireum.logika.State.Claim.Def.AdtLit = {
-      val r = reader.read_logikaStateClaimDefAdtLit()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefAdtLit _)
-    return r
-  }
-
-  def from_logikaStateClaimDefRandom(o: org.sireum.logika.State.Claim.Def.Random, pooling: B): ISZ[U8] = {
-    val w = Writer.Default(MessagePack.writer(pooling))
-    w.write_logikaStateClaimDefRandom(o)
-    return w.result
-  }
-
-  def to_logikaStateClaimDefRandom(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Def.Random, MessagePack.ErrorMsg] = {
-    def f_logikaStateClaimDefRandom(reader: Reader): org.sireum.logika.State.Claim.Def.Random = {
-      val r = reader.read_logikaStateClaimDefRandom()
-      return r
-    }
-    val r = to(data, f_logikaStateClaimDefRandom _)
-    return r
-  }
-
   def from_logikaStateClaimLet(o: org.sireum.logika.State.Claim.Let, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
     w.write_logikaStateClaimLet(o)
@@ -3825,6 +3664,51 @@ object MsgPack {
     return r
   }
 
+  def from_logikaStateClaimLetAdtLit(o: org.sireum.logika.State.Claim.Let.AdtLit, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetAdtLit(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetAdtLit(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.AdtLit, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetAdtLit(reader: Reader): org.sireum.logika.State.Claim.Let.AdtLit = {
+      val r = reader.read_logikaStateClaimLetAdtLit()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetAdtLit _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqLit(o: org.sireum.logika.State.Claim.Let.SeqLit, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetSeqLit(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetSeqLit(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.SeqLit, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqLit(reader: Reader): org.sireum.logika.State.Claim.Let.SeqLit = {
+      val r = reader.read_logikaStateClaimLetSeqLit()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetSeqLit _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqLitArg(o: org.sireum.logika.State.Claim.Let.SeqLit.Arg, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetSeqLitArg(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetSeqLitArg(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.SeqLit.Arg, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqLitArg(reader: Reader): org.sireum.logika.State.Claim.Let.SeqLit.Arg = {
+      val r = reader.read_logikaStateClaimLetSeqLitArg()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetSeqLitArg _)
+    return r
+  }
+
   def from_logikaStateClaimLetCurrentName(o: org.sireum.logika.State.Claim.Let.CurrentName, pooling: B): ISZ[U8] = {
     val w = Writer.Default(MessagePack.writer(pooling))
     w.write_logikaStateClaimLetCurrentName(o)
@@ -3837,6 +3721,51 @@ object MsgPack {
       return r
     }
     val r = to(data, f_logikaStateClaimLetCurrentName _)
+    return r
+  }
+
+  def from_logikaStateClaimLetSeqStore(o: org.sireum.logika.State.Claim.Let.SeqStore, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetSeqStore(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetSeqStore(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.SeqStore, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetSeqStore(reader: Reader): org.sireum.logika.State.Claim.Let.SeqStore = {
+      val r = reader.read_logikaStateClaimLetSeqStore()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetSeqStore _)
+    return r
+  }
+
+  def from_logikaStateClaimLetFieldStore(o: org.sireum.logika.State.Claim.Let.FieldStore, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetFieldStore(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetFieldStore(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.FieldStore, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetFieldStore(reader: Reader): org.sireum.logika.State.Claim.Let.FieldStore = {
+      val r = reader.read_logikaStateClaimLetFieldStore()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetFieldStore _)
+    return r
+  }
+
+  def from_logikaStateClaimLetRandom(o: org.sireum.logika.State.Claim.Let.Random, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.write_logikaStateClaimLetRandom(o)
+    return w.result
+  }
+
+  def to_logikaStateClaimLetRandom(data: ISZ[U8]): Either[org.sireum.logika.State.Claim.Let.Random, MessagePack.ErrorMsg] = {
+    def f_logikaStateClaimLetRandom(reader: Reader): org.sireum.logika.State.Claim.Let.Random = {
+      val r = reader.read_logikaStateClaimLetRandom()
+      return r
+    }
+    val r = to(data, f_logikaStateClaimLetRandom _)
     return r
   }
 
