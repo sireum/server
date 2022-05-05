@@ -401,7 +401,9 @@ object AnalysisService {
   val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
-  var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
+  var _defaultConfig: logika.Config = Logika.Verify.defaultConfig(smt2Configs = ISZ(
+    logika.CvcConfig("", ISZ(), ISZ()), logika.Z3Config("", ISZ(), ISZ()))
+  )
   var _hint: B = T
   var _smt2query: B = T
 
