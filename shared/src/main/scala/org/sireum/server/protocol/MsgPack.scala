@@ -985,6 +985,7 @@ object MsgPack {
       writer.writeString(o.exe)
       writer.writeISZ(o.validOpts, writer.writeString _)
       writer.writeISZ(o.satOpts, writer.writeString _)
+      writer.writeZ(o.rlimit)
     }
 
     def writeorgsireumlogikaLoopId(o: org.sireum.logika.LoopId): Unit = {
@@ -2573,7 +2574,8 @@ object MsgPack {
       val exe = reader.readString()
       val validOpts = reader.readISZ(reader.readString _)
       val satOpts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts)
+      val rlimit = reader.readZ()
+      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts, rlimit)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

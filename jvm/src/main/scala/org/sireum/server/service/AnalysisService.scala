@@ -402,7 +402,7 @@ object AnalysisService {
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig(smt2Configs = ISZ(
-    logika.CvcConfig("", ISZ(), ISZ()), logika.Z3Config("", ISZ(), ISZ()))
+    logika.CvcConfig("", ISZ(), ISZ(), 0), logika.Z3Config("", ISZ(), ISZ()))
   )
   var _hint: B = T
   var _smt2query: B = T
@@ -493,7 +493,7 @@ class AnalysisService(numOfThreads: Z) extends Service {
           else req.config.smt2Configs
         AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
           for (c <- smt2Configs) yield c match {
-            case c: CvcConfig => c(exe = ServerExt.cvcExe(serverAPI.sireumHome).string)
+            case c: CvcConfig => c(exe = ServerExt.cvcExe(serverAPI.sireumHome).string, rlimit = c.rlimit)
             case c: Z3Config => c(exe = ServerExt.z3Exe(serverAPI.sireumHome).string)
           }))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)

@@ -87,7 +87,7 @@ object ServerExt {
   def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
     AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query,
       AnalysisService.defaultConfig(smt2Configs = ISZ(
-        logika.CvcConfig(cvcExe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ()),
+        logika.CvcConfig(cvcExe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
         logika.Z3Config(z3Exe(sireumHome).string, ISZ(), ISZ()))))
     new service.AnalysisService(numOfThreads)
   }

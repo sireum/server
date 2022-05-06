@@ -958,7 +958,8 @@ object JSON {
         ("type", st""""org.sireum.logika.CvcConfig""""),
         ("exe", printString(o.exe)),
         ("validOpts", printISZ(T, o.validOpts, printString _)),
-        ("satOpts", printISZ(T, o.satOpts, printString _))
+        ("satOpts", printISZ(T, o.satOpts, printString _)),
+        ("rlimit", printZ(o.rlimit))
       ))
     }
 
@@ -3094,7 +3095,10 @@ object JSON {
       parser.parseObjectKey("satOpts")
       val satOpts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts)
+      parser.parseObjectKey("rlimit")
+      val rlimit = parser.parseZ()
+      parser.parseObjectNext()
+      return org.sireum.logika.CvcConfig(exe, validOpts, satOpts, rlimit)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
