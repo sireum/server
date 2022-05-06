@@ -120,6 +120,7 @@ class AnalysisServerTest extends TestSuite {
         posIn.write('\n')
       }
       val t = new ServerThread
+      t.setPriority(Thread.MAX_PRIORITY)
       t.start()
       var first = T
       for (req <- freqs(ISZ(s"L${line.value}"))) {
