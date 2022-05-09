@@ -402,7 +402,7 @@ object AnalysisService {
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig(smt2Configs = ISZ(
-    logika.CvcConfig("", ISZ(), ISZ(), 0), logika.Z3Config("", ISZ(), ISZ()))
+    logika.CvcConfig("cvc", ISZ(), ISZ(), 0), logika.CvcConfig("cvc5", ISZ(), ISZ(), 0), logika.Z3Config("z3", ISZ(), ISZ()))
   )
   var _hint: B = T
   var _smt2query: B = T
@@ -431,7 +431,7 @@ object AnalysisService {
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs, config.cvcRLimit,
         config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal, config.simplifiedQuery,
-        reporter),
+        config.smt2Seq, reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
       reporter, req.par, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
     System.gc()
@@ -493,7 +493,8 @@ class AnalysisService(numOfThreads: Z) extends Service {
           else req.config.smt2Configs
         AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
           for (c <- smt2Configs) yield c match {
-            case c: CvcConfig => c(exe = ServerExt.cvcExe(serverAPI.sireumHome).string, rlimit = c.rlimit)
+            case c: CvcConfig if c.exe === "cvc" => c(exe = ServerExt.cvc4Exe(serverAPI.sireumHome).string, rlimit = c.rlimit)
+            case c: CvcConfig => c(exe = ServerExt.cvc5Exe(serverAPI.sireumHome).string, rlimit = c.rlimit)
             case c: Z3Config => c(exe = ServerExt.z3Exe(serverAPI.sireumHome).string)
           }))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)

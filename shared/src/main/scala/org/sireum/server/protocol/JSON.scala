@@ -933,7 +933,8 @@ object JSON {
         ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
         ("cvcRLimit", printZ(o.cvcRLimit)),
         ("fpRoundingMode", printString(o.fpRoundingMode)),
-        ("caching", printB(o.caching))
+        ("caching", printB(o.caching)),
+        ("smt2Seq", printB(o.smt2Seq))
       ))
     }
 
@@ -942,6 +943,13 @@ object JSON {
         case o: org.sireum.logika.Z3Config => return printorgsireumlogikaZ3Config(o)
         case o: org.sireum.logika.CvcConfig => return printorgsireumlogikaCvcConfig(o)
       }
+    }
+
+    @pure def printorgsireumlogikaSmt2Configs(o: org.sireum.logika.Smt2Configs): ST = {
+      return printObject(ISZ(
+        ("type", st""""org.sireum.logika.Smt2Configs""""),
+        ("configs", printISZ(F, o.configs, printorgsireumlogikaSmt2Config _))
+      ))
     }
 
     @pure def printorgsireumlogikaZ3Config(o: org.sireum.logika.Z3Config): ST = {
@@ -3044,7 +3052,10 @@ object JSON {
       parser.parseObjectKey("caching")
       val caching = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode, caching)
+      parser.parseObjectKey("smt2Seq")
+      val smt2Seq = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, cvcRLimit, fpRoundingMode, caching, smt2Seq)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
@@ -3054,6 +3065,21 @@ object JSON {
         case "org.sireum.logika.CvcConfig" => val r = parseorgsireumlogikaCvcConfigT(T); return r
         case _ => val r = parseorgsireumlogikaCvcConfigT(T); return r
       }
+    }
+
+    def parseorgsireumlogikaSmt2Configs(): org.sireum.logika.Smt2Configs = {
+      val r = parseorgsireumlogikaSmt2ConfigsT(F)
+      return r
+    }
+
+    def parseorgsireumlogikaSmt2ConfigsT(typeParsed: B): org.sireum.logika.Smt2Configs = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.Smt2Configs")
+      }
+      parser.parseObjectKey("configs")
+      val configs = parser.parseISZ(parseorgsireumlogikaSmt2Config _)
+      parser.parseObjectNext()
+      return org.sireum.logika.Smt2Configs(configs)
     }
 
     def parseorgsireumlogikaZ3Config(): org.sireum.logika.Z3Config = {
@@ -5033,6 +5059,24 @@ object JSON {
       return r
     }
     val r = to(s, forgsireumlogikaSmt2Config _)
+    return r
+  }
+
+  def fromorgsireumlogikaSmt2Configs(o: org.sireum.logika.Smt2Configs, isCompact: B): String = {
+    val st = Printer.printorgsireumlogikaSmt2Configs(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toorgsireumlogikaSmt2Configs(s: String): Either[org.sireum.logika.Smt2Configs, Json.ErrorMsg] = {
+    def forgsireumlogikaSmt2Configs(parser: Parser): org.sireum.logika.Smt2Configs = {
+      val r = parser.parseorgsireumlogikaSmt2Configs()
+      return r
+    }
+    val r = to(s, forgsireumlogikaSmt2Configs _)
     return r
   }
 

@@ -80,15 +80,19 @@ object ServerExt {
 
   def pause(): Unit = Thread.sleep(pauseTime)
 
-  def cvcExe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc.exe" else "cvc")
+  def cvc4Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc.exe" else "cvc")
+
+  def cvc5Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
 
   def z3Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
 
   def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
     AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query,
       AnalysisService.defaultConfig(smt2Configs = ISZ(
-        logika.CvcConfig(cvcExe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
-        logika.Z3Config(z3Exe(sireumHome).string, ISZ(), ISZ()))))
+        logika.CvcConfig(cvc4Exe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
+        logika.Z3Config(z3Exe(sireumHome).string, ISZ(), ISZ()),
+        logika.CvcConfig(cvc5Exe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
+      )))
     new service.AnalysisService(numOfThreads)
   }
 

@@ -218,7 +218,8 @@ object Logika {
       checkInfeasiblePatternMatch = T,
       cvcRLimit = 1000000,
       fpRoundingMode = "RNE",
-      caching = F
+      caching = F,
+      smt2Seq = F,
     )
 
   }
