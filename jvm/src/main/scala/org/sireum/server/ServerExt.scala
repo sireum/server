@@ -25,7 +25,8 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.server.service.{Service, AnalysisService}
+import org.sireum.logika.{Smt2, Smt2Invoke}
+import org.sireum.server.service.{AnalysisService, Service}
 
 import java.io.ByteArrayOutputStream
 
@@ -80,19 +81,12 @@ object ServerExt {
 
   def pause(): Unit = Thread.sleep(pauseTime)
 
-  def cvc4Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc.exe" else "cvc")
-
-  def cvc5Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / (if (Os.isWin) "cvc4.exe" else "cvc4")
-
-  def z3Exe(sireumHome: Os.Path): Os.Path = sireumHome / "bin" / platform / "z3" / "bin" / (if (Os.isWin) "z3.exe" else "z3")
-
   def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
-    AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query,
-      AnalysisService.defaultConfig(smt2Configs = ISZ(
-        logika.CvcConfig(cvc4Exe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
-        logika.Z3Config(z3Exe(sireumHome).string, ISZ(), ISZ()),
-        logika.CvcConfig(cvc5Exe(sireumHome).string, ISZ("--full-saturate-quant"), ISZ(), 1000000),
-      )))
+    val smt2Configs =
+      Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), F, Smt2.defaultValidOpts, Smt2.validTimeoutInMs).left ++
+        Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), T, Smt2.defaultSatOpts, Smt2.satTimeoutInMs).left
+    AnalysisService._defaultConfig = AnalysisService.defaultConfig(smt2Configs = smt2Configs)
+    AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query, AnalysisService._defaultConfig)
     new service.AnalysisService(numOfThreads)
   }
 
