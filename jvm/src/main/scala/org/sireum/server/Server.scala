@@ -178,6 +178,7 @@ object Server {
 
   def run(): Z = {
     serverAPI.logFile.writeOver("")
+    serverAPI.log(F, s"Server v$version")
     serverAPI.log(F, s"Initializing runtime library ...")
     val (_, _) = lang.FrontEnd.checkedLibraryReporter
     for (i <- services.indices) {
