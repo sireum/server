@@ -198,6 +198,7 @@ object Logika {
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),
       sat = F,
+      rlimit = 1000000,
       timeoutInMs = 2000,
       defaultLoopBound = 3,
       loopBounds = HashMap.empty,

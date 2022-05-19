@@ -941,6 +941,7 @@ object MsgPack {
       writer.writeZ(Constants.orgsireumlogikaConfig)
       writer.writeISZ(o.smt2Configs, writeorgsireumlogikaSmt2Config _)
       writer.writeB(o.sat)
+      writer.writeZ(o.rlimit)
       writer.writeZ(o.timeoutInMs)
       writer.writeZ(o.defaultLoopBound)
       writer.writeHashMap(o.loopBounds, writeorgsireumlogikaLoopId _, writer.writeZ _)
@@ -2494,6 +2495,7 @@ object MsgPack {
       }
       val smt2Configs = reader.readISZ(readorgsireumlogikaSmt2Config _)
       val sat = reader.readB()
+      val rlimit = reader.readZ()
       val timeoutInMs = reader.readZ()
       val defaultLoopBound = reader.readZ()
       val loopBounds = reader.readHashMap(readorgsireumlogikaLoopId _, reader.readZ _)
@@ -2515,7 +2517,7 @@ object MsgPack {
       val fpRoundingMode = reader.readString()
       val caching = reader.readB()
       val smt2Seq = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
+      return org.sireum.logika.Config(smt2Configs, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

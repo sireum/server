@@ -913,6 +913,7 @@ object JSON {
         ("type", st""""org.sireum.logika.Config""""),
         ("smt2Configs", printISZ(F, o.smt2Configs, printorgsireumlogikaSmt2Config _)),
         ("sat", printB(o.sat)),
+        ("rlimit", printZ(o.rlimit)),
         ("timeoutInMs", printZ(o.timeoutInMs)),
         ("defaultLoopBound", printZ(o.defaultLoopBound)),
         ("loopBounds", printHashMap(F, o.loopBounds, printorgsireumlogikaLoopId _, printZ _)),
@@ -2965,6 +2966,9 @@ object JSON {
       parser.parseObjectKey("sat")
       val sat = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("rlimit")
+      val rlimit = parser.parseZ()
+      parser.parseObjectNext()
       parser.parseObjectKey("timeoutInMs")
       val timeoutInMs = parser.parseZ()
       parser.parseObjectNext()
@@ -3028,7 +3032,7 @@ object JSON {
       parser.parseObjectKey("smt2Seq")
       val smt2Seq = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
+      return org.sireum.logika.Config(smt2Configs, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

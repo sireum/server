@@ -83,8 +83,8 @@ object ServerExt {
 
   def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
     val smt2Configs =
-      Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), F, Smt2.defaultValidOpts, Smt2.validTimeoutInMs).left ++
-        Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), T, Smt2.defaultSatOpts, Smt2.satTimeoutInMs).left
+      Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), F, Smt2.defaultValidOpts, Smt2.validTimeoutInMs, Smt2.rlimit).left ++
+        Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), T, Smt2.defaultSatOpts, Smt2.satTimeoutInMs, Smt2.rlimit).left
     AnalysisService._defaultConfig = AnalysisService.defaultConfig(smt2Configs = smt2Configs)
     AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query, AnalysisService._defaultConfig)
     new service.AnalysisService(numOfThreads)
