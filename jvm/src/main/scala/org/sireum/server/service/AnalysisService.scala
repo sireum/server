@@ -441,6 +441,7 @@ class AnalysisService(numOfThreads: Z) extends Service {
   val terminated = new _root_.java.util.concurrent.atomic.AtomicBoolean()
   var threads: ISZ[AnalysisService.Thread] = ISZ()
   var _owned: Boolean = false
+  var nameExePathMap: HashMap[String, String] = _
 
   override def $owned: Boolean = _owned
 
@@ -489,9 +490,12 @@ class AnalysisService(numOfThreads: Z) extends Service {
         val smt2Configs: ISZ[Smt2Config] =
           if (req.config.smt2Configs.isEmpty) AnalysisService.defaultConfig.smt2Configs
           else req.config.smt2Configs
-        val nameExePathMap: HashMap[String, String] = Smt2Invoke.nameExePathMap(serverAPI.sireumHome)
+        if (nameExePathMap == null) {
+          nameExePathMap = Smt2Invoke.nameExePathMap(serverAPI.sireumHome)
+        }
         AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
-          for (smt2Config <- smt2Configs) yield smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
+          for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
+            smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)
       case _ => halt(s"Infeasible: $req")
     }
