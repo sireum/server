@@ -174,7 +174,7 @@ object AnalysisService {
         files = req.files,
         vfiles = req.vfiles,
         line = req.line,
-        par = req.par,
+        par = defaultConfig.parCores,
         strictAliasing = T,
         followSymLink = F,
         all = F,
@@ -431,7 +431,7 @@ object AnalysisService {
         config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal, config.simplifiedQuery,
         config.smt2Seq, reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
-      reporter, req.par, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
+      reporter, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
     System.gc()
   }
 }

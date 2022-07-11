@@ -135,7 +135,6 @@ object JSON {
         ("type", st""""Slang.Check.Script""""),
         ("isBackground", printB(o.isBackground)),
         ("logikaEnabled", printB(o.logikaEnabled)),
-        ("par", printZ(o.par)),
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
@@ -147,7 +146,6 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Slang.Check.Project""""),
         ("isBackground", printB(o.isBackground)),
-        ("par", printZ(o.par)),
         ("id", printISZ(T, o.id, printString _)),
         ("proyek", printString(o.proyek)),
         ("files", printHashSMap(T, o.files, printString _, printString _)),
@@ -912,6 +910,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""org.sireum.logika.Config""""),
         ("smt2Configs", printISZ(F, o.smt2Configs, printorgsireumlogikaSmt2Config _)),
+        ("parCores", printZ(o.parCores)),
         ("sat", printB(o.sat)),
         ("rlimit", printZ(o.rlimit)),
         ("timeoutInMs", printZ(o.timeoutInMs)),
@@ -934,7 +933,21 @@ object JSON {
         ("checkInfeasiblePatternMatch", printB(o.checkInfeasiblePatternMatch)),
         ("fpRoundingMode", printString(o.fpRoundingMode)),
         ("caching", printB(o.caching)),
-        ("smt2Seq", printB(o.smt2Seq))
+        ("smt2Seq", printB(o.smt2Seq)),
+        ("branchPar", print_logikaConfigBranchParType(o.branchPar)),
+        ("branchParCores", printZ(o.branchParCores))
+      ))
+    }
+
+    @pure def print_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): ST = {
+      val value: String = o match {
+        case org.sireum.logika.Config.BranchPar.Disabled => "Disabled"
+        case org.sireum.logika.Config.BranchPar.OnlyAllReturns => "OnlyAllReturns"
+        case org.sireum.logika.Config.BranchPar.All => "All"
+      }
+      return printObject(ISZ(
+        ("type", printString("org.sireum.logika.Config.BranchPar")),
+        ("value", printString(value))
       ))
     }
 
@@ -1306,9 +1319,6 @@ object JSON {
       parser.parseObjectKey("logikaEnabled")
       val logikaEnabled = parser.parseB()
       parser.parseObjectNext()
-      parser.parseObjectKey("par")
-      val par = parser.parseZ()
-      parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
@@ -1321,7 +1331,7 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.Check.Script(isBackground, logikaEnabled, par, id, uriOpt, content, line)
+      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line)
     }
 
     def parseSlangCheckProject(): Slang.Check.Project = {
@@ -1335,9 +1345,6 @@ object JSON {
       }
       parser.parseObjectKey("isBackground")
       val isBackground = parser.parseB()
-      parser.parseObjectNext()
-      parser.parseObjectKey("par")
-      val par = parser.parseZ()
       parser.parseObjectNext()
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
@@ -1354,7 +1361,7 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.Check.Project(isBackground, par, id, proyek, files, vfiles, line)
+      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -2963,6 +2970,9 @@ object JSON {
       parser.parseObjectKey("smt2Configs")
       val smt2Configs = parser.parseISZ(parseorgsireumlogikaSmt2Config _)
       parser.parseObjectNext()
+      parser.parseObjectKey("parCores")
+      val parCores = parser.parseZ()
+      parser.parseObjectNext()
       parser.parseObjectKey("sat")
       val sat = parser.parseB()
       parser.parseObjectNext()
@@ -3032,7 +3042,34 @@ object JSON {
       parser.parseObjectKey("smt2Seq")
       val smt2Seq = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
+      parser.parseObjectKey("branchPar")
+      val branchPar = parse_logikaConfigBranchParType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("branchParCores")
+      val branchParCores = parser.parseZ()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores)
+    }
+
+    def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
+      val r = parse_logikaConfigBranchParT(F)
+      return r
+    }
+
+    def parse_logikaConfigBranchParT(typeParsed: B): org.sireum.logika.Config.BranchPar.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.Config.BranchPar")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      org.sireum.logika.Config.BranchPar.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.BranchPar.")
+          return org.sireum.logika.Config.BranchPar.byOrdinal(0).get
+      }
     }
 
     def parseorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

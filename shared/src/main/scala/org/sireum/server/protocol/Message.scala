@@ -87,8 +87,6 @@ object Slang {
   @datatype trait Check extends Request {
     def isBackground: B
 
-    def par: Z
-
     def line: Z
   }
 
@@ -96,7 +94,6 @@ object Slang {
 
     @datatype class Script(val isBackground: B,
                            val logikaEnabled: B,
-                           val par: Z,
                            val id: ISZ[String],
                            val uriOpt: Option[String],
                            val content: String,
@@ -104,7 +101,6 @@ object Slang {
 
 
     @datatype class Project(val isBackground: B,
-                            val par: Z,
                             val id: ISZ[String],
                             val proyek: String,
                             val files: HashSMap[String, String],
@@ -197,6 +193,7 @@ object Logika {
 
     val defaultConfig: logika.Config = logika.Config(
       smt2Configs = ISZ(),
+      parCores = 1,
       sat = F,
       rlimit = 1000000,
       timeoutInMs = 2000,
@@ -220,6 +217,8 @@ object Logika {
       fpRoundingMode = "RNE",
       caching = F,
       smt2Seq = F,
+      branchPar = logika.Config.BranchPar.All,
+      branchParCores = 1
     )
 
   }

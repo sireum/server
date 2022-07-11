@@ -313,7 +313,6 @@ object MsgPack {
       writer.writeZ(Constants.SlangCheckScript)
       writer.writeB(o.isBackground)
       writer.writeB(o.logikaEnabled)
-      writer.writeZ(o.par)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
@@ -323,7 +322,6 @@ object MsgPack {
     def writeSlangCheckProject(o: Slang.Check.Project): Unit = {
       writer.writeZ(Constants.SlangCheckProject)
       writer.writeB(o.isBackground)
-      writer.writeZ(o.par)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeString(o.proyek)
       writer.writeHashSMap(o.files, writer.writeString _, writer.writeString _)
@@ -940,6 +938,7 @@ object MsgPack {
     def writeorgsireumlogikaConfig(o: org.sireum.logika.Config): Unit = {
       writer.writeZ(Constants.orgsireumlogikaConfig)
       writer.writeISZ(o.smt2Configs, writeorgsireumlogikaSmt2Config _)
+      writer.writeZ(o.parCores)
       writer.writeB(o.sat)
       writer.writeZ(o.rlimit)
       writer.writeZ(o.timeoutInMs)
@@ -963,6 +962,12 @@ object MsgPack {
       writer.writeString(o.fpRoundingMode)
       writer.writeB(o.caching)
       writer.writeB(o.smt2Seq)
+      write_logikaConfigBranchParType(o.branchPar)
+      writer.writeZ(o.branchParCores)
+    }
+
+    def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
+      writer.writeZ(o.ordinal)
     }
 
     def writeorgsireumlogikaSmt2Config(o: org.sireum.logika.Smt2Config): Unit = {
@@ -1279,12 +1284,11 @@ object MsgPack {
       }
       val isBackground = reader.readB()
       val logikaEnabled = reader.readB()
-      val par = reader.readZ()
       val id = reader.readISZ(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
       val line = reader.readZ()
-      return Slang.Check.Script(isBackground, logikaEnabled, par, id, uriOpt, content, line)
+      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line)
     }
 
     def readSlangCheckProject(): Slang.Check.Project = {
@@ -1297,13 +1301,12 @@ object MsgPack {
         reader.expectZ(Constants.SlangCheckProject)
       }
       val isBackground = reader.readB()
-      val par = reader.readZ()
       val id = reader.readISZ(reader.readString _)
       val proyek = reader.readString()
       val files = reader.readHashSMap(reader.readString _, reader.readString _)
       val vfiles = reader.readISZ(reader.readString _)
       val line = reader.readZ()
-      return Slang.Check.Project(isBackground, par, id, proyek, files, vfiles, line)
+      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line)
     }
 
     def readSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -2494,6 +2497,7 @@ object MsgPack {
         reader.expectZ(Constants.orgsireumlogikaConfig)
       }
       val smt2Configs = reader.readISZ(readorgsireumlogikaSmt2Config _)
+      val parCores = reader.readZ()
       val sat = reader.readB()
       val rlimit = reader.readZ()
       val timeoutInMs = reader.readZ()
@@ -2517,7 +2521,14 @@ object MsgPack {
       val fpRoundingMode = reader.readString()
       val caching = reader.readB()
       val smt2Seq = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq)
+      val branchPar = read_logikaConfigBranchParType()
+      val branchParCores = reader.readZ()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, defaultLoopBound, loopBounds, unroll, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores)
+    }
+
+    def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
+      val r = reader.readZ()
+      return org.sireum.logika.Config.BranchPar.byOrdinal(r).get
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {
