@@ -1041,6 +1041,7 @@ object MsgPack {
     def write_langastTypedTypeVar(o: org.sireum.lang.ast.Typed.TypeVar): Unit = {
       writer.writeZ(Constants._langastTypedTypeVar)
       writer.writeString(o.id)
+      writer.writeB(o.isImmutable)
     }
 
     def write_langastTypedPackage(o: org.sireum.lang.ast.Typed.Package): Unit = {
@@ -2665,7 +2666,8 @@ object MsgPack {
         reader.expectZ(Constants._langastTypedTypeVar)
       }
       val id = reader.readString()
-      return org.sireum.lang.ast.Typed.TypeVar(id)
+      val isImmutable = reader.readB()
+      return org.sireum.lang.ast.Typed.TypeVar(id, isImmutable)
     }
 
     def read_langastTypedPackage(): org.sireum.lang.ast.Typed.Package = {

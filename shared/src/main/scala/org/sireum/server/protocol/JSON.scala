@@ -1059,7 +1059,8 @@ object JSON {
     @pure def print_langastTypedTypeVar(o: org.sireum.lang.ast.Typed.TypeVar): ST = {
       return printObject(ISZ(
         ("type", st""""org.sireum.lang.ast.Typed.TypeVar""""),
-        ("id", printString(o.id))
+        ("id", printString(o.id)),
+        ("isImmutable", printB(o.isImmutable))
       ))
     }
 
@@ -3274,7 +3275,10 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseString()
       parser.parseObjectNext()
-      return org.sireum.lang.ast.Typed.TypeVar(id)
+      parser.parseObjectKey("isImmutable")
+      val isImmutable = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.lang.ast.Typed.TypeVar(id, isImmutable)
     }
 
     def parse_langastTypedPackage(): org.sireum.lang.ast.Typed.Package = {
