@@ -167,9 +167,7 @@ object Logika {
       @strictpure def id: ISZ[String] = ISZ()
     }
 
-    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
-
-    @datatype class Halted(val id: ISZ[String], val posOpt: Option[Position], val state: logika.State) extends Response
+    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val terminated: B, val labels: ISZ[String], val claims: String) extends Response
 
     @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val title: String,
                               val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,

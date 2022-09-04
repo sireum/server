@@ -25,6 +25,7 @@
 package org.sireum.server.service
 
 import org.sireum._
+import org.sireum.lang.tipe.TypeHierarchy
 import org.sireum.logika.{Smt2Config, Smt2Invoke}
 import org.sireum.message._
 import org.sireum.project.{DependencyManager, Project}
@@ -284,8 +285,44 @@ object AnalysisService {
       isIllFormed = T
     }
 
-    override def state(posOpt: Option[Position], s: logika.State): Unit = if (hint) {
-      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, s))
+    override def state(posOpt: Option[Position], context: ISZ[String], th: TypeHierarchy, s: logika.State): Unit = if (hint) {
+      var claims: String = ""
+      posOpt match {
+        case Some(pos) =>
+          try {
+            logika.Util.claimsToExps(pos, context, s.claims, th, T) match {
+              case Some(es) =>
+                claims =
+                  st"""{
+                      |  ${(for (e <- es.elements) yield e.prettyST, ";\n")}
+                      |}""".render
+            case _ =>
+            }
+          } catch {
+            case e: Throwable =>
+              val baos = new java.io.ByteArrayOutputStream
+              e.printStackTrace(new java.io.PrintStream(baos))
+              server.Server.Ext.log(serverAPI.logFile, new java.lang.String(baos.toByteArray, "UTF-8"))
+              baos.close()
+          }
+        case _ =>
+      }
+      if (claims.size === 0) {
+        val sts = logika.State.Claim.claimsSTs(s.claims, logika.Util.ClaimDefs.empty)
+        claims =
+          st"""{
+               |  ${(sts, ",\n")}
+               |}""".render
+      }
+      var found = F
+      var labels = ISZ[String]()
+      for (claim <- s.claims if !found) {
+        claim match {
+          case claim: logika.State.Claim.Label => labels = labels :+ claim.label; found = T
+          case _ =>
+        }
+      }
+      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.status, labels, claims))
     }
 
     override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type, message: String): Unit = {
