@@ -294,7 +294,7 @@ object AnalysisService {
               case Some(es) =>
                 claims =
                   st"""{
-                      |  ${(for (e <- es.elements) yield e.prettyST, ";\n")}
+                      |  ${(for (e <- (HashSSet.empty[lang.ast.Exp] ++ es).elements) yield e.prettyST, ";\n")}
                       |}""".render
             case _ =>
             }
