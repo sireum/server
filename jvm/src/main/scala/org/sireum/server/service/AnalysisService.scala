@@ -290,14 +290,11 @@ object AnalysisService {
       posOpt match {
         case Some(pos) =>
           try {
-            logika.Util.claimsToExps(pos, context, s.claims, th, T) match {
-              case Some(es) =>
-                claims =
-                  st"""{
-                      |  ${(for (e <- (HashSSet.empty[lang.ast.Exp] ++ es).elements) yield e.prettyST, ";\n")}
-                      |}""".render
-            case _ =>
-            }
+            val es = logika.Util.claimsToExps(pos, context, s.claims, th, T)
+            claims =
+              st"""{
+                  |  ${(for (e <- (HashSSet.empty[lang.ast.Exp] ++ es).elements) yield e.prettyST, ";\n")}
+                  |}""".render
           } catch {
             case e: Throwable =>
               val baos = new java.io.ByteArrayOutputStream
@@ -308,10 +305,9 @@ object AnalysisService {
         case _ =>
       }
       if (claims.size === 0) {
-        val sts = logika.State.Claim.claimsSTs(s.claims, logika.Util.ClaimDefs.empty)
         claims =
           st"""{
-               |  ${(sts, ",\n")}
+               |  // Error occurred when rendering claims
                |}""".render
       }
       var found = F
