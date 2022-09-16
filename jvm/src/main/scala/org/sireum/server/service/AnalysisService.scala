@@ -287,28 +287,35 @@ object AnalysisService {
 
     override def state(posOpt: Option[Position], context: ISZ[String], th: TypeHierarchy, s: logika.State): Unit = if (hint) {
       var claims: String = ""
+      var err: String = ""
       posOpt match {
         case Some(pos) =>
           try {
             val es = logika.Util.claimsToExps(pos, context, s.claims, th, T)
             claims =
               st"""{
-                  |  ${(for (e <- (HashSSet.empty[lang.ast.Exp] ++ es).elements) yield e.prettyST, ";\n")}
+                  |  ${(for (e <- es) yield e.prettyST, ";\n")}
                   |}""".render
           } catch {
             case e: Throwable =>
               val baos = new java.io.ByteArrayOutputStream
               e.printStackTrace(new java.io.PrintStream(baos))
-              server.Server.Ext.log(serverAPI.logFile, new java.lang.String(baos.toByteArray, "UTF-8"))
+              err = new java.lang.String(baos.toByteArray, "UTF-8")
+              server.Server.Ext.log(serverAPI.logFile, err)
               baos.close()
           }
         case _ =>
       }
       if (claims.size === 0) {
+        val sts = logika.State.Claim.claimsSTs(s.claims, logika.Util.ClaimDefs.empty)
         claims =
           st"""{
-               |  // Error occurred when rendering claims
-               |}""".render
+               |  ${(sts, ",\n")}
+               |}
+               |
+               |/* Error occurred when rendering claims:
+               |$err
+               |*/""".render
       }
       var found = F
       var labels = ISZ[String]()
