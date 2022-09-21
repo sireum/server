@@ -285,13 +285,14 @@ object AnalysisService {
       isIllFormed = T
     }
 
-    override def state(posOpt: Option[Position], context: ISZ[String], th: TypeHierarchy, s: logika.State): Unit = if (hint) {
+    override def state(posOpt: Option[Position], context: ISZ[String], th: TypeHierarchy, s: logika.State,
+                       atLinesFresh: B): Unit = if (hint) {
       var claims: String = ""
       var err: String = ""
       posOpt match {
         case Some(pos) =>
           try {
-            val es = logika.Util.claimsToExps(pos, context, s.claims, th, T)
+            val es = logika.Util.claimsToExps(pos, context, s.claims, th, atLinesFresh)
             claims =
               st"""{
                   |  ${(for (e <- es) yield e.prettyST, ";\n")}
