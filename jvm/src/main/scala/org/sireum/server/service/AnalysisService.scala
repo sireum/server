@@ -532,7 +532,10 @@ class AnalysisService(numOfThreads: Z) extends Service {
           if (req.config.smt2Configs.isEmpty) AnalysisService.defaultConfig.smt2Configs
           else req.config.smt2Configs
         if (nameExePathMap == null) {
-          nameExePathMap = Smt2Invoke.nameExePathMap(serverAPI.sireumHome)
+          if(Smt2Invoke.isSupportedPlatform)
+            nameExePathMap = Smt2Invoke.nameExePathMap(serverAPI.sireumHome)
+          else
+            nameExePathMap = HashMap.empty
         }
         AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
           for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield

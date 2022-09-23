@@ -25,7 +25,7 @@
 package org.sireum.server
 
 import org.sireum._
-import org.sireum.logika.{Smt2, Smt2Invoke}
+import org.sireum.logika.{Smt2, Smt2Config, Smt2Invoke}
 import org.sireum.server.service.{AnalysisService, Service}
 
 import java.io.ByteArrayOutputStream
@@ -83,8 +83,11 @@ object ServerExt {
 
   def analysisService(sireumHome: Os.Path, numOfThreads: Z): Service = {
     val smt2Configs =
-      Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), F, Smt2.defaultValidOpts, Smt2.validTimeoutInMs, Smt2.rlimit).left ++
-        Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), T, Smt2.defaultSatOpts, Smt2.satTimeoutInMs, Smt2.rlimit).left
+      if(Smt2Invoke.isSupportedPlatform)
+        Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), F, Smt2.defaultValidOpts, Smt2.validTimeoutInMs, Smt2.rlimit).left ++
+          Smt2.parseConfigs(Smt2Invoke.nameExePathMap(sireumHome), T, Smt2.defaultSatOpts, Smt2.satTimeoutInMs, Smt2.rlimit).left
+      else
+        ISZ[Smt2Config]()
     AnalysisService._defaultConfig = AnalysisService.defaultConfig(smt2Configs = smt2Configs)
     AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query, AnalysisService._defaultConfig)
     new service.AnalysisService(numOfThreads)
