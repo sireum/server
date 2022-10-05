@@ -307,7 +307,7 @@ object AnalysisService {
           }
         case _ =>
       }
-      if (claims.size === 0) {
+      if (claims.size == 0) {
         val sts = logika.State.Claim.claimsSTs(s.claims, logika.Util.ClaimDefs.empty)
         claims =
           st"""{
@@ -345,7 +345,7 @@ object AnalysisService {
             val d = outputDir / "smt2" / st"${(id, "-")}".render
             d.mkdirAll()
             @strictpure def replaceChar(c: C): C =
-              if (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c === '.')) c else '-'
+              if (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c.value == '.')) c else '-'
             val filename = s"$title-${extension.Time.currentMillis}.smt2"
             val f = d / conversions.String.fromCis(for (c <- conversions.String.toCis(filename)) yield replaceChar(c))
             f.writeOver(r.query)

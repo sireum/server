@@ -47,7 +47,7 @@ import org.sireum.message.{Message, Reporter}
         org.sireum.lang.FrontEnd.rewrite(org.sireum.lang.FrontEnd.Rewrite.InsertConstructorVals,
           req.isScript, req.fileUriOpt, req.text, reporter) match {
           case org.sireum.Some((newText, n)) =>
-            if (n =!= 0) {
+            if (n != 0) {
               serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   s"Successfully inserted $n constructor parameter val modifier(s)"), Some(newText), n))
@@ -75,7 +75,7 @@ import org.sireum.message.{Message, Reporter}
             for (m <- reporter.messages) {
               serverAPI.sendRespond(server.protocol.Report(req.id, m))
             }
-            if (n =!= 0) {
+            if (n != 0) {
               if (reporter.hasWarning) {
                 var warnings = 0
                 for (m <- reporter.messages) {
@@ -121,7 +121,7 @@ import org.sireum.message.{Message, Reporter}
         org.sireum.lang.FrontEnd.rewrite(org.sireum.lang.FrontEnd.Rewrite.ReplaceEnumSymbols,
           req.isScript, req.fileUriOpt, req.text, reporter) match {
           case org.sireum.Some((newText, n)) =>
-            if (n =!= 0) {
+            if (n != 0) {
               serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   s"Successfully replaced $n enum element symbol(s) with strings"), Some(newText), n))
