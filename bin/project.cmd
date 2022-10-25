@@ -20,13 +20,11 @@ import org.sireum._
 import org.sireum.project.ProjectUtil._
 import org.sireum.project.Project
 
-val tipe = "slang-tipe"
-
 val anvil = "anvil"
 
 val tools = "tools"
 
-val logika = "logika"
+val infoflow = "infoflow"
 
 val codegen = "hamr-codegen"
 
@@ -43,9 +41,9 @@ val homeDir = Os.slashDir.up.canon
 val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseId = server,
   baseDir = homeDir,
-  sharedDeps = sharedId(logika),
+  sharedDeps = sharedId(infoflow),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(anvil, tools, logika, codegen, phantom, proyek, parser),
+  jvmDeps = ISZ(anvil, tools, codegen, phantom, proyek, parser),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",
