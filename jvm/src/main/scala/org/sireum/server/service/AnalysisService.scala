@@ -285,14 +285,14 @@ object AnalysisService {
       isIllFormed = T
     }
 
-    override def state(posOpt: Option[Position], context: ISZ[String], th: TypeHierarchy, s: logika.State,
-                       atLinesFresh: B): Unit = if (hint) {
+    override def state(plugins: ISZ[logika.plugin.ClaimPlugin], posOpt: Option[Position], context: ISZ[String],
+                       th: TypeHierarchy, s: logika.State, atLinesFresh: B): Unit = if (hint) {
       var claims: String = ""
       var err: String = ""
       posOpt match {
         case Some(pos) =>
           try {
-            val es = logika.Util.claimsToExps(pos, context, s.claims, th, atLinesFresh)
+            val es = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh)
             claims =
               st"""{
                   |  ${(for (e <- es) yield e.prettyST, ";\n")}
@@ -468,9 +468,9 @@ object AnalysisService {
     }
     val config = defaultConfig
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl.create(defaultConfig.smt2Configs, th, config.timeoutInMs,
-        config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal, config.simplifiedQuery,
-        config.smt2Seq, reporter),
+      logika.Smt2Impl.create(defaultConfig.smt2Configs, logika.plugin.Plugin.claimPlugins(logika.Logika.defaultPlugins),
+        th, config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
+        config.simplifiedQuery, config.smt2Seq, reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
       reporter, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
     System.gc()
