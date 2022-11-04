@@ -475,7 +475,7 @@ object AnalysisService {
         config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
         config.simplifiedQuery, config.smt2Seq, reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
-      reporter, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
+      reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     System.gc()
   }
 }
