@@ -202,7 +202,6 @@ object AnalysisService {
                   val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
                   new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
     var _owned: Boolean = false
-    var _ignore: B = F
 
     override def $owned: Boolean = _owned
 
@@ -445,14 +444,16 @@ object AnalysisService {
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
   var _hint: B = T
   var _smt2query: B = T
+  var _infoFlow: B = T
 
   def defaultConfig: logika.Config = synchronized {
     return _defaultConfig
   }
 
-  def setConfig(newHint: B, newSmt2Query: B, newConfig: logika.Config): Unit = synchronized {
+  def setConfig(newHint: B, newSmt2Query: B, newInfoFlow: B, newConfig: logika.Config): Unit = synchronized {
     _hint = newHint
     _smt2query = newSmt2Query
+    _infoFlow = newInfoFlow
     _defaultConfig = newConfig
   }
 
@@ -467,9 +468,11 @@ object AnalysisService {
       scriptCache = createCache(req.uriOpt)
     }
     val config = defaultConfig
+    val plugins = logika.Logika.defaultPlugins ++
+      (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]())
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl.create(defaultConfig.smt2Configs, logika.plugin.Plugin.claimPlugins(logika.Logika.defaultPlugins),
-        th, config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
+      logika.Smt2Impl.create(defaultConfig.smt2Configs, logika.plugin.Plugin.claimPlugins(plugins), th,
+        config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
         config.simplifiedQuery, config.smt2Seq, reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
       reporter, hasLogika, logika.Logika.defaultPlugins, req.line, ISZ(), ISZ())
@@ -537,7 +540,7 @@ class AnalysisService(numOfThreads: Z) extends Service {
           else
             nameExePathMap = HashMap.empty
         }
-        AnalysisService.setConfig(req.hint, req.smt2query, req.config(smt2Configs =
+        AnalysisService.setConfig(req.hint, req.smt2query, req.infoFlow, req.config(smt2Configs =
           for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
             smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)

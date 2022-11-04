@@ -259,6 +259,7 @@ object MsgPack {
       writer.writeZ(Constants.LogikaVerifyConfig)
       writer.writeB(o.hint)
       writer.writeB(o.smt2query)
+      writer.writeB(o.infoFlow)
       writeorgsireumlogikaConfig(o.config)
     }
 
@@ -758,8 +759,9 @@ object MsgPack {
       }
       val hint = reader.readB()
       val smt2query = reader.readB()
+      val infoFlow = reader.readB()
       val config = readorgsireumlogikaConfig()
-      return Logika.Verify.Config(hint, smt2query, config)
+      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
     }
 
     def readLogikaVerifyState(): Logika.Verify.State = {

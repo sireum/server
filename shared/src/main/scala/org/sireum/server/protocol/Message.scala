@@ -163,7 +163,7 @@ object Logika {
 
   object Verify {
 
-    @datatype class Config(val hint: B, val smt2query: B, val config: logika.Config) extends Request {
+    @datatype class Config(val hint: B, val smt2query: B, val infoFlow: B, val config: logika.Config) extends Request {
       @strictpure def id: ISZ[String] = ISZ()
     }
 

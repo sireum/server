@@ -217,6 +217,7 @@ object JSON {
         ("type", st""""Logika.Verify.Config""""),
         ("hint", printB(o.hint)),
         ("smt2query", printB(o.smt2query)),
+        ("infoFlow", printB(o.infoFlow)),
         ("config", printorgsireumlogikaConfig(o.config))
       ))
     }
@@ -879,10 +880,13 @@ object JSON {
       parser.parseObjectKey("smt2query")
       val smt2query = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("infoFlow")
+      val infoFlow = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("config")
       val config = parseorgsireumlogikaConfig()
       parser.parseObjectNext()
-      return Logika.Verify.Config(hint, smt2query, config)
+      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
     }
 
     def parseLogikaVerifyState(): Logika.Verify.State = {
