@@ -173,6 +173,7 @@ object AnalysisService {
         config = defaultConfig,
         cache = if (defaultConfig.caching) cache else logika.Smt2.NoCache(),
         files = req.files,
+        filesWatched = T,
         vfiles = req.vfiles,
         line = req.line,
         par = defaultConfig.parCores,
