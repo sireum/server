@@ -217,7 +217,8 @@ object Logika {
       smt2Seq = F,
       branchPar = logika.Config.BranchPar.All,
       branchParCores = 1,
-      atLinesFresh = F
+      atLinesFresh = F,
+      interp = F,
     )
 
   }
