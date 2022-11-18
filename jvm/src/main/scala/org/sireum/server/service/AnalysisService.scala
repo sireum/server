@@ -104,7 +104,7 @@ object AnalysisService {
                 check(req, (reporter: ReporterImpl) => {
                   val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
                   val hasLogika = req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
-                    req.logikaEnabled && hasSireum && compactFirstLine.contains("#Logika")
+                    req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp)
                   var cancelled = true
                   extension.Cancel.handleCancellable { () =>
                     checkScript(req, reporter, hasLogika)

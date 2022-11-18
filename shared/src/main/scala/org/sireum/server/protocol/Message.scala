@@ -195,9 +195,6 @@ object Logika {
       sat = F,
       rlimit = 1000000,
       timeoutInMs = 2000,
-      defaultLoopBound = 3,
-      loopBounds = HashMap.empty,
-      unroll = F,
       charBitWidth = 32,
       intBitWidth = 0,
       useReal = F,
@@ -219,6 +216,8 @@ object Logika {
       branchParCores = 1,
       atLinesFresh = F,
       interp = F,
+      loopBound = 3,
+      callBound = 3,
     )
 
   }
