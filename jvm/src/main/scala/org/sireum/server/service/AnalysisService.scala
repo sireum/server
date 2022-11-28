@@ -326,7 +326,7 @@ object AnalysisService {
           case _ =>
         }
       }
-      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.status, labels, claims))
+      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.ok, labels, claims))
     }
 
     override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type, message: String): Unit = {
