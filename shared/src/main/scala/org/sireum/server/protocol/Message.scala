@@ -218,6 +218,7 @@ object Logika {
       interp = F,
       loopBound = 3,
       callBound = 3,
+      interpContracts = F
     )
 
   }

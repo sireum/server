@@ -298,7 +298,8 @@ object JSON {
         ("atLinesFresh", printB(o.atLinesFresh)),
         ("interp", printB(o.interp)),
         ("loopBound", printZ(o.loopBound)),
-        ("callBound", printZ(o.callBound))
+        ("callBound", printZ(o.callBound)),
+        ("interpContracts", printB(o.interpContracts))
       ))
     }
 
@@ -1093,7 +1094,10 @@ object JSON {
       parser.parseObjectKey("callBound")
       val callBound = parser.parseZ()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound)
+      parser.parseObjectKey("interpContracts")
+      val interpContracts = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
