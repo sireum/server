@@ -474,7 +474,8 @@ object AnalysisService {
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
       logika.Smt2Impl.create(defaultConfig.smt2Configs, logika.plugin.Plugin.claimPlugins(plugins), th,
         config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
-        config.simplifiedQuery, config.smt2Seq, reporter),
+        config.simplifiedQuery, config.smt2Seq, config.rawInscription, config.elideEncoding, config.atLinesFresh,
+        reporter),
       if (config.caching) scriptCache else logika.Smt2.NoCache(),
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     System.gc()
