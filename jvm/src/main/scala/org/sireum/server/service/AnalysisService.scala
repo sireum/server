@@ -195,19 +195,27 @@ object AnalysisService {
     System.gc()
   }
 
-  class FileCache(val uriOpt: Option[String],
-                  val project: Project,
-                  val dmOpt: Option[DependencyManager],
-                  var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
-                  var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                  val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
-                  new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
-    var _owned: Boolean = false
+  final class FileCache(val uriOpt: Option[String],
+                        val project: Project,
+                        val dmOpt: Option[DependencyManager],
+                        var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
+                        var thMap: HashMap[String, lang.tipe.TypeHierarchy],
+                        val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
+                        new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
+    private var isClonable: scala.Boolean = true
+    private var isOwned: scala.Boolean = false
 
-    override def $owned: Boolean = _owned
+    override def $clonable: Boolean = isClonable
 
-    override def $owned_=(b: Boolean): FileCache = {
-      _owned = b
+    override def $clonable_=(b: Boolean): this.type = {
+      isClonable = false
+      this
+    }
+
+    override def $owned: scala.Boolean = isOwned
+
+    override def $owned_=(b: scala.Boolean): this.type = {
+      isOwned = b
       this
     }
 
@@ -227,16 +235,17 @@ object AnalysisService {
     }
   }
 
-  class ReporterImpl(hint: B,
-                     smt2query: B,
-                     serverAPI: server.ServerAPI,
-                     id: ISZ[String],
-                     outputDirOpt: Option[Os.Path],
-                     val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
-                     new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
+  final class ReporterImpl(hint: B,
+                           smt2query: B,
+                           serverAPI: server.ServerAPI,
+                           id: ISZ[String],
+                           outputDirOpt: Option[Os.Path],
+                           val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
+                           new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
 
-    var _owned: Boolean = false
+    private var isClonable: scala.Boolean = true
+    private var isOwned: scala.Boolean = false
     var _ignore: B = F
     var isIllFormed: B = F
     var numOfSmt2Calls: Z = 0
@@ -244,6 +253,20 @@ object AnalysisService {
     var numOfErrors: Z = 0
     var numOfInternalErrors: Z = 0
     var numOfWarnings: Z = 0
+
+    override def $clonable: Boolean = isClonable
+
+    override def $clonable_=(b: Boolean): this.type = {
+      isClonable = false
+      this
+    }
+
+    override def $owned: scala.Boolean = isOwned
+
+    override def $owned_=(b: scala.Boolean): this.type = {
+      isOwned = b
+      this
+    }
 
     override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
       other match {
@@ -257,13 +280,6 @@ object AnalysisService {
           numOfWarnings = numOfWarnings + other.numOfWarnings
           return this
       }
-    }
-
-    override def $owned: Boolean = _owned
-
-    override def $owned_=(b: Boolean): ReporterImpl = {
-      _owned = b
-      this
     }
 
     override def $clone: ReporterImpl = {
@@ -482,17 +498,25 @@ object AnalysisService {
   }
 }
 
-class AnalysisService(numOfThreads: Z) extends Service {
+final class AnalysisService(numOfThreads: Z) extends Service {
 
   val terminated = new _root_.java.util.concurrent.atomic.AtomicBoolean()
   var threads: ISZ[AnalysisService.Thread] = ISZ()
-  var _owned: Boolean = false
   var nameExePathMap: HashMap[String, String] = _
+  private var isClonable: scala.Boolean = true
+  private var isOwned: scala.Boolean = false
 
-  override def $owned: Boolean = _owned
+  override def $clonable: Boolean = isClonable
 
-  override def $owned_=(b: Boolean): AnalysisService = {
-    _owned = b
+  override def $clonable_=(b: Boolean): this.type = {
+    isClonable = false
+    this
+  }
+
+  override def $owned: scala.Boolean = isOwned
+
+  override def $owned_=(b: scala.Boolean): this.type = {
+    isOwned = b
     this
   }
 
