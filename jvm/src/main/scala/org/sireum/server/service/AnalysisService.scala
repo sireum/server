@@ -308,7 +308,7 @@ object AnalysisService {
       posOpt match {
         case Some(pos) =>
           try {
-            val es = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh)
+            val (es, _) = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh)
             claims =
               st"""{
                   |  ${(for (e <- es) yield e.prettyST, ";\n")}
