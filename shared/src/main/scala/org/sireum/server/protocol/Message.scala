@@ -219,8 +219,8 @@ object Logika {
       loopBound = 3,
       callBound = 3,
       interpContracts = F,
-      rawInscription = F,
-      elideEncoding = F
+      elideEncoding = F,
+      rawInscription = F
     )
 
   }
