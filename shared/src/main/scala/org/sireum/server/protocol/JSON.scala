@@ -32,6 +32,12 @@ package org.sireum.server.protocol
 
 import org.sireum._
 import org.sireum.Json.Printer._
+import org.sireum.server.protocol.Request
+import org.sireum.server.protocol.Terminate
+import org.sireum.server.protocol.Response
+import org.sireum.server.protocol.Cancel
+import org.sireum.server.protocol.Timing
+import org.sireum.server.protocol.Report
 
 object JSON {
 
