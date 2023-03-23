@@ -184,7 +184,8 @@ object AnalysisService {
         disableOutput = F,
         verbose = serverAPI.isVerbose,
         sanityCheck = F,
-        plugins = logika.Logika.defaultPlugins,
+        plugins = logika.Logika.defaultPlugins ++
+          (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]()),
         skipMethods = ISZ(),
         skipTypes = ISZ(),
         reporter = reporter
