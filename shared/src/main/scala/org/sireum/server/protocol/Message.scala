@@ -220,7 +220,8 @@ object Logika {
       callBound = 3,
       interpContracts = F,
       elideEncoding = F,
-      rawInscription = F
+      rawInscription = F,
+      interpStrictPure = F
     )
 
   }
