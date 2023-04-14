@@ -353,12 +353,13 @@ object AnalysisService {
       serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
     }
 
-    override def query(pos: Position, title: String, time: Z, forceReport: B, r: logika.Smt2Query.Result): Unit = {
+    override def query(pos: Position, title: String, time: Z, forceReport: B, detailElided: B,
+                       r: logika.Smt2Query.Result): Unit = {
       numOfSmt2Calls = numOfSmt2Calls + 1
       smt2TimeMillis = smt2TimeMillis + r.timeMillis
       if (smt2query || forceReport) {
         val query: String = outputDirOpt match {
-          case Some(outputDir) =>
+          case Some(outputDir) if !detailElided =>
             val d = outputDir / "smt2" / st"${(id, "-")}".render
             d.mkdirAll()
             @strictpure def replaceChar(c: C): C =
