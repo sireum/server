@@ -171,7 +171,7 @@ object AnalysisService {
         cacheTypeHierarchy = serverAPI.cacheType,
         mapBox = mapBox,
         config = defaultConfig,
-        cache = if (defaultConfig.caching) cache else logika.Smt2.NoCache(),
+        cache = if (defaultConfig.caching) cache else logika.Logika.NoSmt2Cache.create,
         files = req.files,
         filesWatched = T,
         vfiles = req.vfiles,
@@ -201,8 +201,10 @@ object AnalysisService {
                         val dmOpt: Option[DependencyManager],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
+                        var properties: HashSMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
+                        var sessionProperties: HashSMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
-                        new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Smt2.Cache {
+                        new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Logika.Cache {
     private var isClonable: scala.Boolean = true
     private var isOwned: scala.Boolean = false
 
@@ -233,6 +235,46 @@ object AnalysisService {
 
     def set(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
       storage.put((args, query.value), result)
+    }
+
+    def keys: ISZ[String] = {
+      return properties.keys
+    }
+
+    def getValue(key: logika.Logika.Cache.Key): Option[logika.Logika.Cache.Value] = {
+      return properties.get(key)
+    }
+
+    def setValue(key: logika.Logika.Cache.Key, value: logika.Logika.Cache.Value): Unit = {
+      properties = properties + key ~> value
+    }
+
+    def clearValue(key: logika.Logika.Cache.Key): Unit = {
+      properties = properties -- ISZ(key)
+    }
+
+    def startSession(): Unit = {
+      sessionProperties = HashSMap.empty
+    }
+
+    def endSession(): Unit = {
+      sessionProperties = HashSMap.empty
+    }
+
+    def sessionKeys: ISZ[String] = {
+      return sessionProperties.keys
+    }
+
+    def getSessionValue(key: logika.Logika.Cache.Key): Option[logika.Logika.Cache.Value] = {
+      return sessionProperties.get(key)
+    }
+
+    def setSessionValue(key: logika.Logika.Cache.Key, value: logika.Logika.Cache.Value): Unit = {
+      sessionProperties = sessionProperties + key ~> value
+    }
+
+    def clearSessionValue(key: logika.Logika.Cache.Key): Unit = {
+      sessionProperties = sessionProperties -- ISZ(key)
     }
   }
 
@@ -477,7 +519,8 @@ object AnalysisService {
   }
 
   def createCache(uriOpt: Option[String], project: Project = Project.empty, dmOpt: Option[DependencyManager] = None()): FileCache =
-    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty, org.sireum.HashMap.empty)
+    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty, org.sireum.HashMap.empty, org.sireum.HashSMap.empty,
+      org.sireum.HashSMap.empty)
 
   var scriptCache: FileCache = createCache(None())
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
@@ -494,7 +537,7 @@ object AnalysisService {
         config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
         config.simplifiedQuery, config.smt2Seq, config.rawInscription, config.elideEncoding, config.atLinesFresh,
         reporter),
-      if (config.caching) scriptCache else logika.Smt2.NoCache(),
+      if (config.caching) scriptCache else logika.Logika.NoSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     System.gc()
   }
