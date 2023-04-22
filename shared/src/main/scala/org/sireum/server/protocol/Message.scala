@@ -221,7 +221,7 @@ object Logika {
       interpContracts = F,
       elideEncoding = F,
       rawInscription = F,
-      interpStrictPure = F
+      flipStrictPure = F
     )
 
   }

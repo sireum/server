@@ -308,7 +308,7 @@ object JSON {
         ("interpContracts", printB(o.interpContracts)),
         ("elideEncoding", printB(o.elideEncoding)),
         ("rawInscription", printB(o.rawInscription)),
-        ("interpStrictPure", printB(o.interpStrictPure))
+        ("flipStrictPure", printB(o.flipStrictPure))
       ))
     }
 
@@ -330,6 +330,7 @@ object JSON {
         ("isSat", printB(o.isSat)),
         ("name", printString(o.name)),
         ("exe", printString(o.exe)),
+        ("rlimit", printZ(o.rlimit)),
         ("opts", printISZ(T, o.opts, printString _))
       ))
     }
@@ -1124,10 +1125,10 @@ object JSON {
       parser.parseObjectKey("rawInscription")
       val rawInscription = parser.parseB()
       parser.parseObjectNext()
-      parser.parseObjectKey("interpStrictPure")
-      val interpStrictPure = parser.parseB()
+      parser.parseObjectKey("flipStrictPure")
+      val flipStrictPure = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, interpStrictPure)
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
@@ -1169,10 +1170,13 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
+      parser.parseObjectKey("rlimit")
+      val rlimit = parser.parseZ()
+      parser.parseObjectNext()
       parser.parseObjectKey("opts")
       val opts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Config(isSat, name, exe, opts)
+      return org.sireum.logika.Smt2Config(isSat, name, exe, rlimit, opts)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

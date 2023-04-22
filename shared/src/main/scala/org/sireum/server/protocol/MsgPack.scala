@@ -336,7 +336,7 @@ object MsgPack {
       writer.writeB(o.interpContracts)
       writer.writeB(o.elideEncoding)
       writer.writeB(o.rawInscription)
-      writer.writeB(o.interpStrictPure)
+      writer.writeB(o.flipStrictPure)
     }
 
     def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
@@ -348,6 +348,7 @@ object MsgPack {
       writer.writeB(o.isSat)
       writer.writeString(o.name)
       writer.writeString(o.exe)
+      writer.writeZ(o.rlimit)
       writer.writeISZ(o.opts, writer.writeString _)
     }
 
@@ -877,8 +878,8 @@ object MsgPack {
       val interpContracts = reader.readB()
       val elideEncoding = reader.readB()
       val rawInscription = reader.readB()
-      val interpStrictPure = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, interpStrictPure)
+      val flipStrictPure = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure)
     }
 
     def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
@@ -898,8 +899,9 @@ object MsgPack {
       val isSat = reader.readB()
       val name = reader.readString()
       val exe = reader.readString()
+      val rlimit = reader.readZ()
       val opts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.Smt2Config(isSat, name, exe, opts)
+      return org.sireum.logika.Smt2Config(isSat, name, exe, rlimit, opts)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
