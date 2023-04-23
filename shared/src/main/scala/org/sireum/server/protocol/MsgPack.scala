@@ -337,6 +337,7 @@ object MsgPack {
       writer.writeB(o.elideEncoding)
       writer.writeB(o.rawInscription)
       writer.writeB(o.flipStrictPure)
+      writer.writeB(o.transitionCache)
     }
 
     def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
@@ -879,7 +880,8 @@ object MsgPack {
       val elideEncoding = reader.readB()
       val rawInscription = reader.readB()
       val flipStrictPure = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure)
+      val transitionCache = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache)
     }
 
     def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {

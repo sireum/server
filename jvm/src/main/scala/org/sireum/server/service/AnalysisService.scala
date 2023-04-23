@@ -160,7 +160,10 @@ object AnalysisService {
             return
         }
         proyekCache.put(key, cache)
+      } else if (!defaultConfig.transitionCache) {
+        cache.clearTransition()
       }
+
       val mapBox = MBox2(cache.uriMap, cache.thMap)
       Analysis.run(
         root = root,
@@ -171,7 +174,7 @@ object AnalysisService {
         cacheTypeHierarchy = serverAPI.cacheType,
         mapBox = mapBox,
         config = defaultConfig,
-        cache = if (defaultConfig.caching) cache else logika.Logika.NoSmt2Cache.create,
+        cache = if (defaultConfig.caching) cache else logika.NoTransitionSmt2Cache.create,
         files = req.files,
         filesWatched = T,
         vfiles = req.vfiles,
@@ -192,6 +195,7 @@ object AnalysisService {
       )
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
+      cache.clearTaskCache()
     }
     System.gc()
   }
@@ -199,21 +203,20 @@ object AnalysisService {
   final class FileCache(val uriOpt: Option[String],
                         val project: Project,
                         val dmOpt: Option[DependencyManager],
+                        val persistentCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
+                        val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        var properties: HashSMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
-                        var sessionProperties: HashSMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
-                        val storage: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
-                        new java.util.concurrent.ConcurrentHashMap[(ISZ[String], Predef.String), logika.Smt2Query.Result]) extends logika.Logika.Cache {
-    private var isClonable: scala.Boolean = true
+                        val transitionCache: java.util.Map[(Long, lang.ast.Stmt, logika.State), (ISZ[logika.State], logika.Smt2.StrictPureMethods)] =
+                        new java.util.concurrent.ConcurrentHashMap,
+                        val smt2Cache: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
+                        new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
+
     private var isOwned: scala.Boolean = false
 
-    override def $clonable: Boolean = isClonable
+    override def $clonable: Boolean = false
 
-    override def $clonable_=(b: Boolean): this.type = {
-      isClonable = false
-      this
-    }
+    override def $clonable_=(b: Boolean): this.type = halt("Cannot update FileCache clonable")
 
     override def $owned: scala.Boolean = isOwned
 
@@ -222,60 +225,37 @@ object AnalysisService {
       this
     }
 
-    override def $clone: FileCache = this
+    override def $clone: this.type = halt("Cannot clone FileCache")
 
-    override def string: String = {
-      return "Smt2Cache"
+    override def string: String = "FileCache"
+
+    def clearTransition(): Unit = {
+      transitionCache.clear()
     }
 
-    def get(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
-      val r = storage.get((args, query.value))
+    def getTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State): Option[(ISZ[logika.State], logika.Smt2.StrictPureMethods)] = {
+      val r = transitionCache.get((th.fingerprint.value, stmt, state))
       return if (r == null) None() else Some(r)
     }
 
-    def set(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
-      storage.put((args, query.value), result)
+    def setTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State, nextStates: ISZ[logika.State],
+                      spms: logika.Smt2.StrictPureMethods): Unit = {
+      transitionCache.put((th.fingerprint.value, stmt, state), (nextStates, spms))
     }
 
-    def keys: ISZ[String] = {
-      return properties.keys
+    def getSmt2(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
+      val r = smt2Cache.get((args, query.value))
+      return if (r == null) None() else Some(r)
     }
 
-    def getValue(key: logika.Logika.Cache.Key): Option[logika.Logika.Cache.Value] = {
-      return properties.get(key)
+    def setSmt2(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
+      smt2Cache.put((args, query.value), result)
     }
 
-    def setValue(key: logika.Logika.Cache.Key, value: logika.Logika.Cache.Value): Unit = {
-      properties = properties + key ~> value
+    def clearTaskCache(): Unit = {
+      taskCache.clear()
     }
 
-    def clearValue(key: logika.Logika.Cache.Key): Unit = {
-      properties = properties -- ISZ(key)
-    }
-
-    def startSession(): Unit = {
-      sessionProperties = HashSMap.empty
-    }
-
-    def endSession(): Unit = {
-      sessionProperties = HashSMap.empty
-    }
-
-    def sessionKeys: ISZ[String] = {
-      return sessionProperties.keys
-    }
-
-    def getSessionValue(key: logika.Logika.Cache.Key): Option[logika.Logika.Cache.Value] = {
-      return sessionProperties.get(key)
-    }
-
-    def setSessionValue(key: logika.Logika.Cache.Key, value: logika.Logika.Cache.Value): Unit = {
-      sessionProperties = sessionProperties + key ~> value
-    }
-
-    def clearSessionValue(key: logika.Logika.Cache.Key): Unit = {
-      sessionProperties = sessionProperties -- ISZ(key)
-    }
   }
 
   final class ReporterImpl(hint: B,
@@ -519,8 +499,8 @@ object AnalysisService {
   }
 
   def createCache(uriOpt: Option[String], project: Project = Project.empty, dmOpt: Option[DependencyManager] = None()): FileCache =
-    new FileCache(uriOpt, project, dmOpt, org.sireum.HashMap.empty, org.sireum.HashMap.empty, org.sireum.HashSMap.empty,
-      org.sireum.HashSMap.empty)
+    new FileCache(uriOpt, project, dmOpt, new java.util.concurrent.ConcurrentHashMap,
+      new java.util.concurrent.ConcurrentHashMap, org.sireum.HashMap.empty, org.sireum.HashMap.empty)
 
   var scriptCache: FileCache = createCache(None())
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
@@ -530,6 +510,9 @@ object AnalysisService {
       scriptCache = createCache(req.uriOpt)
     }
     val config = defaultConfig
+    if (!config.transitionCache) {
+      scriptCache.clearTransition()
+    }
     val plugins = logika.Logika.defaultPlugins ++
       (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]())
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
@@ -537,8 +520,9 @@ object AnalysisService {
         config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
         config.simplifiedQuery, config.smt2Seq, config.rawInscription, config.elideEncoding, config.atLinesFresh,
         reporter),
-      if (config.caching) scriptCache else logika.Logika.NoSmt2Cache.create,
+      if (config.caching) scriptCache else logika.NoTransitionSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
+    scriptCache.clearTaskCache()
     System.gc()
   }
 }
