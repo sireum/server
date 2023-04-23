@@ -34,6 +34,7 @@ import org.sireum.server.ServerExt
 import org.sireum.server.protocol._
 
 import java.io.ByteArrayOutputStream
+import java.lang.ref.SoftReference
 import java.util.concurrent.TimeUnit
 
 object AnalysisService {
@@ -207,9 +208,9 @@ object AnalysisService {
                         val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        val transitionCache: java.util.Map[(Long, lang.ast.Stmt, logika.State), (ISZ[logika.State], logika.Smt2.StrictPureMethods)] =
+                        val transitionCache: java.util.Map[(Long, lang.ast.Stmt, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2.StrictPureMethods)]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val smt2Cache: java.util.Map[(ISZ[String], Predef.String), logika.Smt2Query.Result] =
+                        val smt2Cache: java.util.Map[(ISZ[String], Predef.String), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
 
     private var isOwned: scala.Boolean = false
@@ -234,22 +235,40 @@ object AnalysisService {
     }
 
     def getTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State): Option[(ISZ[logika.State], logika.Smt2.StrictPureMethods)] = {
-      val r = transitionCache.get((th.fingerprint.value, stmt, state))
-      return if (r == null) None() else Some(r)
+      val key = (th.fingerprint.value, stmt, state)
+      val rRef = transitionCache.get(key)
+      var r = Option.none[(ISZ[logika.State], logika.Smt2.StrictPureMethods)]()
+      if (rRef != null) {
+        if (rRef.get != null) {
+          r = Some(rRef.get)
+        } else {
+          transitionCache.remove(key)
+        }
+      }
+      return r
     }
 
     def setTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State, nextStates: ISZ[logika.State],
                       spms: logika.Smt2.StrictPureMethods): Unit = {
-      transitionCache.put((th.fingerprint.value, stmt, state), (nextStates, spms))
+      transitionCache.put((th.fingerprint.value, stmt, state), new SoftReference((nextStates, spms)))
     }
 
     def getSmt2(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
-      val r = smt2Cache.get((args, query.value))
-      return if (r == null) None() else Some(r)
+      val key = (args, query.value)
+      val rRef = smt2Cache.get(key)
+      var r = Option.none[logika.Smt2Query.Result]()
+      if (rRef != null) {
+        if (rRef.get != null) {
+          r = Some(rRef.get)
+        } else {
+          smt2Cache.remove(key)
+        }
+      }
+      return r
     }
 
     def setSmt2(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
-      smt2Cache.put((args, query.value), result)
+      smt2Cache.put((args, query.value), new SoftReference(result))
     }
 
     def clearTaskCache(): Unit = {
