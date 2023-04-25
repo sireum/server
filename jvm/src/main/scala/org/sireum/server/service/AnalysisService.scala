@@ -205,7 +205,7 @@ object AnalysisService {
                         val project: Project,
                         val dmOpt: Option[DependencyManager],
                         val persistentCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
-                        val taskCache: java.util.concurrent.ConcurrentHashMap[(Int, logika.Logika.Cache.Key), logika.Logika.Cache.Value],
+                        val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
                         val transitionCache: java.util.Map[(Long, lang.ast.Stmt, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2.StrictPureMethods)]] =
