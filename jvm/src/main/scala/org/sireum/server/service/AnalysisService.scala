@@ -208,7 +208,7 @@ object AnalysisService {
                         val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        val transitionCache: java.util.Map[(Long, lang.ast.Stmt, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2.StrictPureMethods)]] =
+                        val transitionCache: java.util.Map[(Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2)]] =
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(ISZ[String], Predef.String), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
@@ -234,13 +234,15 @@ object AnalysisService {
       transitionCache.clear()
     }
 
-    def getTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State): Option[(ISZ[logika.State], logika.Smt2.StrictPureMethods)] = {
-      val key = (th.fingerprint.value, stmt, state)
+    def getTransition(th: TypeHierarchy, transition: logika.Logika.Cache.Transition,
+                      state: logika.State): MOption[(ISZ[logika.State], logika.Smt2)] = {
+      val key = (th.fingerprint.value, transition, state)
       val rRef = transitionCache.get(key)
-      var r = Option.none[(ISZ[logika.State], logika.Smt2.StrictPureMethods)]()
+      var r = MOption.none[(ISZ[logika.State], logika.Smt2)]()
       if (rRef != null) {
         if (rRef.get != null) {
-          r = Some(rRef.get)
+          val (ss, smt2) = rRef.get
+          r = MSome((ss, smt2.$clone.asInstanceOf[logika.Smt2]))
         } else {
           transitionCache.remove(key)
         }
@@ -248,9 +250,9 @@ object AnalysisService {
       return r
     }
 
-    def setTransition(th: TypeHierarchy, stmt: lang.ast.Stmt, state: logika.State, nextStates: ISZ[logika.State],
-                      spms: logika.Smt2.StrictPureMethods): Unit = {
-      transitionCache.put((th.fingerprint.value, stmt, state), new SoftReference((nextStates, spms)))
+    def setTransition(th: TypeHierarchy, transition: logika.Logika.Cache.Transition, state: logika.State,
+                      nextStates: ISZ[logika.State], smt2: logika.Smt2): Unit = {
+      transitionCache.put((th.fingerprint.value, transition, state), new SoftReference((nextStates, smt2.minimize)))
     }
 
     def getSmt2(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
