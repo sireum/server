@@ -236,15 +236,16 @@ object AnalysisService {
       transitionCache.clear()
     }
 
-    def getTransition(th: TypeHierarchy, transition: logika.Logika.Cache.Transition,
-                      state: logika.State): MOption[(ISZ[logika.State], logika.Smt2)] = {
+    def getTransitionAndUpdateSmt2(th: TypeHierarchy, transition: logika.Logika.Cache.Transition,
+                                   state: logika.State, smt2: logika.Smt2): Option[ISZ[logika.State]] = {
       val key = (th.fingerprint.value, transition, state)
       val rRef = transitionCache.get(key)
-      var r = MOption.none[(ISZ[logika.State], logika.Smt2)]()
+      var r = Option.none[ISZ[logika.State]]()
       if (rRef != null) {
         if (rRef.get != null) {
-          val (ss, smt2) = rRef.get
-          r = MSome((ss, smt2.$clone.asInstanceOf[logika.Smt2]))
+          val (ss, csmt2) = rRef.get
+          smt2.updateFrom(csmt2)
+          r = Some(ss)
         } else {
           transitionCache.remove(key)
         }
