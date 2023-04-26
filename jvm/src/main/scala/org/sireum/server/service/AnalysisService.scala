@@ -31,7 +31,9 @@ import org.sireum.message._
 import org.sireum.project.{DependencyManager, Project}
 import org.sireum.proyek.{Analysis, Proyek}
 import org.sireum.server.ServerExt
+import org.sireum.server.protocol.Analysis.Cache
 import org.sireum.server.protocol._
+import org.sireum.server.service.AnalysisService.{proyekCache, scriptCache}
 
 import java.io.ByteArrayOutputStream
 import java.lang.ref.SoftReference
@@ -595,6 +597,7 @@ final class AnalysisService(numOfThreads: Z) extends Service {
         return AnalysisService.checkQueue.removeIf(_.id == req.id) || AnalysisService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
       case _: Slang.Check => return T
+      case _: Cache.Clear => return T
       case _ => return F
     }
   }
@@ -620,6 +623,45 @@ final class AnalysisService(numOfThreads: Z) extends Service {
           for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
             smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)
+      case req: Cache.Clear =>
+        import org.sireum.$internal.CollectionCompat.Converters._
+        val prefix = req.kind match {
+          case Cache.Kind.All =>
+            scriptCache.uriMap = HashMap.empty
+            scriptCache.thMap = HashMap.empty
+            scriptCache.smt2Cache.clear()
+            scriptCache.transitionCache.clear()
+            scriptCache.persistentCache.clear()
+            proyekCache.clear()
+            "All caches"
+          case Cache.Kind.Files =>
+            scriptCache.uriMap = HashMap.empty
+            scriptCache.thMap = HashMap.empty
+            for (cache <- proyekCache.values.asScala) {
+              cache.uriMap = HashMap.empty
+              cache.thMap = HashMap.empty
+            }
+            "File cache"
+          case Cache.Kind.SMT2 =>
+            scriptCache.smt2Cache.clear()
+            for (cache <- proyekCache.values.asScala) {
+              cache.smt2Cache.clear()
+            }
+            "SMT2 query cache"
+          case Cache.Kind.Transitions =>
+            scriptCache.transitionCache.clear()
+            for (cache <- proyekCache.values.asScala) {
+              cache.transitionCache.clear()
+            }
+            "Transition cache"
+          case Cache.Kind.Persistent =>
+            scriptCache.persistentCache.clear()
+            for (cache <- proyekCache.values.asScala) {
+              cache.persistentCache.clear()
+            }
+            "Persistent cache"
+        }
+        serverAPI.sendRespond(Cache.Cleared(s"$prefix have been successfully cleared"))
       case _ => halt(s"Infeasible: $req")
     }
   }

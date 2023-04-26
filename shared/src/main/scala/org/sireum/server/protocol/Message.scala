@@ -156,6 +156,27 @@ object Analysis {
     @strictpure override def posOpt: Option[Position] = None()
   }
 
+  object Cache {
+
+    @enum object Kind {
+      "All"
+      "Files"
+      "SMT2"
+      "Transitions"
+      "Persistent"
+    }
+
+    @datatype class Clear(kind: Cache.Kind.Type) extends Request {
+      @strictpure override def id: ISZ[String] = ISZ()
+    }
+
+    @datatype class Cleared(msg: String) extends Response {
+      @strictpure override def id: ISZ[String] = ISZ()
+
+      @strictpure override def posOpt: Option[Position] = None()
+    }
+  }
+
 }
 
 

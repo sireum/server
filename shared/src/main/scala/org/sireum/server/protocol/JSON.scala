@@ -52,6 +52,7 @@ object JSON {
         case o: Slang.Check.Script => return printSlangCheckScript(o)
         case o: Slang.Check.Project => return printSlangCheckProject(o)
         case o: Slang.Rewrite.Request => return printSlangRewriteRequest(o)
+        case o: Analysis.Cache.Clear => return printAnalysisCacheClear(o)
         case o: Logika.Verify.Config => return printLogikaVerifyConfig(o)
       }
     }
@@ -71,6 +72,7 @@ object JSON {
         case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
         case o: Analysis.Start => return printAnalysisStart(o)
         case o: Analysis.End => return printAnalysisEnd(o)
+        case o: Analysis.Cache.Cleared => return printAnalysisCacheCleared(o)
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
         case o: Logika.Verify.Smt2Query => return printLogikaVerifySmt2Query(o)
         case o: Logika.Verify.Info => return printLogikaVerifyInfo(o)
@@ -215,6 +217,34 @@ object JSON {
         ("numOfInternalErrors", printZ(o.numOfInternalErrors)),
         ("numOfErrors", printZ(o.numOfErrors)),
         ("numOfWarnings", printZ(o.numOfWarnings))
+      ))
+    }
+
+    @pure def printAnalysisCacheKindType(o: Analysis.Cache.Kind.Type): ST = {
+      val value: String = o match {
+        case Analysis.Cache.Kind.All => "All"
+        case Analysis.Cache.Kind.Files => "Files"
+        case Analysis.Cache.Kind.SMT2 => "SMT2"
+        case Analysis.Cache.Kind.Transitions => "Transitions"
+        case Analysis.Cache.Kind.Persistent => "Persistent"
+      }
+      return printObject(ISZ(
+        ("type", printString("Analysis.Cache.Kind")),
+        ("value", printString(value))
+      ))
+    }
+
+    @pure def printAnalysisCacheClear(o: Analysis.Cache.Clear): ST = {
+      return printObject(ISZ(
+        ("type", st""""Analysis.Cache.Clear""""),
+        ("kind", printAnalysisCacheKindType(o.kind))
+      ))
+    }
+
+    @pure def printAnalysisCacheCleared(o: Analysis.Cache.Cleared): ST = {
+      return printObject(ISZ(
+        ("type", st""""Analysis.Cache.Cleared""""),
+        ("msg", printString(o.msg))
       ))
     }
 
@@ -528,7 +558,7 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Status.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Status.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Analysis.Cache.Clear", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
@@ -537,6 +567,7 @@ object JSON {
         case "Slang.Check.Script" => val r = parseSlangCheckScriptT(T); return r
         case "Slang.Check.Project" => val r = parseSlangCheckProjectT(T); return r
         case "Slang.Rewrite.Request" => val r = parseSlangRewriteRequestT(T); return r
+        case "Analysis.Cache.Clear" => val r = parseAnalysisCacheClearT(T); return r
         case "Logika.Verify.Config" => val r = parseLogikaVerifyConfigT(T); return r
         case _ => val r = parseLogikaVerifyConfigT(T); return r
       }
@@ -555,7 +586,7 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.End", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
@@ -564,6 +595,7 @@ object JSON {
         case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
         case "Analysis.Start" => val r = parseAnalysisStartT(T); return r
         case "Analysis.End" => val r = parseAnalysisEndT(T); return r
+        case "Analysis.Cache.Cleared" => val r = parseAnalysisCacheClearedT(T); return r
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
         case "Logika.Verify.Smt2Query" => val r = parseLogikaVerifySmt2QueryT(T); return r
         case "Logika.Verify.Info" => val r = parseLogikaVerifyInfoT(T); return r
@@ -887,6 +919,57 @@ object JSON {
       val numOfWarnings = parser.parseZ()
       parser.parseObjectNext()
       return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+    }
+
+    def parseAnalysisCacheKindType(): Analysis.Cache.Kind.Type = {
+      val r = parseAnalysisCacheKindT(F)
+      return r
+    }
+
+    def parseAnalysisCacheKindT(typeParsed: B): Analysis.Cache.Kind.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("Analysis.Cache.Kind")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      Analysis.Cache.Kind.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for Analysis.Cache.Kind.")
+          return Analysis.Cache.Kind.byOrdinal(0).get
+      }
+    }
+
+    def parseAnalysisCacheClear(): Analysis.Cache.Clear = {
+      val r = parseAnalysisCacheClearT(F)
+      return r
+    }
+
+    def parseAnalysisCacheClearT(typeParsed: B): Analysis.Cache.Clear = {
+      if (!typeParsed) {
+        parser.parseObjectType("Analysis.Cache.Clear")
+      }
+      parser.parseObjectKey("kind")
+      val kind = parseAnalysisCacheKindType()
+      parser.parseObjectNext()
+      return Analysis.Cache.Clear(kind)
+    }
+
+    def parseAnalysisCacheCleared(): Analysis.Cache.Cleared = {
+      val r = parseAnalysisCacheClearedT(F)
+      return r
+    }
+
+    def parseAnalysisCacheClearedT(typeParsed: B): Analysis.Cache.Cleared = {
+      if (!typeParsed) {
+        parser.parseObjectType("Analysis.Cache.Cleared")
+      }
+      parser.parseObjectKey("msg")
+      val msg = parser.parseString()
+      parser.parseObjectNext()
+      return Analysis.Cache.Cleared(msg)
     }
 
     def parseLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -1861,6 +1944,42 @@ object JSON {
       return r
     }
     val r = to(s, fAnalysisEnd _)
+    return r
+  }
+
+  def fromAnalysisCacheClear(o: Analysis.Cache.Clear, isCompact: B): String = {
+    val st = Printer.printAnalysisCacheClear(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toAnalysisCacheClear(s: String): Either[Analysis.Cache.Clear, Json.ErrorMsg] = {
+    def fAnalysisCacheClear(parser: Parser): Analysis.Cache.Clear = {
+      val r = parser.parseAnalysisCacheClear()
+      return r
+    }
+    val r = to(s, fAnalysisCacheClear _)
+    return r
+  }
+
+  def fromAnalysisCacheCleared(o: Analysis.Cache.Cleared, isCompact: B): String = {
+    val st = Printer.printAnalysisCacheCleared(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toAnalysisCacheCleared(s: String): Either[Analysis.Cache.Cleared, Json.ErrorMsg] = {
+    def fAnalysisCacheCleared(parser: Parser): Analysis.Cache.Cleared = {
+      val r = parser.parseAnalysisCacheCleared()
+      return r
+    }
+    val r = to(s, fAnalysisCacheCleared _)
     return r
   }
 

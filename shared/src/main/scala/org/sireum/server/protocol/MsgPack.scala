@@ -70,45 +70,49 @@ object MsgPack {
 
     val AnalysisEnd: Z = -19
 
-    val LogikaVerifyConfig: Z = -18
+    val AnalysisCacheClear: Z = -18
 
-    val LogikaVerifyState: Z = -17
+    val AnalysisCacheCleared: Z = -17
 
-    val LogikaVerifySmt2Query: Z = -16
+    val LogikaVerifyConfig: Z = -16
 
-    val LogikaVerifyInfo: Z = -15
+    val LogikaVerifyState: Z = -15
 
-    val orgsireumlogikaConfig: Z = -14
+    val LogikaVerifySmt2Query: Z = -14
 
-    val orgsireumlogikaSmt2Config: Z = -13
+    val LogikaVerifyInfo: Z = -13
 
-    val orgsireumlogikaLoopId: Z = -12
+    val orgsireumlogikaConfig: Z = -12
 
-    val _logikaSmt2QueryResult: Z = -11
+    val orgsireumlogikaSmt2Config: Z = -11
 
-    val _langastTypedName: Z = -10
+    val orgsireumlogikaLoopId: Z = -10
 
-    val _langastTypedTuple: Z = -9
+    val _logikaSmt2QueryResult: Z = -9
 
-    val _langastTypedFun: Z = -8
+    val _langastTypedName: Z = -8
 
-    val _langastTypedTypeVar: Z = -7
+    val _langastTypedTuple: Z = -7
 
-    val _langastTypedPackage: Z = -6
+    val _langastTypedFun: Z = -6
 
-    val _langastTypedObject: Z = -5
+    val _langastTypedTypeVar: Z = -5
 
-    val _langastTypedEnum: Z = -4
+    val _langastTypedPackage: Z = -4
 
-    val _langastTypedMethod: Z = -3
+    val _langastTypedObject: Z = -3
 
-    val _langastTypedMethods: Z = -2
+    val _langastTypedEnum: Z = -2
 
-    val _langastTypedFact: Z = -1
+    val _langastTypedMethod: Z = -1
 
-    val _langastTypedTheorem: Z = 0
+    val _langastTypedMethods: Z = 0
 
-    val _langastTypedInv: Z = 1
+    val _langastTypedFact: Z = 1
+
+    val _langastTypedTheorem: Z = 2
+
+    val _langastTypedInv: Z = 3
 
   }
 
@@ -131,6 +135,7 @@ object MsgPack {
         case o: Slang.Check.Script => writeSlangCheckScript(o)
         case o: Slang.Check.Project => writeSlangCheckProject(o)
         case o: Slang.Rewrite.Request => writeSlangRewriteRequest(o)
+        case o: Analysis.Cache.Clear => writeAnalysisCacheClear(o)
         case o: Logika.Verify.Config => writeLogikaVerifyConfig(o)
       }
     }
@@ -148,6 +153,7 @@ object MsgPack {
         case o: Slang.Rewrite.Response => writeSlangRewriteResponse(o)
         case o: Analysis.Start => writeAnalysisStart(o)
         case o: Analysis.End => writeAnalysisEnd(o)
+        case o: Analysis.Cache.Cleared => writeAnalysisCacheCleared(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
         case o: Logika.Verify.Smt2Query => writeLogikaVerifySmt2Query(o)
         case o: Logika.Verify.Info => writeLogikaVerifyInfo(o)
@@ -259,6 +265,20 @@ object MsgPack {
       writer.writeZ(o.numOfInternalErrors)
       writer.writeZ(o.numOfErrors)
       writer.writeZ(o.numOfWarnings)
+    }
+
+    def writeAnalysisCacheKindType(o: Analysis.Cache.Kind.Type): Unit = {
+      writer.writeZ(o.ordinal)
+    }
+
+    def writeAnalysisCacheClear(o: Analysis.Cache.Clear): Unit = {
+      writer.writeZ(Constants.AnalysisCacheClear)
+      writeAnalysisCacheKindType(o.kind)
+    }
+
+    def writeAnalysisCacheCleared(o: Analysis.Cache.Cleared): Unit = {
+      writer.writeZ(Constants.AnalysisCacheCleared)
+      writer.writeString(o.msg)
     }
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
@@ -505,6 +525,7 @@ object MsgPack {
         case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
         case Constants.SlangCheckProject => val r = readSlangCheckProjectT(T); return r
         case Constants.SlangRewriteRequest => val r = readSlangRewriteRequestT(T); return r
+        case Constants.AnalysisCacheClear => val r = readAnalysisCacheClearT(T); return r
         case Constants.LogikaVerifyConfig => val r = readLogikaVerifyConfigT(T); return r
         case _ =>
           reader.error(i, s"$t is not a valid type of Request.")
@@ -536,6 +557,7 @@ object MsgPack {
         case Constants.SlangRewriteResponse => val r = readSlangRewriteResponseT(T); return r
         case Constants.AnalysisStart => val r = readAnalysisStartT(T); return r
         case Constants.AnalysisEnd => val r = readAnalysisEndT(T); return r
+        case Constants.AnalysisCacheCleared => val r = readAnalysisCacheClearedT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
         case Constants.LogikaVerifySmt2Query => val r = readLogikaVerifySmt2QueryT(T); return r
         case Constants.LogikaVerifyInfo => val r = readLogikaVerifyInfoT(T); return r
@@ -762,6 +784,37 @@ object MsgPack {
       val numOfErrors = reader.readZ()
       val numOfWarnings = reader.readZ()
       return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+    }
+
+    def readAnalysisCacheKindType(): Analysis.Cache.Kind.Type = {
+      val r = reader.readZ()
+      return Analysis.Cache.Kind.byOrdinal(r).get
+    }
+
+    def readAnalysisCacheClear(): Analysis.Cache.Clear = {
+      val r = readAnalysisCacheClearT(F)
+      return r
+    }
+
+    def readAnalysisCacheClearT(typeParsed: B): Analysis.Cache.Clear = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.AnalysisCacheClear)
+      }
+      val kind = readAnalysisCacheKindType()
+      return Analysis.Cache.Clear(kind)
+    }
+
+    def readAnalysisCacheCleared(): Analysis.Cache.Cleared = {
+      val r = readAnalysisCacheClearedT(F)
+      return r
+    }
+
+    def readAnalysisCacheClearedT(typeParsed: B): Analysis.Cache.Cleared = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.AnalysisCacheCleared)
+      }
+      val msg = reader.readString()
+      return Analysis.Cache.Cleared(msg)
     }
 
     def readLogikaVerifyConfig(): Logika.Verify.Config = {
@@ -1412,6 +1465,36 @@ object MsgPack {
       return r
     }
     val r = to(data, fAnalysisEnd _)
+    return r
+  }
+
+  def fromAnalysisCacheClear(o: Analysis.Cache.Clear, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeAnalysisCacheClear(o)
+    return w.result
+  }
+
+  def toAnalysisCacheClear(data: ISZ[U8]): Either[Analysis.Cache.Clear, MessagePack.ErrorMsg] = {
+    def fAnalysisCacheClear(reader: Reader): Analysis.Cache.Clear = {
+      val r = reader.readAnalysisCacheClear()
+      return r
+    }
+    val r = to(data, fAnalysisCacheClear _)
+    return r
+  }
+
+  def fromAnalysisCacheCleared(o: Analysis.Cache.Cleared, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeAnalysisCacheCleared(o)
+    return w.result
+  }
+
+  def toAnalysisCacheCleared(data: ISZ[U8]): Either[Analysis.Cache.Cleared, MessagePack.ErrorMsg] = {
+    def fAnalysisCacheCleared(reader: Reader): Analysis.Cache.Cleared = {
+      val r = reader.readAnalysisCacheCleared()
+      return r
+    }
+    val r = to(data, fAnalysisCacheCleared _)
     return r
   }
 
