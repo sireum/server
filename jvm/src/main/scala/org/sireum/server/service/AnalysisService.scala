@@ -163,8 +163,6 @@ object AnalysisService {
             return
         }
         proyekCache.put(key, cache)
-      } else if (!defaultConfig.transitionCache) {
-        cache.clearTransition()
       }
 
       val mapBox = MBox2(cache.uriMap, cache.thMap)
@@ -526,7 +524,7 @@ object AnalysisService {
     _smt2query = newSmt2Query
     _coverage = newCoverage
     _infoFlow = newInfoFlow
-    _defaultConfig = newConfig
+    _defaultConfig = newConfig(transitionCache = newConfig.transitionCache && !newConfig.interp)
   }
 
   def createCache(uriOpt: Option[String], project: Project = Project.empty, dmOpt: Option[DependencyManager] = None()): FileCache =
