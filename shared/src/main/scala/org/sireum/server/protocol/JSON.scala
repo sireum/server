@@ -71,6 +71,7 @@ object JSON {
         case o: Status.Response => return printStatusResponse(o)
         case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
         case o: Analysis.Start => return printAnalysisStart(o)
+        case o: Analysis.Coverage => return printAnalysisCoverage(o)
         case o: Analysis.End => return printAnalysisEnd(o)
         case o: Analysis.Cache.Cleared => return printAnalysisCacheCleared(o)
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
@@ -203,6 +204,14 @@ object JSON {
       ))
     }
 
+    @pure def printAnalysisCoverage(o: Analysis.Coverage): ST = {
+      return printObject(ISZ(
+        ("type", st""""Analysis.Coverage""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("pos", printPosition(o.pos))
+      ))
+    }
+
     @pure def printAnalysisEnd(o: Analysis.End): ST = {
       return printObject(ISZ(
         ("type", st""""Analysis.End""""),
@@ -253,6 +262,7 @@ object JSON {
         ("type", st""""Logika.Verify.Config""""),
         ("hint", printB(o.hint)),
         ("smt2query", printB(o.smt2query)),
+        ("coverage", printB(o.coverage)),
         ("infoFlow", printB(o.infoFlow)),
         ("config", printorgsireumlogikaConfig(o.config))
       ))
@@ -586,7 +596,7 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.Coverage", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "Report" => val r = parseReportT(T); return r
@@ -594,6 +604,7 @@ object JSON {
         case "Status.Response" => val r = parseStatusResponseT(T); return r
         case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
         case "Analysis.Start" => val r = parseAnalysisStartT(T); return r
+        case "Analysis.Coverage" => val r = parseAnalysisCoverageT(T); return r
         case "Analysis.End" => val r = parseAnalysisEndT(T); return r
         case "Analysis.Cache.Cleared" => val r = parseAnalysisCacheClearedT(T); return r
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
@@ -876,6 +887,24 @@ object JSON {
       return Analysis.Start(id, currentTimeMillis)
     }
 
+    def parseAnalysisCoverage(): Analysis.Coverage = {
+      val r = parseAnalysisCoverageT(F)
+      return r
+    }
+
+    def parseAnalysisCoverageT(typeParsed: B): Analysis.Coverage = {
+      if (!typeParsed) {
+        parser.parseObjectType("Analysis.Coverage")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("pos")
+      val pos = parser.parsePosition()
+      parser.parseObjectNext()
+      return Analysis.Coverage(id, pos)
+    }
+
     def parseAnalysisEnd(): Analysis.End = {
       val r = parseAnalysisEndT(F)
       return r
@@ -987,13 +1016,16 @@ object JSON {
       parser.parseObjectKey("smt2query")
       val smt2query = parser.parseB()
       parser.parseObjectNext()
+      parser.parseObjectKey("coverage")
+      val coverage = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("infoFlow")
       val infoFlow = parser.parseB()
       parser.parseObjectNext()
       parser.parseObjectKey("config")
       val config = parseorgsireumlogikaConfig()
       parser.parseObjectNext()
-      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
+      return Logika.Verify.Config(hint, smt2query, coverage, infoFlow, config)
     }
 
     def parseLogikaVerifyState(): Logika.Verify.State = {
@@ -1926,6 +1958,24 @@ object JSON {
       return r
     }
     val r = to(s, fAnalysisStart _)
+    return r
+  }
+
+  def fromAnalysisCoverage(o: Analysis.Coverage, isCompact: B): String = {
+    val st = Printer.printAnalysisCoverage(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toAnalysisCoverage(s: String): Either[Analysis.Coverage, Json.ErrorMsg] = {
+    def fAnalysisCoverage(parser: Parser): Analysis.Coverage = {
+      val r = parser.parseAnalysisCoverage()
+      return r
+    }
+    val r = to(s, fAnalysisCoverage _)
     return r
   }
 

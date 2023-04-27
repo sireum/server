@@ -61,7 +61,7 @@ object AnalysisService {
             Some(Os.path(req.proyek) / "out" / "logika")
           case _ => None()
         }
-        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, outputDirOpt)
+        val reporter = new ReporterImpl(_hint, _smt2query, _coverage, serverAPI, req.id, outputDirOpt)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
@@ -284,6 +284,7 @@ object AnalysisService {
 
   final class ReporterImpl(hint: B,
                            smt2query: B,
+                           cover: B,
                            serverAPI: server.ServerAPI,
                            id: ISZ[String],
                            outputDirOpt: Option[Os.Path],
@@ -330,7 +331,7 @@ object AnalysisService {
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, _messages)
+      val r = new ReporterImpl(hint, smt2query, cover, serverAPI, id, outputDirOpt, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
@@ -424,8 +425,12 @@ object AnalysisService {
       serverAPI.sendRespond(Timing(id, desc, timeInMs))
     }
 
+    override def coverage(pos: Position): Unit = {
+      if (cover) serverAPI.sendRespond(server.protocol.Analysis.Coverage(id, pos))
+    }
+
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt)
+      return new ReporterImpl(hint, smt2query, cover, serverAPI, id, outputDirOpt)
     }
 
     override def messages: ISZ[Message] = {
@@ -509,15 +514,17 @@ object AnalysisService {
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
   var _hint: B = T
   var _smt2query: B = T
+  var _coverage: B = T
   var _infoFlow: B = T
 
   def defaultConfig: logika.Config = synchronized {
     return _defaultConfig
   }
 
-  def setConfig(newHint: B, newSmt2Query: B, newInfoFlow: B, newConfig: logika.Config): Unit = synchronized {
+  def setConfig(newHint: B, newSmt2Query: B, newCoverage: B, newInfoFlow: B, newConfig: logika.Config): Unit = synchronized {
     _hint = newHint
     _smt2query = newSmt2Query
+    _coverage = newCoverage
     _infoFlow = newInfoFlow
     _defaultConfig = newConfig
   }
@@ -620,9 +627,10 @@ final class AnalysisService(numOfThreads: Z) extends Service {
           else
             nameExePathMap = HashMap.empty
         }
-        AnalysisService.setConfig(req.hint, req.smt2query, req.infoFlow, req.config(smt2Configs =
-          for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
-            smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
+        AnalysisService.setConfig(req.hint, req.smt2query, req.coverage, req.infoFlow,
+          req.config(smt2Configs =
+            for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
+              smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)
       case req: Cache.Clear =>
         import org.sireum.$internal.CollectionCompat.Converters._

@@ -68,51 +68,53 @@ object MsgPack {
 
     val AnalysisStart: Z = -20
 
-    val AnalysisEnd: Z = -19
+    val AnalysisCoverage: Z = -19
 
-    val AnalysisCacheClear: Z = -18
+    val AnalysisEnd: Z = -18
 
-    val AnalysisCacheCleared: Z = -17
+    val AnalysisCacheClear: Z = -17
 
-    val LogikaVerifyConfig: Z = -16
+    val AnalysisCacheCleared: Z = -16
 
-    val LogikaVerifyState: Z = -15
+    val LogikaVerifyConfig: Z = -15
 
-    val LogikaVerifySmt2Query: Z = -14
+    val LogikaVerifyState: Z = -14
 
-    val LogikaVerifyInfo: Z = -13
+    val LogikaVerifySmt2Query: Z = -13
 
-    val orgsireumlogikaConfig: Z = -12
+    val LogikaVerifyInfo: Z = -12
 
-    val orgsireumlogikaSmt2Config: Z = -11
+    val orgsireumlogikaConfig: Z = -11
 
-    val orgsireumlogikaLoopId: Z = -10
+    val orgsireumlogikaSmt2Config: Z = -10
 
-    val _logikaSmt2QueryResult: Z = -9
+    val orgsireumlogikaLoopId: Z = -9
 
-    val _langastTypedName: Z = -8
+    val _logikaSmt2QueryResult: Z = -8
 
-    val _langastTypedTuple: Z = -7
+    val _langastTypedName: Z = -7
 
-    val _langastTypedFun: Z = -6
+    val _langastTypedTuple: Z = -6
 
-    val _langastTypedTypeVar: Z = -5
+    val _langastTypedFun: Z = -5
 
-    val _langastTypedPackage: Z = -4
+    val _langastTypedTypeVar: Z = -4
 
-    val _langastTypedObject: Z = -3
+    val _langastTypedPackage: Z = -3
 
-    val _langastTypedEnum: Z = -2
+    val _langastTypedObject: Z = -2
 
-    val _langastTypedMethod: Z = -1
+    val _langastTypedEnum: Z = -1
 
-    val _langastTypedMethods: Z = 0
+    val _langastTypedMethod: Z = 0
 
-    val _langastTypedFact: Z = 1
+    val _langastTypedMethods: Z = 1
 
-    val _langastTypedTheorem: Z = 2
+    val _langastTypedFact: Z = 2
 
-    val _langastTypedInv: Z = 3
+    val _langastTypedTheorem: Z = 3
+
+    val _langastTypedInv: Z = 4
 
   }
 
@@ -152,6 +154,7 @@ object MsgPack {
         case o: Status.Response => writeStatusResponse(o)
         case o: Slang.Rewrite.Response => writeSlangRewriteResponse(o)
         case o: Analysis.Start => writeAnalysisStart(o)
+        case o: Analysis.Coverage => writeAnalysisCoverage(o)
         case o: Analysis.End => writeAnalysisEnd(o)
         case o: Analysis.Cache.Cleared => writeAnalysisCacheCleared(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
@@ -252,6 +255,12 @@ object MsgPack {
       writer.writeZ(o.currentTimeMillis)
     }
 
+    def writeAnalysisCoverage(o: Analysis.Coverage): Unit = {
+      writer.writeZ(Constants.AnalysisCoverage)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writePosition(o.pos)
+    }
+
     def writeAnalysisEnd(o: Analysis.End): Unit = {
       writer.writeZ(Constants.AnalysisEnd)
       writer.writeB(o.isBackground)
@@ -285,6 +294,7 @@ object MsgPack {
       writer.writeZ(Constants.LogikaVerifyConfig)
       writer.writeB(o.hint)
       writer.writeB(o.smt2query)
+      writer.writeB(o.coverage)
       writer.writeB(o.infoFlow)
       writeorgsireumlogikaConfig(o.config)
     }
@@ -556,6 +566,7 @@ object MsgPack {
         case Constants.StatusResponse => val r = readStatusResponseT(T); return r
         case Constants.SlangRewriteResponse => val r = readSlangRewriteResponseT(T); return r
         case Constants.AnalysisStart => val r = readAnalysisStartT(T); return r
+        case Constants.AnalysisCoverage => val r = readAnalysisCoverageT(T); return r
         case Constants.AnalysisEnd => val r = readAnalysisEndT(T); return r
         case Constants.AnalysisCacheCleared => val r = readAnalysisCacheClearedT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
@@ -763,6 +774,20 @@ object MsgPack {
       return Analysis.Start(id, currentTimeMillis)
     }
 
+    def readAnalysisCoverage(): Analysis.Coverage = {
+      val r = readAnalysisCoverageT(F)
+      return r
+    }
+
+    def readAnalysisCoverageT(typeParsed: B): Analysis.Coverage = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.AnalysisCoverage)
+      }
+      val id = reader.readISZ(reader.readString _)
+      val pos = reader.readPosition()
+      return Analysis.Coverage(id, pos)
+    }
+
     def readAnalysisEnd(): Analysis.End = {
       val r = readAnalysisEndT(F)
       return r
@@ -828,9 +853,10 @@ object MsgPack {
       }
       val hint = reader.readB()
       val smt2query = reader.readB()
+      val coverage = reader.readB()
       val infoFlow = reader.readB()
       val config = readorgsireumlogikaConfig()
-      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
+      return Logika.Verify.Config(hint, smt2query, coverage, infoFlow, config)
     }
 
     def readLogikaVerifyState(): Logika.Verify.State = {
@@ -1450,6 +1476,21 @@ object MsgPack {
       return r
     }
     val r = to(data, fAnalysisStart _)
+    return r
+  }
+
+  def fromAnalysisCoverage(o: Analysis.Coverage, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeAnalysisCoverage(o)
+    return w.result
+  }
+
+  def toAnalysisCoverage(data: ISZ[U8]): Either[Analysis.Coverage, MessagePack.ErrorMsg] = {
+    def fAnalysisCoverage(reader: Reader): Analysis.Coverage = {
+      val r = reader.readAnalysisCoverage()
+      return r
+    }
+    val r = to(data, fAnalysisCoverage _)
     return r
   }
 
