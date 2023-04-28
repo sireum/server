@@ -208,6 +208,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Analysis.Coverage""""),
         ("id", printISZ(T, o.id, printString _)),
+        ("cached", printB(o.cached)),
         ("pos", printPosition(o.pos))
       ))
     }
@@ -262,7 +263,6 @@ object JSON {
         ("type", st""""Logika.Verify.Config""""),
         ("hint", printB(o.hint)),
         ("smt2query", printB(o.smt2query)),
-        ("coverage", printB(o.coverage)),
         ("infoFlow", printB(o.infoFlow)),
         ("config", printorgsireumlogikaConfig(o.config))
       ))
@@ -899,10 +899,13 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
+      parser.parseObjectKey("cached")
+      val cached = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
       parser.parseObjectNext()
-      return Analysis.Coverage(id, pos)
+      return Analysis.Coverage(id, cached, pos)
     }
 
     def parseAnalysisEnd(): Analysis.End = {
@@ -1016,16 +1019,13 @@ object JSON {
       parser.parseObjectKey("smt2query")
       val smt2query = parser.parseB()
       parser.parseObjectNext()
-      parser.parseObjectKey("coverage")
-      val coverage = parser.parseB()
-      parser.parseObjectNext()
       parser.parseObjectKey("infoFlow")
       val infoFlow = parser.parseB()
       parser.parseObjectNext()
       parser.parseObjectKey("config")
       val config = parseorgsireumlogikaConfig()
       parser.parseObjectNext()
-      return Logika.Verify.Config(hint, smt2query, coverage, infoFlow, config)
+      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
     }
 
     def parseLogikaVerifyState(): Logika.Verify.State = {

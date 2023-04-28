@@ -258,6 +258,7 @@ object MsgPack {
     def writeAnalysisCoverage(o: Analysis.Coverage): Unit = {
       writer.writeZ(Constants.AnalysisCoverage)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeB(o.cached)
       writer.writePosition(o.pos)
     }
 
@@ -294,7 +295,6 @@ object MsgPack {
       writer.writeZ(Constants.LogikaVerifyConfig)
       writer.writeB(o.hint)
       writer.writeB(o.smt2query)
-      writer.writeB(o.coverage)
       writer.writeB(o.infoFlow)
       writeorgsireumlogikaConfig(o.config)
     }
@@ -784,8 +784,9 @@ object MsgPack {
         reader.expectZ(Constants.AnalysisCoverage)
       }
       val id = reader.readISZ(reader.readString _)
+      val cached = reader.readB()
       val pos = reader.readPosition()
-      return Analysis.Coverage(id, pos)
+      return Analysis.Coverage(id, cached, pos)
     }
 
     def readAnalysisEnd(): Analysis.End = {
@@ -853,10 +854,9 @@ object MsgPack {
       }
       val hint = reader.readB()
       val smt2query = reader.readB()
-      val coverage = reader.readB()
       val infoFlow = reader.readB()
       val config = readorgsireumlogikaConfig()
-      return Logika.Verify.Config(hint, smt2query, coverage, infoFlow, config)
+      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
     }
 
     def readLogikaVerifyState(): Logika.Verify.State = {

@@ -142,7 +142,7 @@ object Analysis {
     @strictpure override def posOpt: Option[Position] = None()
   }
 
-  @datatype class Coverage(val id: ISZ[String], pos: Position) extends Response {
+  @datatype class Coverage(val id: ISZ[String], cached: B, pos: Position) extends Response {
     @pure override def posOpt: Option[Position] = {
       return Some(pos)
     }
@@ -190,8 +190,7 @@ object Logika {
 
   object Verify {
 
-    @datatype class Config(val hint: B, val smt2query: B, val coverage: B,
-                           val infoFlow: B, val config: logika.Config) extends Request {
+    @datatype class Config(val hint: B, val smt2query: B, val infoFlow: B, val config: logika.Config) extends Request {
       @strictpure def id: ISZ[String] = ISZ()
     }
 

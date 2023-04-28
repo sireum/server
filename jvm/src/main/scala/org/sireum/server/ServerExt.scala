@@ -89,8 +89,8 @@ object ServerExt {
       else
         ISZ[Smt2Config]()
     AnalysisService._defaultConfig = AnalysisService.defaultConfig(smt2Configs = smt2Configs)
-    AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query, AnalysisService._coverage,
-      AnalysisService._infoFlow, AnalysisService._defaultConfig)
+    AnalysisService.setConfig(AnalysisService._hint, AnalysisService._smt2query, AnalysisService._infoFlow,
+      AnalysisService._defaultConfig)
     new service.AnalysisService(numOfThreads)
   }
 
