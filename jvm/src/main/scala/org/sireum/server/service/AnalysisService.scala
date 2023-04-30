@@ -210,7 +210,7 @@ object AnalysisService {
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
                         val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2)]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val smt2Cache: java.util.Map[(ISZ[String], Predef.String), SoftReference[logika.Smt2Query.Result]] =
+                        val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
 
     private var isOwned: scala.Boolean = false
@@ -259,8 +259,10 @@ object AnalysisService {
         new SoftReference((nextStates, smt2.minimize)))
     }
 
-    def getSmt2(isSat: B, query: String, args: ISZ[String]): Option[logika.Smt2Query.Result] = {
-      val key = (args, query.value)
+    def getSmt2(isSat: B, th: TypeHierarchy, config: logika.Config, timeoutInMs: Z, claims: ISZ[logika.State.Claim]): Option[logika.Smt2Query.Result] = {
+      val thf = (if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody).value +
+        timeoutInMs.toLong + (if (isSat) 0 else 1)
+      val key = (thf, config.fingerprint.value, claims)
       val rRef = smt2Cache.get(key)
       var r = Option.none[logika.Smt2Query.Result]()
       if (rRef != null) {
@@ -273,8 +275,11 @@ object AnalysisService {
       return r
     }
 
-    def setSmt2(isSat: B, query: String, args: ISZ[String], result: logika.Smt2Query.Result): Unit = {
-      smt2Cache.put((args, query.value), new SoftReference(result))
+    def setSmt2(isSat: B, th: TypeHierarchy, config: logika.Config, timeoutInMs: Z, claims: ISZ[logika.State.Claim],
+                result: logika.Smt2Query.Result): Unit = {
+      val thf = (if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody).value +
+        timeoutInMs.toLong + (if (isSat) 0 else 1)
+      smt2Cache.put((thf, config.fingerprint.value, claims), new SoftReference(result))
     }
 
     def clearTaskCache(): Unit = {
@@ -545,10 +550,7 @@ object AnalysisService {
     val plugins = logika.Logika.defaultPlugins ++
       (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]())
     logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl.create(defaultConfig.smt2Configs, logika.plugin.Plugin.claimPlugins(plugins), th,
-        config.timeoutInMs, config.fpRoundingMode, config.charBitWidth, config.intBitWidth, config.useReal,
-        config.simplifiedQuery, config.smt2Seq, config.rawInscription, config.elideEncoding, config.atLinesFresh,
-        reporter),
+      logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins), th, reporter),
       if (config.caching) scriptCache else logika.NoTransitionSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     scriptCache.clearTaskCache()

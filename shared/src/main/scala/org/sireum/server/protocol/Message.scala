@@ -249,7 +249,8 @@ object Logika {
       elideEncoding = F,
       rawInscription = F,
       flipStrictPure = F,
-      transitionCache = F
+      transitionCache = F,
+      patternExhaustive = T
     )
 
   }
