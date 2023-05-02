@@ -66,6 +66,7 @@ object AnalysisService {
         var hasLogika = false
         val startTime = extension.Time.currentMillis
         serverAPI.sendRespond(server.protocol.Analysis.Start(req.id, startTime))
+        serverAPI.reportStatus()
         try {
           val p = f(reporter)
           hasLogika = p._1
@@ -432,6 +433,9 @@ object AnalysisService {
 
     override def coverage(cached: B, pos: Position): Unit = {
       serverAPI.sendRespond(server.protocol.Analysis.Coverage(id, cached, pos))
+      if (pos.beginLine != pos.endLine) {
+        serverAPI.reportStatus()
+      }
     }
 
     override def empty: logika.Logika.Reporter = {
