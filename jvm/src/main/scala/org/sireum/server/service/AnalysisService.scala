@@ -305,9 +305,16 @@ object AnalysisService {
 
     def setSmt2(isSat: B, th: TypeHierarchy, config: logika.Config, timeoutInMs: Z, claims: ISZ[logika.State.Claim],
                 result: logika.Smt2Query.Result): Unit = {
+      def makeResultCached(s: Predef.String): Predef.String = {
+        val result = "Result:"
+        val i = s.indexOf(result)
+        if (i < 0) return s
+        return s"${s.substring(0, i)}Result (Cached):${s.substring(i + result.length, s.length)}"
+      }
+      val r = result(query = makeResultCached(result.query.value), info = makeResultCached(result.info.value))
       val thf = (if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody).value +
         timeoutInMs.toLong + (if (isSat) 0 else 1)
-      smt2Cache.put((thf, config.fingerprint.value, claims), new SoftReference(result))
+      smt2Cache.put((thf, config.fingerprint.value, claims), new SoftReference(r))
     }
 
     def clearTaskCache(): Unit = {
