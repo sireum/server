@@ -61,7 +61,7 @@ object AnalysisService {
             Some(Os.path(req.proyek) / "out" / "logika")
           case _ => None()
         }
-        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, outputDirOpt)
+        val reporter = new ReporterImpl(_hint, _smt2query, serverAPI, req.id, outputDirOpt, F)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
@@ -330,6 +330,7 @@ object AnalysisService {
                            serverAPI: server.ServerAPI,
                            id: ISZ[String],
                            outputDirOpt: Option[Os.Path],
+                           collectStats: B,
                            val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
                            new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
@@ -362,23 +363,24 @@ object AnalysisService {
 
     override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
       other match {
-        case other: ReporterImpl => synchronized {
+        case other: ReporterImpl =>
           _messages.addAll(other._messages)
-          isIllFormed = isIllFormed || other.isIllFormed
-          numOfVCs = numOfVCs + other.numOfVCs
-          numOfSats = numOfSats + other.numOfSats
-          vcMillis = vcMillis + other.vcMillis
-          satMillis = satMillis + other.satMillis
-          numOfErrors = numOfErrors + other.numOfErrors
-          numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
-          numOfWarnings = numOfWarnings + other.numOfWarnings
+          if (collectStats) synchronized {
+            isIllFormed = isIllFormed || other.isIllFormed
+            numOfVCs = numOfVCs + other.numOfVCs
+            numOfSats = numOfSats + other.numOfSats
+            vcMillis = vcMillis + other.vcMillis
+            satMillis = satMillis + other.satMillis
+            numOfErrors = numOfErrors + other.numOfErrors
+            numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
+            numOfWarnings = numOfWarnings + other.numOfWarnings
+          }
           return this
-        }
       }
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, _messages)
+      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
@@ -451,7 +453,7 @@ object AnalysisService {
 
     override def query(pos: Position, title: String, isSat: B, time: Z, forceReport: B, detailElided: B,
                        r: logika.Smt2Query.Result): Unit = {
-      synchronized {
+      if (collectStats) synchronized {
         if (isSat) {
           numOfSats = numOfSats + 1
           satMillis = satMillis + time
@@ -489,7 +491,7 @@ object AnalysisService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt)
+      return new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats)
     }
 
     override def messages: ISZ[Message] = {
