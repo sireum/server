@@ -154,8 +154,10 @@ object Analysis {
                       val isIllFormed: B,
                       val hasLogika: B,
                       val totalTimeMillis: Z,
-                      val numOfSmt2Calls: Z,
-                      val smt2TimeMillis: Z,
+                      val numOfVCs: Z,
+                      val numOfSats: Z,
+                      val vcTimeMillis: Z,
+                      val satTimeMillis: Z,
                       val numOfInternalErrors: Z,
                       val numOfErrors: Z,
                       val numOfWarnings: Z) extends Response {
@@ -196,7 +198,7 @@ object Logika {
 
     @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val terminated: B, val labels: ISZ[String], val claims: String) extends Response
 
-    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val timeInMs: Z, val title: String,
+    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, isSat: B, val timeInMs: Z, val title: String,
                               val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,
                               val info: String, val output: String) extends Response {
       @pure override def posOpt: Option[Position] = {

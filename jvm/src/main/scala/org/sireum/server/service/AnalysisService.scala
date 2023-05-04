@@ -87,8 +87,10 @@ object AnalysisService {
             hasLogika = hasLogika,
             isIllFormed = reporter.isIllFormed,
             totalTimeMillis = extension.Time.currentMillis - startTime,
-            numOfSmt2Calls = reporter.numOfSmt2Calls,
-            smt2TimeMillis = reporter.smt2TimeMillis,
+            numOfVCs = reporter.numOfVCs,
+            numOfSats = reporter.numOfSats,
+            vcTimeMillis = reporter.vcMillis,
+            satTimeMillis = reporter.satMillis,
             numOfInternalErrors = reporter.numOfInternalErrors,
             numOfErrors = reporter.numOfErrors,
             numOfWarnings = reporter.numOfWarnings
@@ -336,8 +338,10 @@ object AnalysisService {
     private var isOwned: scala.Boolean = false
     var _ignore: B = F
     var isIllFormed: B = F
-    var numOfSmt2Calls: Z = 0
-    var smt2TimeMillis: Z = 0
+    var numOfVCs: Z = 0
+    var numOfSats: Z = 0
+    var vcMillis: Z = 0
+    var satMillis: Z = 0
     var numOfErrors: Z = 0
     var numOfInternalErrors: Z = 0
     var numOfWarnings: Z = 0
@@ -358,15 +362,18 @@ object AnalysisService {
 
     override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
       other match {
-        case other: ReporterImpl =>
+        case other: ReporterImpl => synchronized {
           _messages.addAll(other._messages)
           isIllFormed = isIllFormed || other.isIllFormed
-          numOfSmt2Calls = numOfSmt2Calls + other.numOfSmt2Calls
-          smt2TimeMillis = smt2TimeMillis + other.smt2TimeMillis
+          numOfVCs = numOfVCs + other.numOfVCs
+          numOfSats = numOfSats + other.numOfSats
+          vcMillis = vcMillis + other.vcMillis
+          satMillis = satMillis + other.satMillis
           numOfErrors = numOfErrors + other.numOfErrors
           numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
           numOfWarnings = numOfWarnings + other.numOfWarnings
           return this
+        }
       }
     }
 
@@ -375,8 +382,10 @@ object AnalysisService {
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
-      r.numOfSmt2Calls = numOfSmt2Calls
-      r.smt2TimeMillis = smt2TimeMillis
+      r.numOfVCs = numOfVCs
+      r.numOfSats = numOfSats
+      r.vcMillis = vcMillis
+      r.satMillis = satMillis
       r.numOfInternalErrors = numOfInternalErrors
       r
     }
@@ -440,10 +449,17 @@ object AnalysisService {
       serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
     }
 
-    override def query(pos: Position, title: String, time: Z, forceReport: B, detailElided: B,
+    override def query(pos: Position, title: String, isSat: B, time: Z, forceReport: B, detailElided: B,
                        r: logika.Smt2Query.Result): Unit = {
-      numOfSmt2Calls = numOfSmt2Calls + 1
-      smt2TimeMillis = smt2TimeMillis + r.timeMillis
+      synchronized {
+        if (isSat) {
+          numOfSats = numOfSats + 1
+          satMillis = satMillis + time
+        } else {
+          numOfVCs = numOfVCs + 1
+          vcMillis = vcMillis + time
+        }
+      }
       if (smt2query || forceReport) {
         val query: String = outputDirOpt match {
           case Some(outputDir) if !detailElided =>
@@ -457,7 +473,7 @@ object AnalysisService {
             f.canon.string
           case _ => r.query
         }
-        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, time, title, r.kind, r.solverName, query, r.info, r.output))
+        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, isSat, time, title, r.kind, r.solverName, query, r.info, r.output))
       }
     }
 

@@ -270,8 +270,10 @@ object MsgPack {
       writer.writeB(o.isIllFormed)
       writer.writeB(o.hasLogika)
       writer.writeZ(o.totalTimeMillis)
-      writer.writeZ(o.numOfSmt2Calls)
-      writer.writeZ(o.smt2TimeMillis)
+      writer.writeZ(o.numOfVCs)
+      writer.writeZ(o.numOfSats)
+      writer.writeZ(o.vcTimeMillis)
+      writer.writeZ(o.satTimeMillis)
       writer.writeZ(o.numOfInternalErrors)
       writer.writeZ(o.numOfErrors)
       writer.writeZ(o.numOfWarnings)
@@ -312,6 +314,7 @@ object MsgPack {
       writer.writeZ(Constants.LogikaVerifySmt2Query)
       writer.writeISZ(o.id, writer.writeString _)
       writer.writePosition(o.pos)
+      writer.writeB(o.isSat)
       writer.writeZ(o.timeInMs)
       writer.writeString(o.title)
       write_logikaSmt2QueryResultKindType(o.kind)
@@ -805,12 +808,14 @@ object MsgPack {
       val isIllFormed = reader.readB()
       val hasLogika = reader.readB()
       val totalTimeMillis = reader.readZ()
-      val numOfSmt2Calls = reader.readZ()
-      val smt2TimeMillis = reader.readZ()
+      val numOfVCs = reader.readZ()
+      val numOfSats = reader.readZ()
+      val vcTimeMillis = reader.readZ()
+      val satTimeMillis = reader.readZ()
       val numOfInternalErrors = reader.readZ()
       val numOfErrors = reader.readZ()
       val numOfWarnings = reader.readZ()
-      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfVCs, numOfSats, vcTimeMillis, satTimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
     }
 
     def readAnalysisCacheKindType(): Analysis.Cache.Kind.Type = {
@@ -888,6 +893,7 @@ object MsgPack {
       }
       val id = reader.readISZ(reader.readString _)
       val pos = reader.readPosition()
+      val isSat = reader.readB()
       val timeInMs = reader.readZ()
       val title = reader.readString()
       val kind = read_logikaSmt2QueryResultKindType()
@@ -895,7 +901,7 @@ object MsgPack {
       val query = reader.readString()
       val info = reader.readString()
       val output = reader.readString()
-      return Logika.Verify.Smt2Query(id, pos, timeInMs, title, kind, solverName, query, info, output)
+      return Logika.Verify.Smt2Query(id, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def readLogikaVerifyInfo(): Logika.Verify.Info = {

@@ -222,8 +222,10 @@ object JSON {
         ("isIllFormed", printB(o.isIllFormed)),
         ("hasLogika", printB(o.hasLogika)),
         ("totalTimeMillis", printZ(o.totalTimeMillis)),
-        ("numOfSmt2Calls", printZ(o.numOfSmt2Calls)),
-        ("smt2TimeMillis", printZ(o.smt2TimeMillis)),
+        ("numOfVCs", printZ(o.numOfVCs)),
+        ("numOfSats", printZ(o.numOfSats)),
+        ("vcTimeMillis", printZ(o.vcTimeMillis)),
+        ("satTimeMillis", printZ(o.satTimeMillis)),
         ("numOfInternalErrors", printZ(o.numOfInternalErrors)),
         ("numOfErrors", printZ(o.numOfErrors)),
         ("numOfWarnings", printZ(o.numOfWarnings))
@@ -284,6 +286,7 @@ object JSON {
         ("type", st""""Logika.Verify.Smt2Query""""),
         ("id", printISZ(T, o.id, printString _)),
         ("pos", printPosition(o.pos)),
+        ("isSat", printB(o.isSat)),
         ("timeInMs", printZ(o.timeInMs)),
         ("title", printString(o.title)),
         ("kind", print_logikaSmt2QueryResultKindType(o.kind)),
@@ -936,11 +939,17 @@ object JSON {
       parser.parseObjectKey("totalTimeMillis")
       val totalTimeMillis = parser.parseZ()
       parser.parseObjectNext()
-      parser.parseObjectKey("numOfSmt2Calls")
-      val numOfSmt2Calls = parser.parseZ()
+      parser.parseObjectKey("numOfVCs")
+      val numOfVCs = parser.parseZ()
       parser.parseObjectNext()
-      parser.parseObjectKey("smt2TimeMillis")
-      val smt2TimeMillis = parser.parseZ()
+      parser.parseObjectKey("numOfSats")
+      val numOfSats = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("vcTimeMillis")
+      val vcTimeMillis = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("satTimeMillis")
+      val satTimeMillis = parser.parseZ()
       parser.parseObjectNext()
       parser.parseObjectKey("numOfInternalErrors")
       val numOfInternalErrors = parser.parseZ()
@@ -951,7 +960,7 @@ object JSON {
       parser.parseObjectKey("numOfWarnings")
       val numOfWarnings = parser.parseZ()
       parser.parseObjectNext()
-      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfSmt2Calls, smt2TimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
+      return Analysis.End(isBackground, id, wasCancelled, isIllFormed, hasLogika, totalTimeMillis, numOfVCs, numOfSats, vcTimeMillis, satTimeMillis, numOfInternalErrors, numOfErrors, numOfWarnings)
     }
 
     def parseAnalysisCacheKindType(): Analysis.Cache.Kind.Type = {
@@ -1071,6 +1080,9 @@ object JSON {
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
       parser.parseObjectNext()
+      parser.parseObjectKey("isSat")
+      val isSat = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("timeInMs")
       val timeInMs = parser.parseZ()
       parser.parseObjectNext()
@@ -1092,7 +1104,7 @@ object JSON {
       parser.parseObjectKey("output")
       val output = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.Smt2Query(id, pos, timeInMs, title, kind, solverName, query, info, output)
+      return Logika.Verify.Smt2Query(id, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def parseLogikaVerifyInfo(): Logika.Verify.Info = {
