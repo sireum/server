@@ -208,7 +208,8 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Analysis.Coverage""""),
         ("id", printISZ(T, o.id, printString _)),
-        ("cached", printB(o.cached)),
+        ("setCache", printB(o.setCache)),
+        ("cached", printU64(o.cached)),
         ("pos", printPosition(o.pos))
       ))
     }
@@ -903,13 +904,16 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
+      parser.parseObjectKey("setCache")
+      val setCache = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("cached")
-      val cached = parser.parseB()
+      val cached = parser.parseU64()
       parser.parseObjectNext()
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
       parser.parseObjectNext()
-      return Analysis.Coverage(id, cached, pos)
+      return Analysis.Coverage(id, setCache, cached, pos)
     }
 
     def parseAnalysisEnd(): Analysis.End = {

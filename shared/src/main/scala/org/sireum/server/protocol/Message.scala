@@ -142,7 +142,7 @@ object Analysis {
     @strictpure override def posOpt: Option[Position] = None()
   }
 
-  @datatype class Coverage(val id: ISZ[String], cached: B, pos: Position) extends Response {
+  @datatype class Coverage(val id: ISZ[String], val setCache: B, val cached: U64, val pos: Position) extends Response {
     @pure override def posOpt: Option[Position] = {
       return Some(pos)
     }
@@ -174,11 +174,11 @@ object Analysis {
       "Persistent"
     }
 
-    @datatype class Clear(kind: Cache.Kind.Type) extends Request {
+    @datatype class Clear(val kind: Cache.Kind.Type) extends Request {
       @strictpure override def id: ISZ[String] = ISZ()
     }
 
-    @datatype class Cleared(msg: String) extends Response {
+    @datatype class Cleared(val msg: String) extends Response {
       @strictpure override def id: ISZ[String] = ISZ()
 
       @strictpure override def posOpt: Option[Position] = None()
@@ -198,7 +198,7 @@ object Logika {
 
     @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val terminated: B, val labels: ISZ[String], val claims: String) extends Response
 
-    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, isSat: B, val timeInMs: Z, val title: String,
+    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val isSat: B, val timeInMs: Z, val title: String,
                               val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,
                               val info: String, val output: String) extends Response {
       @pure override def posOpt: Option[Position] = {

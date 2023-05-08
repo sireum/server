@@ -258,7 +258,8 @@ object MsgPack {
     def writeAnalysisCoverage(o: Analysis.Coverage): Unit = {
       writer.writeZ(Constants.AnalysisCoverage)
       writer.writeISZ(o.id, writer.writeString _)
-      writer.writeB(o.cached)
+      writer.writeB(o.setCache)
+      writer.writeU64(o.cached)
       writer.writePosition(o.pos)
     }
 
@@ -788,9 +789,10 @@ object MsgPack {
         reader.expectZ(Constants.AnalysisCoverage)
       }
       val id = reader.readISZ(reader.readString _)
-      val cached = reader.readB()
+      val setCache = reader.readB()
+      val cached = reader.readU64()
       val pos = reader.readPosition()
-      return Analysis.Coverage(id, cached, pos)
+      return Analysis.Coverage(id, setCache, cached, pos)
     }
 
     def readAnalysisEnd(): Analysis.End = {

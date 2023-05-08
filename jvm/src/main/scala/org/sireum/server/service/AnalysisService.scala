@@ -211,9 +211,9 @@ object AnalysisService {
                         val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2)]] =
+                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2, U64)]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2)]] =
+                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, U64)]] =
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
@@ -240,16 +240,16 @@ object AnalysisService {
     }
 
     def getTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                                   state: logika.State, smt2: logika.Smt2): Option[ISZ[logika.State]] = {
+                                   state: logika.State, smt2: logika.Smt2): Option[(ISZ[logika.State], U64)] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
       val key = (thf.value, config.fingerprint.value, transition, state)
       val rRef = transitionCache.get(key)
-      var r = Option.none[ISZ[logika.State]]()
+      var r = Option.none[(ISZ[logika.State], U64)]()
       if (rRef != null) {
         if (rRef.get != null) {
-          val (ss, csmt2) = rRef.get
+          val (ss, csmt2, cached) = rRef.get
           smt2.updateFrom(csmt2)
-          r = Some(ss)
+          r = Some((ss, cached))
         } else {
           transitionCache.remove(key)
         }
@@ -258,23 +258,25 @@ object AnalysisService {
     }
 
     def setTransition(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                      state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2): Unit = {
+                      state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2): U64 = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
+      val cached = ops.StringOps(st"(${state.toST}, ${transition.toST})".render).sha3U64(T, T)
       transitionCache.put((thf.value, config.fingerprint.value, transition, state),
-        new SoftReference((nextStates, smt2.minimize)))
+        new SoftReference((nextStates, smt2.minimize, cached)))
+      return cached
     }
 
     def getAssignExpTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                                            smt2: logika.Smt2): Option[ISZ[(logika.State, logika.State.Value)]] = {
+                                            smt2: logika.Smt2): Option[(ISZ[(logika.State, logika.State.Value)], U64)] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
       val key = (thf.value, config.fingerprint.value, exp, state)
       val rRef = expTransitionCache.get(key)
-      var r = Option.none[ISZ[(logika.State, logika.State.Value)]]()
+      var r = Option.none[(ISZ[(logika.State, logika.State.Value)], U64)]()
       if (rRef != null) {
         if (rRef.get != null) {
-          val (svs, csmt2) = rRef.get
+          val (svs, csmt2, cached) = rRef.get
           smt2.updateFrom(csmt2)
-          r = Some(svs)
+          r = Some((svs, cached))
         } else {
           expTransitionCache.remove(key)
         }
@@ -283,10 +285,12 @@ object AnalysisService {
     }
 
     def setAssignExpTransition(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                               nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2): Unit = {
+                               nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2): U64 = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
+      val cached = ops.StringOps(st"(${state.toST}, ${exp.prettyST})".render).sha3U64(T, T)
       expTransitionCache.put((thf.value, config.fingerprint.value, exp, state),
-        new SoftReference((nextStatesValues, smt2.minimize)))
+        new SoftReference((nextStatesValues, smt2.minimize, cached)))
+      return cached
     }
 
     def getSmt2(isSat: B, th: TypeHierarchy, config: logika.Config, timeoutInMs: Z, claims: ISZ[logika.State.Claim]): Option[logika.Smt2Query.Result] = {
@@ -483,8 +487,8 @@ object AnalysisService {
       serverAPI.sendRespond(Timing(id, desc, timeInMs))
     }
 
-    override def coverage(cached: B, pos: Position): Unit = {
-      serverAPI.sendRespond(server.protocol.Analysis.Coverage(id, cached, pos))
+    override def coverage(setCache: B, cached: U64, pos: Position): Unit = {
+      serverAPI.sendRespond(server.protocol.Analysis.Coverage(id, setCache, cached, pos))
       if (pos.beginLine != pos.endLine) {
         serverAPI.reportStatus()
       }
