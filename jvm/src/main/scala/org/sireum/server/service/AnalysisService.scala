@@ -38,6 +38,7 @@ import org.sireum.server.service.AnalysisService.{proyekCache, scriptCache}
 import java.io.ByteArrayOutputStream
 import java.lang.ref.SoftReference
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 object AnalysisService {
 
@@ -335,6 +336,10 @@ object AnalysisService {
                            id: ISZ[String],
                            outputDirOpt: Option[Os.Path],
                            collectStats: B,
+                           _numOfVCs: AtomicLong = new AtomicLong(0),
+                           _numOfSats: AtomicLong = new AtomicLong(0),
+                           _vcMillis: AtomicLong = new AtomicLong(0),
+                           _satMillis: AtomicLong = new AtomicLong(0),
                            val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
                            new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
@@ -343,13 +348,17 @@ object AnalysisService {
     private var isOwned: scala.Boolean = false
     var _ignore: B = F
     var isIllFormed: B = F
-    var numOfVCs: Z = 0
-    var numOfSats: Z = 0
-    var vcMillis: Z = 0
-    var satMillis: Z = 0
     var numOfErrors: Z = 0
     var numOfInternalErrors: Z = 0
     var numOfWarnings: Z = 0
+
+    override def numOfVCs: Z = _numOfVCs.get
+
+    override def numOfSats: Z = _numOfSats.get
+
+    override def vcMillis: Z = _vcMillis.get
+
+    override def satMillis: Z = _satMillis.get
 
     override def $clonable: Boolean = isClonable
 
@@ -369,29 +378,26 @@ object AnalysisService {
       other match {
         case other: ReporterImpl =>
           _messages.addAll(other._messages)
-          if (collectStats) synchronized {
-            isIllFormed = isIllFormed || other.isIllFormed
-            numOfVCs = numOfVCs + other.numOfVCs
-            numOfSats = numOfSats + other.numOfSats
-            vcMillis = vcMillis + other.vcMillis
-            satMillis = satMillis + other.satMillis
-            numOfErrors = numOfErrors + other.numOfErrors
-            numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
-            numOfWarnings = numOfWarnings + other.numOfWarnings
+          isIllFormed = isIllFormed || other.isIllFormed
+          numOfErrors = numOfErrors + other.numOfErrors
+          numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
+          numOfWarnings = numOfWarnings + other.numOfWarnings
+          if (collectStats) {
+            _numOfVCs.addAndGet(other.numOfVCs.toLong)
+            _numOfSats.addAndGet(other.numOfSats.toLong)
+            _vcMillis.addAndGet(other.vcMillis.toLong)
+            _satMillis.addAndGet(other.satMillis.toLong)
           }
           return this
       }
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats, _messages)
+      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats, _numOfVCs, _numOfSats,
+        _vcMillis, _satMillis, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
-      r.numOfVCs = numOfVCs
-      r.numOfSats = numOfSats
-      r.vcMillis = vcMillis
-      r.satMillis = satMillis
       r.numOfInternalErrors = numOfInternalErrors
       r
     }
@@ -457,13 +463,13 @@ object AnalysisService {
 
     override def query(pos: Position, title: String, isSat: B, time: Z, forceReport: B, detailElided: B,
                        r: logika.Smt2Query.Result): Unit = {
-      if (collectStats) synchronized {
+      if (collectStats) {
         if (isSat) {
-          numOfSats = numOfSats + 1
-          satMillis = satMillis + time
+          _numOfSats.incrementAndGet
+          _satMillis.addAndGet(time.toLong)
         } else {
-          numOfVCs = numOfVCs + 1
-          vcMillis = vcMillis + time
+          _numOfVCs.incrementAndGet
+          _vcMillis.addAndGet(time.toLong)
         }
       }
       if (smt2query || forceReport) {
