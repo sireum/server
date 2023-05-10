@@ -374,7 +374,7 @@ object AnalysisService {
       this
     }
 
-    override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = {
+    override def combine(other: logika.Logika.Reporter): logika.Logika.Reporter = synchronized {
       other match {
         case other: ReporterImpl =>
           _messages.addAll(other._messages)
@@ -382,12 +382,6 @@ object AnalysisService {
           numOfErrors = numOfErrors + other.numOfErrors
           numOfInternalErrors = numOfInternalErrors + other.numOfInternalErrors
           numOfWarnings = numOfWarnings + other.numOfWarnings
-          if (collectStats) {
-            _numOfVCs.addAndGet(other.numOfVCs.toLong)
-            _numOfSats.addAndGet(other.numOfSats.toLong)
-            _vcMillis.addAndGet(other.vcMillis.toLong)
-            _satMillis.addAndGet(other.satMillis.toLong)
-          }
           return this
       }
     }
