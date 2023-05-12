@@ -252,7 +252,8 @@ object Logika {
       rawInscription = F,
       flipStrictPure = F,
       transitionCache = F,
-      patternExhaustive = T
+      patternExhaustive = T,
+      pureFun = F
     )
 
   }

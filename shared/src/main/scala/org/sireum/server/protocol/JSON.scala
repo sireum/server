@@ -354,7 +354,8 @@ object JSON {
         ("rawInscription", printB(o.rawInscription)),
         ("flipStrictPure", printB(o.flipStrictPure)),
         ("transitionCache", printB(o.transitionCache)),
-        ("patternExhaustive", printB(o.patternExhaustive))
+        ("patternExhaustive", printB(o.patternExhaustive)),
+        ("pureFun", printB(o.pureFun))
       ))
     }
 
@@ -1267,7 +1268,10 @@ object JSON {
       parser.parseObjectKey("patternExhaustive")
       val patternExhaustive = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache, patternExhaustive)
+      parser.parseObjectKey("pureFun")
+      val pureFun = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache, patternExhaustive, pureFun)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
