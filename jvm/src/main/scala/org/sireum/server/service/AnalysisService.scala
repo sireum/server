@@ -114,7 +114,7 @@ object AnalysisService {
                     req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp)
                   var cancelled = true
                   extension.Cancel.handleCancellable { () =>
-                    checkScript(req, reporter, hasLogika)
+                    checkScript(serverAPI.sireumHome, req, reporter, hasLogika)
                     cancelled = false
                   }
                   (hasLogika, cancelled)
@@ -599,7 +599,7 @@ object AnalysisService {
   var scriptCache: FileCache = createCache(None())
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
 
-  def checkScript(req: Slang.Check.Script, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
+  def checkScript(sireumHome: Os.Path, req: Slang.Check.Script, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.uriOpt != req.uriOpt) {
       scriptCache = createCache(req.uriOpt)
     }
@@ -609,8 +609,10 @@ object AnalysisService {
     }
     val plugins = logika.Logika.defaultPlugins ++
       (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]())
-    logika.Logika.checkScript(req.uriOpt, req.content, config, (th: lang.tipe.TypeHierarchy) =>
-      logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins), th, reporter),
+    val nameExePathMap = logika.Smt2Invoke.nameExePathMap(sireumHome)
+    logika.Logika.checkScript(req.uriOpt, req.content, config, nameExePathMap, Os.numOfProcessors,
+      (th: lang.tipe.TypeHierarchy) => logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins),
+        th, reporter),
       if (config.caching) scriptCache else logika.NoTransitionSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     scriptCache.clearTaskCache()
