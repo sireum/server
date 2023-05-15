@@ -296,8 +296,6 @@ object MsgPack {
 
     def writeLogikaVerifyConfig(o: Logika.Verify.Config): Unit = {
       writer.writeZ(Constants.LogikaVerifyConfig)
-      writer.writeB(o.hint)
-      writer.writeB(o.smt2query)
       writer.writeB(o.infoFlow)
       writeorgsireumlogikaConfig(o.config)
     }
@@ -385,7 +383,6 @@ object MsgPack {
       writer.writeB(o.isSat)
       writer.writeString(o.name)
       writer.writeString(o.exe)
-      writer.writeZ(o.rlimit)
       writer.writeISZ(o.opts, writer.writeString _)
     }
 
@@ -861,11 +858,9 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants.LogikaVerifyConfig)
       }
-      val hint = reader.readB()
-      val smt2query = reader.readB()
       val infoFlow = reader.readB()
       val config = readorgsireumlogikaConfig()
-      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
+      return Logika.Verify.Config(infoFlow, config)
     }
 
     def readLogikaVerifyState(): Logika.Verify.State = {
@@ -992,9 +987,8 @@ object MsgPack {
       val isSat = reader.readB()
       val name = reader.readString()
       val exe = reader.readString()
-      val rlimit = reader.readZ()
       val opts = reader.readISZ(reader.readString _)
-      return org.sireum.logika.Smt2Config(isSat, name, exe, rlimit, opts)
+      return org.sireum.logika.Smt2Config(isSat, name, exe, opts)
     }
 
     def readorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {

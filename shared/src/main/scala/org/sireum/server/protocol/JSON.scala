@@ -264,8 +264,6 @@ object JSON {
     @pure def printLogikaVerifyConfig(o: Logika.Verify.Config): ST = {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.Config""""),
-        ("hint", printB(o.hint)),
-        ("smt2query", printB(o.smt2query)),
         ("infoFlow", printB(o.infoFlow)),
         ("config", printorgsireumlogikaConfig(o.config))
       ))
@@ -377,7 +375,6 @@ object JSON {
         ("isSat", printB(o.isSat)),
         ("name", printString(o.name)),
         ("exe", printString(o.exe)),
-        ("rlimit", printZ(o.rlimit)),
         ("opts", printISZ(T, o.opts, printString _))
       ))
     }
@@ -1028,19 +1025,13 @@ object JSON {
       if (!typeParsed) {
         parser.parseObjectType("Logika.Verify.Config")
       }
-      parser.parseObjectKey("hint")
-      val hint = parser.parseB()
-      parser.parseObjectNext()
-      parser.parseObjectKey("smt2query")
-      val smt2query = parser.parseB()
-      parser.parseObjectNext()
       parser.parseObjectKey("infoFlow")
       val infoFlow = parser.parseB()
       parser.parseObjectNext()
       parser.parseObjectKey("config")
       val config = parseorgsireumlogikaConfig()
       parser.parseObjectNext()
-      return Logika.Verify.Config(hint, smt2query, infoFlow, config)
+      return Logika.Verify.Config(infoFlow, config)
     }
 
     def parseLogikaVerifyState(): Logika.Verify.State = {
@@ -1313,13 +1304,10 @@ object JSON {
       parser.parseObjectKey("exe")
       val exe = parser.parseString()
       parser.parseObjectNext()
-      parser.parseObjectKey("rlimit")
-      val rlimit = parser.parseZ()
-      parser.parseObjectNext()
       parser.parseObjectKey("opts")
       val opts = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Config(isSat, name, exe, rlimit, opts)
+      return org.sireum.logika.Smt2Config(isSat, name, exe, opts)
     }
 
     def parseorgsireumlogikaLoopId(): org.sireum.logika.LoopId = {
