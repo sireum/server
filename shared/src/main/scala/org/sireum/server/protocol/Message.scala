@@ -239,7 +239,7 @@ object Logika {
       simplifiedQuery = F,
       checkInfeasiblePatternMatch = T,
       fpRoundingMode = "RNE",
-      caching = F,
+      smt2Caching = F,
       smt2Seq = F,
       branchPar = logika.Config.BranchPar.All,
       branchParCores = 1,
@@ -253,7 +253,8 @@ object Logika {
       flipStrictPure = F,
       transitionCache = F,
       patternExhaustive = T,
-      pureFun = F
+      pureFun = F,
+      detailedInfo = F
     )
 
   }

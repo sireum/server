@@ -62,7 +62,8 @@ object AnalysisService {
             Some(Os.path(req.proyek) / "out" / "logika")
           case _ => None()
         }
-        val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, serverAPI, req.id, outputDirOpt, F)
+        val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
+          serverAPI, req.id, outputDirOpt, F)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
@@ -179,7 +180,7 @@ object AnalysisService {
         cacheTypeHierarchy = serverAPI.cacheType,
         mapBox = mapBox,
         config = defaultConfig,
-        cache = if (defaultConfig.caching) cache else logika.NoTransitionSmt2Cache.create,
+        cache = if (defaultConfig.smt2Caching) cache else logika.NoTransitionSmt2Cache.create,
         files = req.files,
         filesWatched = T,
         vfiles = req.vfiles,
@@ -332,6 +333,7 @@ object AnalysisService {
 
   final class ReporterImpl(hint: B,
                            smt2query: B,
+                           detailedInfo: B,
                            serverAPI: server.ServerAPI,
                            id: ISZ[String],
                            outputDirOpt: Option[Os.Path],
@@ -387,8 +389,8 @@ object AnalysisService {
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats, _numOfVCs, _numOfSats,
-        _vcMillis, _satMillis, _messages)
+      val r = new ReporterImpl(hint, smt2query, detailedInfo, serverAPI, id, outputDirOpt, collectStats, _numOfVCs,
+        _numOfSats, _vcMillis, _satMillis, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
       r.numOfErrors = numOfErrors
@@ -448,7 +450,8 @@ object AnalysisService {
       serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.ok, labels, claims))
     }
 
-    override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type, message: String): Unit = {
+    override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type,
+                        message: String): Unit = if (detailedInfo) {
       val k: Logika.Verify.Info.Kind.Type = kind match {
         case org.sireum.logika.Logika.Reporter.Info.Kind.Verified => Logika.Verify.Info.Kind.Verified
       }
@@ -495,7 +498,7 @@ object AnalysisService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, serverAPI, id, outputDirOpt, collectStats)
+      return new ReporterImpl(hint, smt2query, detailedInfo, serverAPI, id, outputDirOpt, collectStats)
     }
 
     override def messages: ISZ[Message] = {
@@ -609,7 +612,7 @@ object AnalysisService {
     logika.Logika.checkScript(req.uriOpt, req.content, config, nameExePathMap, Os.numOfProcessors,
       (th: lang.tipe.TypeHierarchy) => logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins),
         th, reporter),
-      if (config.caching) scriptCache else logika.NoTransitionSmt2Cache.create,
+      if (config.smt2Caching) scriptCache else logika.NoTransitionSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     scriptCache.clearTaskCache()
     System.gc()

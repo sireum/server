@@ -357,7 +357,7 @@ object MsgPack {
       writer.writeB(o.simplifiedQuery)
       writer.writeB(o.checkInfeasiblePatternMatch)
       writer.writeString(o.fpRoundingMode)
-      writer.writeB(o.caching)
+      writer.writeB(o.smt2Caching)
       writer.writeB(o.smt2Seq)
       write_logikaConfigBranchParType(o.branchPar)
       writer.writeZ(o.branchParCores)
@@ -372,6 +372,7 @@ object MsgPack {
       writer.writeB(o.transitionCache)
       writer.writeB(o.patternExhaustive)
       writer.writeB(o.pureFun)
+      writer.writeB(o.detailedInfo)
     }
 
     def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
@@ -952,7 +953,7 @@ object MsgPack {
       val simplifiedQuery = reader.readB()
       val checkInfeasiblePatternMatch = reader.readB()
       val fpRoundingMode = reader.readString()
-      val caching = reader.readB()
+      val smt2Caching = reader.readB()
       val smt2Seq = reader.readB()
       val branchPar = read_logikaConfigBranchParType()
       val branchParCores = reader.readZ()
@@ -967,7 +968,8 @@ object MsgPack {
       val transitionCache = reader.readB()
       val patternExhaustive = reader.readB()
       val pureFun = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache, patternExhaustive, pureFun)
+      val detailedInfo = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache, patternExhaustive, pureFun, detailedInfo)
     }
 
     def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
