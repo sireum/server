@@ -250,7 +250,7 @@ object Logika {
       interpContracts = F,
       elideEncoding = F,
       rawInscription = F,
-      flipStrictPure = F,
+      strictPureMode = logika.Config.StrictPureMode.Default,
       transitionCache = F,
       patternExhaustive = T,
       pureFun = F,

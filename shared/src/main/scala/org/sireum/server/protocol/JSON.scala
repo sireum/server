@@ -350,7 +350,7 @@ object JSON {
         ("interpContracts", printB(o.interpContracts)),
         ("elideEncoding", printB(o.elideEncoding)),
         ("rawInscription", printB(o.rawInscription)),
-        ("flipStrictPure", printB(o.flipStrictPure)),
+        ("strictPureMode", print_logikaConfigStrictPureModeType(o.strictPureMode)),
         ("transitionCache", printB(o.transitionCache)),
         ("patternExhaustive", printB(o.patternExhaustive)),
         ("pureFun", printB(o.pureFun)),
@@ -366,6 +366,18 @@ object JSON {
       }
       return printObject(ISZ(
         ("type", printString("org.sireum.logika.Config.BranchPar")),
+        ("value", printString(value))
+      ))
+    }
+
+    @pure def print_logikaConfigStrictPureModeType(o: org.sireum.logika.Config.StrictPureMode.Type): ST = {
+      val value: String = o match {
+        case org.sireum.logika.Config.StrictPureMode.Default => "Default"
+        case org.sireum.logika.Config.StrictPureMode.Flip => "Flip"
+        case org.sireum.logika.Config.StrictPureMode.Uninterpreted => "Uninterpreted"
+      }
+      return printObject(ISZ(
+        ("type", printString("org.sireum.logika.Config.StrictPureMode")),
         ("value", printString(value))
       ))
     }
@@ -1251,8 +1263,8 @@ object JSON {
       parser.parseObjectKey("rawInscription")
       val rawInscription = parser.parseB()
       parser.parseObjectNext()
-      parser.parseObjectKey("flipStrictPure")
-      val flipStrictPure = parser.parseB()
+      parser.parseObjectKey("strictPureMode")
+      val strictPureMode = parse_logikaConfigStrictPureModeType()
       parser.parseObjectNext()
       parser.parseObjectKey("transitionCache")
       val transitionCache = parser.parseB()
@@ -1266,7 +1278,7 @@ object JSON {
       parser.parseObjectKey("detailedInfo")
       val detailedInfo = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, flipStrictPure, transitionCache, patternExhaustive, pureFun, detailedInfo)
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
@@ -1287,6 +1299,27 @@ object JSON {
         case _ =>
           parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.BranchPar.")
           return org.sireum.logika.Config.BranchPar.byOrdinal(0).get
+      }
+    }
+
+    def parse_logikaConfigStrictPureModeType(): org.sireum.logika.Config.StrictPureMode.Type = {
+      val r = parse_logikaConfigStrictPureModeT(F)
+      return r
+    }
+
+    def parse_logikaConfigStrictPureModeT(typeParsed: B): org.sireum.logika.Config.StrictPureMode.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.Config.StrictPureMode")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      org.sireum.logika.Config.StrictPureMode.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.StrictPureMode.")
+          return org.sireum.logika.Config.StrictPureMode.byOrdinal(0).get
       }
     }
 
