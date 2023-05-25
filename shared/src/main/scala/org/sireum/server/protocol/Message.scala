@@ -254,7 +254,8 @@ object Logika {
       transitionCache = F,
       patternExhaustive = T,
       pureFun = F,
-      detailedInfo = F
+      detailedInfo = F,
+      satTimeout = F
     )
 
   }
