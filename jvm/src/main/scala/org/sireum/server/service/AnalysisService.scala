@@ -111,8 +111,9 @@ object AnalysisService {
               case req: Slang.Check.Script =>
                 check(req, (reporter: ReporterImpl) => {
                   val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
-                  val hasLogika = req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
-                    req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp)
+                  val hasLogika = req.uriOpt.map(_.value.endsWith(".logika")).getOrElseEager(F) ||
+                    (req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
+                      req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp))
                   var cancelled = true
                   extension.Cancel.handleCancellable { () =>
                     checkScript(serverAPI.sireumHome, req, reporter, hasLogika)
