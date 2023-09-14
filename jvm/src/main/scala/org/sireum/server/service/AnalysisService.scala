@@ -408,13 +408,13 @@ object AnalysisService {
     }
 
     override def state(plugins: ISZ[logika.plugin.ClaimPlugin], posOpt: Option[Position], context: ISZ[String],
-                       th: TypeHierarchy, s: logika.State, atLinesFresh: B): Unit = if (hint) {
+                       th: TypeHierarchy, s: logika.State, atLinesFresh: B, atRewrite: B): Unit = if (hint) {
       var claims: String = ""
       var err: String = ""
       posOpt match {
         case Some(pos) =>
           try {
-            val (es, _) = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh)
+            val (es, _) = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh, atRewrite)
             claims =
               st"""{
                   |  ${(for (e <- es) yield e.prettyST, ";\n")}

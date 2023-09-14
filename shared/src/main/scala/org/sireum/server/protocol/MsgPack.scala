@@ -374,6 +374,9 @@ object MsgPack {
       writer.writeB(o.pureFun)
       writer.writeB(o.detailedInfo)
       writer.writeB(o.satTimeout)
+      write_logikaConfigVerificationModeType(o.mode)
+      write_logikaConfigBackgroundModeType(o.background)
+      writer.writeB(o.atRewrite)
     }
 
     def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
@@ -381,6 +384,14 @@ object MsgPack {
     }
 
     def write_logikaConfigStrictPureModeType(o: org.sireum.logika.Config.StrictPureMode.Type): Unit = {
+      writer.writeZ(o.ordinal)
+    }
+
+    def write_logikaConfigBackgroundModeType(o: org.sireum.logika.Config.BackgroundMode.Type): Unit = {
+      writer.writeZ(o.ordinal)
+    }
+
+    def write_logikaConfigVerificationModeType(o: org.sireum.logika.Config.VerificationMode.Type): Unit = {
       writer.writeZ(o.ordinal)
     }
 
@@ -975,7 +986,10 @@ object MsgPack {
       val pureFun = reader.readB()
       val detailedInfo = reader.readB()
       val satTimeout = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout)
+      val mode = read_logikaConfigVerificationModeType()
+      val background = read_logikaConfigBackgroundModeType()
+      val atRewrite = reader.readB()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, mode, background, atRewrite)
     }
 
     def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
@@ -986,6 +1000,16 @@ object MsgPack {
     def read_logikaConfigStrictPureModeType(): org.sireum.logika.Config.StrictPureMode.Type = {
       val r = reader.readZ()
       return org.sireum.logika.Config.StrictPureMode.byOrdinal(r).get
+    }
+
+    def read_logikaConfigBackgroundModeType(): org.sireum.logika.Config.BackgroundMode.Type = {
+      val r = reader.readZ()
+      return org.sireum.logika.Config.BackgroundMode.byOrdinal(r).get
+    }
+
+    def read_logikaConfigVerificationModeType(): org.sireum.logika.Config.VerificationMode.Type = {
+      val r = reader.readZ()
+      return org.sireum.logika.Config.VerificationMode.byOrdinal(r).get
     }
 
     def readorgsireumlogikaSmt2Config(): org.sireum.logika.Smt2Config = {

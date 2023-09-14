@@ -355,7 +355,10 @@ object JSON {
         ("patternExhaustive", printB(o.patternExhaustive)),
         ("pureFun", printB(o.pureFun)),
         ("detailedInfo", printB(o.detailedInfo)),
-        ("satTimeout", printB(o.satTimeout))
+        ("satTimeout", printB(o.satTimeout)),
+        ("mode", print_logikaConfigVerificationModeType(o.mode)),
+        ("background", print_logikaConfigBackgroundModeType(o.background)),
+        ("atRewrite", printB(o.atRewrite))
       ))
     }
 
@@ -379,6 +382,30 @@ object JSON {
       }
       return printObject(ISZ(
         ("type", printString("org.sireum.logika.Config.StrictPureMode")),
+        ("value", printString(value))
+      ))
+    }
+
+    @pure def print_logikaConfigBackgroundModeType(o: org.sireum.logika.Config.BackgroundMode.Type): ST = {
+      val value: String = o match {
+        case org.sireum.logika.Config.BackgroundMode.Type => "Type"
+        case org.sireum.logika.Config.BackgroundMode.Save => "Save"
+        case org.sireum.logika.Config.BackgroundMode.Disabled => "Disabled"
+      }
+      return printObject(ISZ(
+        ("type", printString("org.sireum.logika.Config.BackgroundMode")),
+        ("value", printString(value))
+      ))
+    }
+
+    @pure def print_logikaConfigVerificationModeType(o: org.sireum.logika.Config.VerificationMode.Type): ST = {
+      val value: String = o match {
+        case org.sireum.logika.Config.VerificationMode.Manual => "Manual"
+        case org.sireum.logika.Config.VerificationMode.Auto => "Auto"
+        case org.sireum.logika.Config.VerificationMode.SymExe => "SymExe"
+      }
+      return printObject(ISZ(
+        ("type", printString("org.sireum.logika.Config.VerificationMode")),
         ("value", printString(value))
       ))
     }
@@ -1282,7 +1309,16 @@ object JSON {
       parser.parseObjectKey("satTimeout")
       val satTimeout = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout)
+      parser.parseObjectKey("mode")
+      val mode = parse_logikaConfigVerificationModeType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("background")
+      val background = parse_logikaConfigBackgroundModeType()
+      parser.parseObjectNext()
+      parser.parseObjectKey("atRewrite")
+      val atRewrite = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, mode, background, atRewrite)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {
@@ -1324,6 +1360,48 @@ object JSON {
         case _ =>
           parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.StrictPureMode.")
           return org.sireum.logika.Config.StrictPureMode.byOrdinal(0).get
+      }
+    }
+
+    def parse_logikaConfigBackgroundModeType(): org.sireum.logika.Config.BackgroundMode.Type = {
+      val r = parse_logikaConfigBackgroundModeT(F)
+      return r
+    }
+
+    def parse_logikaConfigBackgroundModeT(typeParsed: B): org.sireum.logika.Config.BackgroundMode.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.Config.BackgroundMode")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      org.sireum.logika.Config.BackgroundMode.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.BackgroundMode.")
+          return org.sireum.logika.Config.BackgroundMode.byOrdinal(0).get
+      }
+    }
+
+    def parse_logikaConfigVerificationModeType(): org.sireum.logika.Config.VerificationMode.Type = {
+      val r = parse_logikaConfigVerificationModeT(F)
+      return r
+    }
+
+    def parse_logikaConfigVerificationModeT(typeParsed: B): org.sireum.logika.Config.VerificationMode.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.logika.Config.VerificationMode")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      org.sireum.logika.Config.VerificationMode.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for org.sireum.logika.Config.VerificationMode.")
+          return org.sireum.logika.Config.VerificationMode.byOrdinal(0).get
       }
     }
 

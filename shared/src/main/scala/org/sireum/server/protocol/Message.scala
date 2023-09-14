@@ -255,7 +255,10 @@ object Logika {
       patternExhaustive = T,
       pureFun = F,
       detailedInfo = F,
-      satTimeout = F
+      satTimeout = F,
+      mode = logika.Config.VerificationMode.SymExe,
+      background = logika.Config.BackgroundMode.Type,
+      atRewrite = T
     )
 
   }
