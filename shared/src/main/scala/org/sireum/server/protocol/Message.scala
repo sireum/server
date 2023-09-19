@@ -256,7 +256,7 @@ object Logika {
       pureFun = F,
       detailedInfo = F,
       satTimeout = F,
-      mode = logika.Config.VerificationMode.SymExe,
+      isAuto = T,
       background = logika.Config.BackgroundMode.Type,
       atRewrite = T
     )
