@@ -358,7 +358,8 @@ object JSON {
         ("satTimeout", printB(o.satTimeout)),
         ("isAuto", printB(o.isAuto)),
         ("background", print_logikaConfigBackgroundModeType(o.background)),
-        ("atRewrite", printB(o.atRewrite))
+        ("atRewrite", printB(o.atRewrite)),
+        ("searchPc", printB(o.searchPc))
       ))
     }
 
@@ -1306,7 +1307,10 @@ object JSON {
       parser.parseObjectKey("atRewrite")
       val atRewrite = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite)
+      parser.parseObjectKey("searchPc")
+      val searchPc = parser.parseB()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, branchParCores, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite, searchPc)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {

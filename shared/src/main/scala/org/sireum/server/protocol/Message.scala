@@ -258,7 +258,8 @@ object Logika {
       satTimeout = F,
       isAuto = T,
       background = logika.Config.BackgroundMode.Type,
-      atRewrite = T
+      atRewrite = T,
+      searchPc = F
     )
 
   }
