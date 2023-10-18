@@ -26,7 +26,7 @@ class AnalysisServerTest extends TestSuite {
            |
            |def foo(): Unit = {
            |  bar()
-           |}""".stripMargin, 0)))
+           |}""".stripMargin, 0, F)))
 
     * - test(T, id => Seq(
       Slang.Check.Script(F, T, id, Some("script.cmd"),
@@ -53,28 +53,28 @@ class AnalysisServerTest extends TestSuite {
            |
            |import org.sireum._
            |
-           |assert(T)""".stripMargin, 0)))
+           |assert(T)""".stripMargin, 0, F)))
 
     * - test(T, id => Seq(
       Slang.Check.Script(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(F)""".stripMargin, 0)))
+           |assert(F)""".stripMargin, 0, F)))
 
     * - test(T, id => Seq(
       Slang.Check.Script(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(T)""".stripMargin, 0)))
+           |assert(T)""".stripMargin, 0, F)))
 
     * - test(F, id => Seq(
       Slang.Check.Script(F, T, id, None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
-           |assert(T)""".stripMargin, 0),
+           |assert(T)""".stripMargin, 0, F),
       Cancel(id)))
 
   }

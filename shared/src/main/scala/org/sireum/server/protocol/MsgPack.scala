@@ -215,6 +215,7 @@ object MsgPack {
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
       writer.writeZ(o.line)
+      writer.writeB(o.renumberProofSteps)
     }
 
     def writeSlangCheckProject(o: Slang.Check.Project): Unit = {
@@ -225,6 +226,7 @@ object MsgPack {
       writer.writeHashSMap(o.files, writer.writeString _, writer.writeString _)
       writer.writeISZ(o.vfiles, writer.writeString _)
       writer.writeZ(o.line)
+      writer.writeOption(o.renumberProofStepsUriOpt, writer.writeString _)
     }
 
     def writeSlangRewriteKindType(o: Slang.Rewrite.Kind.Type): Unit = {
@@ -717,7 +719,8 @@ object MsgPack {
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
       val line = reader.readZ()
-      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line)
+      val renumberProofSteps = reader.readB()
+      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, renumberProofSteps)
     }
 
     def readSlangCheckProject(): Slang.Check.Project = {
@@ -735,7 +738,8 @@ object MsgPack {
       val files = reader.readHashSMap(reader.readString _, reader.readString _)
       val vfiles = reader.readISZ(reader.readString _)
       val line = reader.readZ()
-      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line)
+      val renumberProofStepsUriOpt = reader.readOption(reader.readString _)
+      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, renumberProofStepsUriOpt)
     }
 
     def readSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {

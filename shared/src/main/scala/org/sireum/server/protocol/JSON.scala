@@ -146,7 +146,8 @@ object JSON {
         ("id", printISZ(T, o.id, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
-        ("line", printZ(o.line))
+        ("line", printZ(o.line)),
+        ("renumberProofSteps", printB(o.renumberProofSteps))
       ))
     }
 
@@ -158,7 +159,8 @@ object JSON {
         ("proyek", printString(o.proyek)),
         ("files", printHashSMap(T, o.files, printString _, printString _)),
         ("vfiles", printISZ(T, o.vfiles, printString _)),
-        ("line", printZ(o.line))
+        ("line", printZ(o.line)),
+        ("renumberProofStepsUriOpt", printOption(T, o.renumberProofStepsUriOpt, printString _))
       ))
     }
 
@@ -794,7 +796,10 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line)
+      parser.parseObjectKey("renumberProofSteps")
+      val renumberProofSteps = parser.parseB()
+      parser.parseObjectNext()
+      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, renumberProofSteps)
     }
 
     def parseSlangCheckProject(): Slang.Check.Project = {
@@ -824,7 +829,10 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line)
+      parser.parseObjectKey("renumberProofStepsUriOpt")
+      val renumberProofStepsUriOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectNext()
+      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, renumberProofStepsUriOpt)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {

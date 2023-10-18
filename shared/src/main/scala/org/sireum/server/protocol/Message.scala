@@ -97,7 +97,8 @@ object Slang {
                            val id: ISZ[String],
                            val uriOpt: Option[String],
                            val content: String,
-                           val line: Z) extends Check
+                           val line: Z,
+                           val renumberProofSteps: B) extends Check
 
 
     @datatype class Project(val isBackground: B,
@@ -105,7 +106,8 @@ object Slang {
                             val proyek: String,
                             val files: HashSMap[String, String],
                             val vfiles: ISZ[String],
-                            val line: Z) extends Check
+                            val line: Z,
+                            val renumberProofStepsUriOpt: Option[String]) extends Check
 
   }
 

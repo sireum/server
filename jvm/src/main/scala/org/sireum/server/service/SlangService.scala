@@ -36,7 +36,10 @@ import org.sireum.message.{Message, Reporter}
   }
 
   def canHandle(request: server.protocol.Request): B = {
-    return request.isInstanceOf[server.protocol.Slang.Rewrite.Request]
+    request match {
+      case request: server.protocol.Slang.Rewrite.Request if request.kind != server.protocol.Slang.Rewrite.Kind.RenumberProofSteps => return T
+      case _ => return F
+    }
   }
 
   def handle(serverAPI: server.ServerAPI, request: server.protocol.Request): Unit = {
@@ -67,55 +70,6 @@ import org.sireum.message.{Message, Reporter}
                   "An error occurred when inserting constructor parameter val modifiers"), None(), 0))
             }
         }
-      case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
-        val reporter = Reporter.create
-        org.sireum.lang.FrontEnd.rewrite(org.sireum.lang.FrontEnd.Rewrite.RenumberProofSteps,
-          req.isScript, req.fileUriOpt, req.text, reporter) match {
-          case org.sireum.Some((newText, n)) =>
-            for (m <- reporter.messages) {
-              serverAPI.sendRespond(server.protocol.Report(req.id, m))
-            }
-            if (n != 0) {
-              if (reporter.hasWarning) {
-                var warnings = 0
-                for (m <- reporter.messages) {
-                  if (m.level == message.Level.Warning) {
-                    warnings = warnings + 1
-                  }
-                }
-                serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                  req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
-                    s"Renumbered $n proof step(s) with $warnings warning(s)"), Some(newText), n))
-              } else {
-                serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                  req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
-                    s"Successfully renumbered $n proof step(s)"), Some(newText), n))
-              }
-            } else {
-              if (reporter.hasError) {
-                serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                  req.id, req.kind, Message(message.Level.Error, None(), "Slang Rewrite",
-                    "Cannot renumber proof steps for an ill-formed program"), None(), 0))
-              } else {
-                serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                  req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
-                    "All proof steps have already been numbered in order"), None(), n))
-              }
-            }
-          case _ =>
-            for (m <- reporter.messages) {
-              serverAPI.sendRespond(server.protocol.Report(req.id, m))
-            }
-            if (reporter.hasError) {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                req.id, req.kind, Message(message.Level.Error, None(), "Slang Rewrite",
-                  "Cannot renumber proof steps for an ill-formed program"), None(), 0))
-            } else {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-                req.id, req.kind, Message(message.Level.InternalError, None(), "Slang Rewrite",
-                  "An error occurred when renumbering proof steps"), None(), 0))
-            }
-        }
       case server.protocol.Slang.Rewrite.Kind.ReplaceEnumSymbols =>
         val reporter = Reporter.create
         org.sireum.lang.FrontEnd.rewrite(org.sireum.lang.FrontEnd.Rewrite.ReplaceEnumSymbols,
@@ -141,6 +95,7 @@ import org.sireum.message.{Message, Reporter}
                   "An error occurred when replacing enum element symbols"), None(), 0))
             }
         }
+      case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps => halt("Infeasible")
     }
   }
 

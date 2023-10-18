@@ -109,18 +109,31 @@ object AnalysisService {
           try {
             req match {
               case req: Slang.Check.Script =>
-                check(req, (reporter: ReporterImpl) => {
-                  val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
-                  val hasLogika = req.uriOpt.map(_.value.endsWith(".logika")).getOrElseEager(F) ||
-                    (req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
-                      req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp))
-                  var cancelled = true
-                  extension.Cancel.handleCancellable { () =>
-                    checkScript(serverAPI.sireumHome, req, reporter, hasLogika)
-                    cancelled = false
+                if (req.renumberProofSteps) {
+                  val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
+                    serverAPI, req.id, None(), F)
+                  lang.parser.Parser.parseTopUnit[lang.ast.TopUnit.Program](req.content, T, F, req.uriOpt, reporter) match {
+                    case Some(program) if !reporter.hasError =>
+                      val (_, program2) = lang.FrontEnd.checkWorksheet(0, None(), program, reporter)
+                      val trans = lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
+                      trans.transformTopUnit(program2)
+                      renumberProofSteps(req, trans, req.content, reporter)
+                    case _ =>
                   }
-                  (hasLogika, cancelled)
-                })
+                } else {
+                  check(req, (reporter: ReporterImpl) => {
+                    val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
+                    val hasLogika = req.uriOpt.map(_.value.endsWith(".logika")).getOrElseEager(F) ||
+                      (req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
+                        req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp))
+                    var cancelled = true
+                    extension.Cancel.handleCancellable { () =>
+                      checkScript(serverAPI.sireumHome, req, reporter, hasLogika)
+                      cancelled = false
+                    }
+                    (hasLogika, cancelled)
+                  })
+                }
               case req: Slang.Check.Project =>
                 check(req, (reporter: ReporterImpl) => {
                   var cancelled = true
@@ -203,8 +216,79 @@ object AnalysisService {
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
       cache.clearTaskCache()
+      req.renumberProofStepsUriOpt match {
+        case Some(uri) =>
+          var found = F
+          for ((mid, map) <- cache.uriMap.entries if !found) {
+            if (map.contains(uri)) {
+              found = T
+              val trans = lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
+              cache.thMap.get(mid) match {
+                case Some(th) =>
+                  for (info <- th.nameMap.values) {
+                    info.posOpt match {
+                      case Some(pos) if pos.uriOpt == req.renumberProofStepsUriOpt =>
+                        info.mtransform(trans)
+                      case _ =>
+                    }
+                  }
+                case _ =>
+              }
+              renumberProofSteps(req, trans, map.get(uri).get.content, reporter)
+            }
+          }
+          if (!found) {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Error, None(), "Slang Rewrite",
+                s"Could not find file ${Os.uriToPath(uri)}"), None(), 0))
+          }
+        case _ =>
+      }
+      System.gc()
     }
-    System.gc()
+
+    def renumberProofSteps(req: Slang.Check, trans: lang.ast.Util.ProofStepsNumberMapper, text: String, reporter: Reporter): Unit = {
+      def renumberProofResult(req: Slang.Check, n: Z, newText: String, reporter: Reporter): Unit = {
+        if (n != 0) {
+          if (reporter.hasWarning) {
+            var warnings = 0
+            for (m <- reporter.messages) {
+              if (m.level == message.Level.Warning) {
+                warnings = warnings + 1
+              }
+            }
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
+                s"Renumbered $n proof step(s) with $warnings warning(s)"), Some(newText), n))
+          } else {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
+                s"Successfully renumbered $n proof step(s)"), Some(newText), n))
+          }
+        } else {
+          if (reporter.hasError) {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Error, None(), "Slang Rewrite",
+                "Cannot renumber proof steps for an ill-formed program"), None(), 0))
+          } else {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
+                "All proof steps have already been numbered in order"), None(), n))
+          }
+        }
+      }
+
+      reporter.reports(trans.reporter.messages)
+      val n = trans.map.size
+      if (n == 0 || reporter.hasError) {
+        renumberProofResult(req, 0, text, reporter)
+      }
+      val content = conversions.String.toCis(text)
+      ops.StringOps.replace(content, trans.map) match {
+        case Either.Left(value) => renumberProofResult(req, n, value, reporter)
+        case Either.Right(message) => halt(s"Internal error: $message")
+      }
+    }
   }
 
   final class FileCache(val uriOpt: Option[String],
