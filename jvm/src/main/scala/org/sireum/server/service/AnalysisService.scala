@@ -303,6 +303,8 @@ object AnalysisService {
                         val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, U64)]] =
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
+                        new java.util.concurrent.ConcurrentHashMap,
+                        val patternsCache: java.util.Map[(Long, ISZ[String]), SoftReference[ISZ[logika.RewritingSystem.Rewriter.Pattern]]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
 
     private var isOwned: scala.Boolean = false
@@ -408,6 +410,25 @@ object AnalysisService {
       val thf = (if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody).value +
         timeoutInMs.toLong + (if (isSat) 0 else 1)
       smt2Cache.put((thf, config.fingerprint.value, claims), new SoftReference(r))
+    }
+
+    def getPatterns(th: TypeHierarchy, name: ISZ[String]): Option[ISZ[logika.RewritingSystem.Rewriter.Pattern]] = {
+      val key = (th.fingerprintNoMethodBody.value, name)
+      val rRef = patternsCache.get(key)
+      var r = Option.none[ISZ[logika.RewritingSystem.Rewriter.Pattern]]()
+      if (rRef != null) {
+        if (rRef.get != null) {
+          r = Some(rRef.get)
+        } else {
+          patternsCache.remove(key)
+        }
+      }
+      return r
+    }
+
+    def setPatterns(th: TypeHierarchy, name: ISZ[String], patterns: ISZ[logika.RewritingSystem.Rewriter.Pattern]): Unit = {
+      val key = (th.fingerprintNoMethodBody.value, name)
+      patternsCache.put(key, new SoftReference(patterns))
     }
 
     def clearTaskCache(): Unit = {
