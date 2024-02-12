@@ -261,7 +261,9 @@ object Logika {
       isAuto = T,
       background = logika.Config.BackgroundMode.Type,
       atRewrite = T,
-      searchPc = F
+      searchPc = F,
+      rwTrace = T,
+      rwMax = 100
     )
 
   }
