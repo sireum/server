@@ -244,7 +244,6 @@ object Logika {
       smt2Caching = F,
       smt2Seq = F,
       branchPar = logika.Config.BranchPar.All,
-      branchParCores = 1,
       atLinesFresh = F,
       interp = F,
       loopBound = 3,
@@ -263,7 +262,8 @@ object Logika {
       atRewrite = T,
       searchPc = F,
       rwTrace = T,
-      rwMax = 100
+      rwMax = 100,
+      rwPar = T
     )
 
   }
