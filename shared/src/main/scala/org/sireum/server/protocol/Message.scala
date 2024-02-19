@@ -263,7 +263,8 @@ object Logika {
       searchPc = F,
       rwTrace = T,
       rwMax = 100,
-      rwPar = T
+      rwPar = T,
+      rwEvalTrace = T
     )
 
   }
