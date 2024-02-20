@@ -304,7 +304,7 @@ object AnalysisService {
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val patternsCache: java.util.Map[(Long, ISZ[String]), SoftReference[ISZ[logika.RewritingSystem.Rewriter.Pattern]]] =
+                        val patternsCache: java.util.Map[(Long, Boolean, ISZ[String]), SoftReference[ISZ[logika.RewritingSystem.Rewriter.Pattern]]] =
                         new java.util.concurrent.ConcurrentHashMap) extends logika.CacheProperties {
 
     private var isOwned: scala.Boolean = false
@@ -412,8 +412,8 @@ object AnalysisService {
       smt2Cache.put((thf, config.fingerprint.value, claims), new SoftReference(r))
     }
 
-    def getPatterns(th: TypeHierarchy, name: ISZ[String]): Option[ISZ[logika.RewritingSystem.Rewriter.Pattern]] = {
-      val key = (th.fingerprintNoMethodBody.value, name)
+    def getPatterns(th: TypeHierarchy, isInObject: B, name: ISZ[String]): Option[ISZ[logika.RewritingSystem.Rewriter.Pattern]] = {
+      val key = (th.fingerprintNoMethodBody.value, isInObject.value, name)
       val rRef = patternsCache.get(key)
       var r = Option.none[ISZ[logika.RewritingSystem.Rewriter.Pattern]]()
       if (rRef != null) {
@@ -426,8 +426,8 @@ object AnalysisService {
       return r
     }
 
-    def setPatterns(th: TypeHierarchy, name: ISZ[String], patterns: ISZ[logika.RewritingSystem.Rewriter.Pattern]): Unit = {
-      val key = (th.fingerprintNoMethodBody.value, name)
+    def setPatterns(th: TypeHierarchy, isInObject: B, name: ISZ[String], patterns: ISZ[logika.RewritingSystem.Rewriter.Pattern]): Unit = {
+      val key = (th.fingerprintNoMethodBody.value, isInObject.value, name)
       patternsCache.put(key, new SoftReference(patterns))
     }
 
