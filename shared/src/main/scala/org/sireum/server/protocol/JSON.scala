@@ -448,6 +448,20 @@ object JSON {
       ))
     }
 
+    @pure def print_langastPurityType(o: org.sireum.lang.ast.Purity.Type): ST = {
+      val value: String = o match {
+        case org.sireum.lang.ast.Purity.Impure => "Impure"
+        case org.sireum.lang.ast.Purity.Pure => "Pure"
+        case org.sireum.lang.ast.Purity.Memoize => "Memoize"
+        case org.sireum.lang.ast.Purity.StrictPure => "StrictPure"
+        case org.sireum.lang.ast.Purity.Abs => "Abs"
+      }
+      return printObject(ISZ(
+        ("type", printString("org.sireum.lang.ast.Purity")),
+        ("value", printString(value))
+      ))
+    }
+
     @pure def print_langastMethodModeType(o: org.sireum.lang.ast.MethodMode.Type): ST = {
       val value: String = o match {
         case org.sireum.lang.ast.MethodMode.Method => "Method"
@@ -514,7 +528,7 @@ object JSON {
     @pure def print_langastTypedFun(o: org.sireum.lang.ast.Typed.Fun): ST = {
       return printObject(ISZ(
         ("type", st""""org.sireum.lang.ast.Typed.Fun""""),
-        ("isPure", printB(o.isPure)),
+        ("purity", print_langastPurityType(o.purity)),
         ("isByName", printB(o.isByName)),
         ("args", printISZ(F, o.args, print_langastTyped _)),
         ("ret", print_langastTyped(o.ret))
@@ -1489,6 +1503,27 @@ object JSON {
       return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
     }
 
+    def parse_langastPurityType(): org.sireum.lang.ast.Purity.Type = {
+      val r = parse_langastPurityT(F)
+      return r
+    }
+
+    def parse_langastPurityT(typeParsed: B): org.sireum.lang.ast.Purity.Type = {
+      if (!typeParsed) {
+        parser.parseObjectType("org.sireum.lang.ast.Purity")
+      }
+      parser.parseObjectKey("value")
+      var i = parser.offset
+      val s = parser.parseString()
+      parser.parseObjectNext()
+      org.sireum.lang.ast.Purity.byName(s) match {
+        case Some(r) => return r
+        case _ =>
+          parser.parseException(i, s"Invalid element name '$s' for org.sireum.lang.ast.Purity.")
+          return org.sireum.lang.ast.Purity.byOrdinal(0).get
+      }
+    }
+
     def parse_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {
       val r = parse_langastMethodModeT(F)
       return r
@@ -1592,8 +1627,8 @@ object JSON {
       if (!typeParsed) {
         parser.parseObjectType("org.sireum.lang.ast.Typed.Fun")
       }
-      parser.parseObjectKey("isPure")
-      val isPure = parser.parseB()
+      parser.parseObjectKey("purity")
+      val purity = parse_langastPurityType()
       parser.parseObjectNext()
       parser.parseObjectKey("isByName")
       val isByName = parser.parseB()
@@ -1604,7 +1639,7 @@ object JSON {
       parser.parseObjectKey("ret")
       val ret = parse_langastTyped()
       parser.parseObjectNext()
-      return org.sireum.lang.ast.Typed.Fun(isPure, isByName, args, ret)
+      return org.sireum.lang.ast.Typed.Fun(purity, isByName, args, ret)
     }
 
     def parse_langastTypedTypeVar(): org.sireum.lang.ast.Typed.TypeVar = {

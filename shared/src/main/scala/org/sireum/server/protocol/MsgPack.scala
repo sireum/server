@@ -425,6 +425,10 @@ object MsgPack {
       writer.writeB(o.cached)
     }
 
+    def write_langastPurityType(o: org.sireum.lang.ast.Purity.Type): Unit = {
+      writer.writeZ(o.ordinal)
+    }
+
     def write_langastMethodModeType(o: org.sireum.lang.ast.MethodMode.Type): Unit = {
       writer.writeZ(o.ordinal)
     }
@@ -463,7 +467,7 @@ object MsgPack {
 
     def write_langastTypedFun(o: org.sireum.lang.ast.Typed.Fun): Unit = {
       writer.writeZ(Constants._langastTypedFun)
-      writer.writeB(o.isPure)
+      write_langastPurityType(o.purity)
       writer.writeB(o.isByName)
       writer.writeISZ(o.args, write_langastTyped _)
       write_langastTyped(o.ret)
@@ -1068,6 +1072,11 @@ object MsgPack {
       return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
     }
 
+    def read_langastPurityType(): org.sireum.lang.ast.Purity.Type = {
+      val r = reader.readZ()
+      return org.sireum.lang.ast.Purity.byOrdinal(r).get
+    }
+
     def read_langastMethodModeType(): org.sireum.lang.ast.MethodMode.Type = {
       val r = reader.readZ()
       return org.sireum.lang.ast.MethodMode.byOrdinal(r).get
@@ -1137,11 +1146,11 @@ object MsgPack {
       if (!typeParsed) {
         reader.expectZ(Constants._langastTypedFun)
       }
-      val isPure = reader.readB()
+      val purity = read_langastPurityType()
       val isByName = reader.readB()
       val args = reader.readISZ(read_langastTyped _)
       val ret = read_langastTyped()
-      return org.sireum.lang.ast.Typed.Fun(isPure, isByName, args, ret)
+      return org.sireum.lang.ast.Typed.Fun(purity, isByName, args, ret)
     }
 
     def read_langastTypedTypeVar(): org.sireum.lang.ast.Typed.TypeVar = {
