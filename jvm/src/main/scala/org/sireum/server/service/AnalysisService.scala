@@ -67,7 +67,7 @@ object AnalysisService {
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
-        serverAPI.sendRespond(server.protocol.Analysis.Start(req.id, startTime))
+        serverAPI.sendResponse(server.protocol.Analysis.Start(req.id, startTime))
         serverAPI.reportStatus()
         try {
           val p = f(reporter)
@@ -78,11 +78,11 @@ object AnalysisService {
             cancelled = true
             val baos = new ByteArrayOutputStream()
             t.printStackTrace(new java.io.PrintStream(baos))
-            serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
+            serverAPI.sendResponse(Report(req.id, Message(Level.InternalError, None(), "logika",
               s"""Internal error occurred:
                  |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
         } finally {
-          serverAPI.sendRespond(server.protocol.Analysis.End(
+          serverAPI.sendResponse(server.protocol.Analysis.End(
             isBackground = req.isBackground,
             id = req.id,
             wasCancelled = cancelled,
@@ -238,7 +238,7 @@ object AnalysisService {
             }
           }
           if (!found) {
-            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+            serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
               req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Error, None(), "Slang Rewrite",
                 s"Could not find file ${Os.uriToPath(uri)}"), None(), 0))
           }
@@ -257,21 +257,21 @@ object AnalysisService {
                 warnings = warnings + 1
               }
             }
-            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+            serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
               req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
                 s"Renumbered $n proof step(s) with $warnings warning(s)"), Some(newText), n))
           } else {
-            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+            serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
               req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
                 s"Successfully renumbered $n proof step(s)"), Some(newText), n))
           }
         } else {
           if (reporter.hasError) {
-            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+            serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
               req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Error, None(), "Slang Rewrite",
                 "Cannot renumber proof steps for an ill-formed program"), None(), 0))
           } else {
-            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+            serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
               req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Info, None(), "Slang Rewrite",
                 "All proof steps have already been numbered in order"), None(), n))
           }
@@ -298,9 +298,9 @@ object AnalysisService {
                         val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2, U64)]] =
+                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2, ISZ[Response])]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, U64)]] =
+                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, ISZ[Response])]] =
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap,
@@ -329,16 +329,20 @@ object AnalysisService {
     }
 
     def getTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                                   state: logika.State, smt2: logika.Smt2): Option[(ISZ[logika.State], U64)] = {
+                                   state: logika.State, smt2: logika.Smt2, reporter: logika.Logika.Reporter): Option[ISZ[logika.State]] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
       val key = (thf.value, config.fingerprint.value, transition, state)
       val rRef = transitionCache.get(key)
-      var r = Option.none[(ISZ[logika.State], U64)]()
+      var r = Option.none[ISZ[logika.State]]()
       if (rRef != null) {
         if (rRef.get != null) {
-          val (ss, csmt2, cached) = rRef.get
+          val (ss, csmt2, responses) = rRef.get
           smt2.updateFrom(csmt2)
-          r = Some((ss, cached))
+          r = Some(ss)
+          val rep = reporter.asInstanceOf[ReporterImpl]
+          for (r <- responses) {
+            rep._serverAPI.sendResponse(r.updateId(rep.id))
+          }
         } else {
           transitionCache.remove(key)
         }
@@ -347,25 +351,30 @@ object AnalysisService {
     }
 
     def setTransition(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                      state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2): U64 = {
+                      state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2, reporter: logika.Logika.Reporter,
+                      numOfReports: Z): Unit = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val cached = ops.StringOps(st"(${state.toST}, ${transition.toST})".render).sha3U64(T, T)
+      val responses = reporter.asInstanceOf[ReporterImpl].responses
+      val transitionResponses = ops.ISZOps(responses).slice(numOfReports, responses.size)
       transitionCache.put((thf.value, config.fingerprint.value, transition, state),
-        new SoftReference((nextStates, smt2.minimize, cached)))
-      return cached
+        new SoftReference((nextStates, smt2.minimize, transitionResponses)))
     }
 
     def getAssignExpTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                                            smt2: logika.Smt2): Option[(ISZ[(logika.State, logika.State.Value)], U64)] = {
+                                            smt2: logika.Smt2, reporter: logika.Logika.Reporter): Option[ISZ[(logika.State, logika.State.Value)]] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
       val key = (thf.value, config.fingerprint.value, exp, state)
       val rRef = expTransitionCache.get(key)
-      var r = Option.none[(ISZ[(logika.State, logika.State.Value)], U64)]()
+      var r = Option.none[ISZ[(logika.State, logika.State.Value)]]()
       if (rRef != null) {
         if (rRef.get != null) {
-          val (svs, csmt2, cached) = rRef.get
+          val (svs, csmt2, responses) = rRef.get
           smt2.updateFrom(csmt2)
-          r = Some((svs, cached))
+          r = Some(svs)
+          val rep = reporter.asInstanceOf[ReporterImpl]
+          for (r <- responses) {
+            rep._serverAPI.sendResponse(r.updateId(rep.id))
+          }
         } else {
           expTransitionCache.remove(key)
         }
@@ -374,12 +383,13 @@ object AnalysisService {
     }
 
     def setAssignExpTransition(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                               nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2): U64 = {
+                               nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2,
+                               reporter: logika.Logika.Reporter, numOfReports: Z): Unit = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val cached = ops.StringOps(st"(${state.toST}, ${exp.prettyST})".render).sha3U64(T, T)
+      val responses = reporter.asInstanceOf[ReporterImpl].responses
+      val transitionResponses = ops.ISZOps(responses).slice(numOfReports, responses.size)
       expTransitionCache.put((thf.value, config.fingerprint.value, exp, state),
-        new SoftReference((nextStatesValues, smt2.minimize, cached)))
-      return cached
+        new SoftReference((nextStatesValues, smt2.minimize, transitionResponses)))
     }
 
     def getSmt2(isSat: B, th: TypeHierarchy, config: logika.Config, timeoutInMs: Z, claims: ISZ[logika.State.Claim]): Option[logika.Smt2Query.Result] = {
@@ -440,8 +450,8 @@ object AnalysisService {
   final class ReporterImpl(hint: B,
                            smt2query: B,
                            detailedInfo: B,
-                           serverAPI: server.ServerAPI,
-                           id: ISZ[String],
+                           val _serverAPI: server.ServerAPI,
+                           val id: ISZ[String],
                            outputDirOpt: Option[Os.Path],
                            collectStats: B,
                            _numOfVCs: AtomicLong = new AtomicLong(0),
@@ -449,7 +459,10 @@ object AnalysisService {
                            _vcMillis: AtomicLong = new AtomicLong(0),
                            _satMillis: AtomicLong = new AtomicLong(0),
                            val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
-                           new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
+                           new _root_.java.util.concurrent.ConcurrentLinkedQueue,
+                           val _responses: _root_.java.util.concurrent.ConcurrentHashMap[Int, ISZ[Response]] =
+                           new _root_.java.util.concurrent.ConcurrentHashMap,
+                           parentOpt: scala.Option[ReporterImpl] = scala.None) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
 
     private var isClonable: scala.Boolean = true
@@ -459,6 +472,38 @@ object AnalysisService {
     var numOfErrors: Z = 0
     var numOfInternalErrors: Z = 0
     var numOfWarnings: Z = 0
+
+    override def numOfReports: Z = responses.size
+
+    def responseKey: Int = System.identityHashCode(Thread.currentThread)
+
+    def responses: ISZ[Response] = {
+      var rs = _responses.get(responseKey)
+      if (rs == null) {
+        rs = ISZ()
+        _responses.put(responseKey, rs)
+      }
+      rs
+    }
+
+    def setResponses(rs: ISZ[Response]): Unit = {
+      _responses.put(responseKey, rs)
+    }
+
+    def sendResponse(r: Response): Unit = {
+      setResponses(responses :+ r)
+      parentOpt match {
+        case scala.Some(parent) => parent.sendResponse(r)
+        case _ => _serverAPI.sendResponse(r)
+      }
+    }
+
+    def child: logika.Logika.Reporter = {
+      new ReporterImpl(hint = hint, smt2query = smt2query, detailedInfo = detailedInfo,
+        _serverAPI = _serverAPI, id = id, outputDirOpt = outputDirOpt, collectStats = collectStats,
+        _numOfVCs = _numOfVCs, _numOfSats = _numOfSats, _vcMillis = _vcMillis, _satMillis = _satMillis,
+        _messages = _messages, _responses = new _root_.java.util.concurrent.ConcurrentHashMap, parentOpt = scala.Some(this))
+    }
 
     override def numOfVCs: Z = _numOfVCs.get
 
@@ -495,7 +540,7 @@ object AnalysisService {
     }
 
     override def $clone: ReporterImpl = {
-      val r = new ReporterImpl(hint, smt2query, detailedInfo, serverAPI, id, outputDirOpt, collectStats, _numOfVCs,
+      val r = new ReporterImpl(hint, smt2query, detailedInfo, _serverAPI, id, outputDirOpt, collectStats, _numOfVCs,
         _numOfSats, _vcMillis, _satMillis, _messages)
       r.isIllFormed = isIllFormed
       r.numOfWarnings = numOfWarnings
@@ -529,7 +574,7 @@ object AnalysisService {
               val baos = new java.io.ByteArrayOutputStream
               e.printStackTrace(new java.io.PrintStream(baos))
               err = new java.lang.String(baos.toByteArray, "UTF-8")
-              server.Server.Ext.log(serverAPI.logFile, err)
+              server.Server.Ext.log(_serverAPI.logFile, err)
               baos.close()
           }
         case _ =>
@@ -553,7 +598,7 @@ object AnalysisService {
           case _ =>
         }
       }
-      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.ok, labels, claims))
+      sendResponse(Logika.Verify.State(id, F, posOpt, !s.ok, labels, claims))
     }
 
     override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type,
@@ -561,7 +606,7 @@ object AnalysisService {
       val k: Logika.Verify.Info.Kind.Type = kind match {
         case org.sireum.logika.Logika.Reporter.Info.Kind.Verified => Logika.Verify.Info.Kind.Verified
       }
-      serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
+      sendResponse(Logika.Verify.Info(id, F, pos, k, message))
     }
 
     override def query(pos: Position, title: String, isSat: B, time: Z, forceReport: B, detailElided: B,
@@ -588,23 +633,23 @@ object AnalysisService {
             f.canon.string
           case _ => r.query
         }
-        serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, isSat, time, title, r.kind, r.solverName, query, r.info, r.output))
+        sendResponse(Logika.Verify.Smt2Query(id, F, pos, isSat, time, title, r.kind, r.solverName, query, r.info, r.output))
       }
     }
 
     override def timing(desc: String, timeInMs: Z): Unit = {
-      serverAPI.sendRespond(Timing(id, desc, timeInMs))
+      sendResponse(Timing(id, desc, timeInMs))
     }
 
-    override def coverage(setCache: B, cached: U64, pos: Position): Unit = {
-      serverAPI.sendRespond(server.protocol.Analysis.Coverage(id, setCache, cached, pos))
+    override def coverage(pos: Position): Unit = {
+      sendResponse(server.protocol.Analysis.Coverage(id, pos))
       if (pos.beginLine != pos.endLine) {
-        serverAPI.reportStatus()
+        _serverAPI.reportStatus()
       }
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, detailedInfo, serverAPI, id, outputDirOpt, collectStats)
+      return new ReporterImpl(hint, smt2query, detailedInfo, _serverAPI, id, outputDirOpt, collectStats)
     }
 
     override def messages: ISZ[Message] = {
@@ -634,7 +679,7 @@ object AnalysisService {
           case Level.Warning => numOfWarnings = numOfWarnings + 1
           case _ =>
         }
-        serverAPI.sendRespond(Report(id, m))
+        sendResponse(Report(id, m))
         _messages.add(m)
       }
     }
@@ -836,7 +881,7 @@ final class AnalysisService(numOfThreads: Z) extends Service {
             }
             "Persistent cache"
         }
-        serverAPI.sendRespond(Cache.Cleared(s"$prefix have been successfully cleared"))
+        serverAPI.sendResponse(Cache.Cleared(s"$prefix have been successfully cleared"))
       case _ => halt(s"Infeasible: $req")
     }
   }

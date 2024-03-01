@@ -51,21 +51,21 @@ import org.sireum.message.{Message, Reporter}
           req.isScript, req.fileUriOpt, req.text, reporter) match {
           case org.sireum.Some((newText, n)) =>
             if (n != 0) {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   s"Successfully inserted $n constructor parameter val modifier(s)"), Some(newText), n))
             } else {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   "All constructor parameters have already been annotated with val or var"), None(), n))
             }
           case _ =>
             if (reporter.hasError) {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Error, None(), "Slang Rewrite",
                   "Cannot insert constructor parameter val modifiers for an ill-formed program"), None(), 0))
             } else {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.InternalError, None(), "Slang Rewrite",
                   "An error occurred when inserting constructor parameter val modifiers"), None(), 0))
             }
@@ -76,21 +76,21 @@ import org.sireum.message.{Message, Reporter}
           req.isScript, req.fileUriOpt, req.text, reporter) match {
           case org.sireum.Some((newText, n)) =>
             if (n != 0) {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   s"Successfully replaced $n enum element symbol(s) with strings"), Some(newText), n))
             } else {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Info, None(), "Slang Rewrite",
                   "All enum elements have already in string form"), None(), n))
             }
           case _ =>
             if (reporter.hasError) {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.Error, None(), "Slang Rewrite",
                   "Cannot replace enum element symbols for an ill-formed program"), None(), 0))
             } else {
-              serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              serverAPI.sendResponse(server.protocol.Slang.Rewrite.Response(
                 req.id, req.kind, Message(message.Level.InternalError, None(), "Slang Rewrite",
                   "An error occurred when replacing enum element symbols"), None(), 0))
             }

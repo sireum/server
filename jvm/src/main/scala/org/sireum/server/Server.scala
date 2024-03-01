@@ -98,7 +98,7 @@ object Server {
 
   def defaultVersions: ISZ[(String, String)]
 
-  def sendRespond(resp: protocol.Response): Unit
+  def sendResponse(resp: protocol.Response): Unit
 
   def totalMemory: Z = {
     return Server.Ext.totalMemory
@@ -109,7 +109,7 @@ object Server {
   }
 
   def reportStatus(): Unit = {
-    sendRespond(protocol.Status.Response(totalMemory, freeMemory))
+    sendResponse(protocol.Status.Response(totalMemory, freeMemory))
   }
 
   def log(isRequest: B, text: String): Unit = {
@@ -133,7 +133,7 @@ object Server {
                               val scalaHome: Os.Path,
                               val sireumHome: Os.Path,
                               val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
-  def sendRespond(resp: protocol.Response): Unit = {
+  def sendResponse(resp: protocol.Response): Unit = {
     val respString = protocol.JSON.fromResponse(resp, T)
     resp match {
       case _: protocol.Status.Response =>
@@ -151,7 +151,7 @@ object Server {
                                  val scalaHome: Os.Path,
                                  val sireumHome: Os.Path,
                                  val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
-  def sendRespond(resp: protocol.Response): Unit = {
+  def sendResponse(resp: protocol.Response): Unit = {
     val respString = protocol.CustomMessagePack.fromResponse(resp)
     resp match {
       case _: protocol.Status.Response =>
@@ -231,7 +231,7 @@ object Server {
           service.handle(serverAPI, req)
         }
         if (!found) {
-          serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
+          serverAPI.sendResponse(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
             "server", s"Unimplemented request handler for: $req")))
         }
     }
@@ -239,11 +239,11 @@ object Server {
   }
 
   def handleVersion(): Unit = {
-    serverAPI.sendRespond(protocol.Version.Response(version))
+    serverAPI.sendResponse(protocol.Version.Response(version))
   }
 
   def handleStatus(): Unit = {
-    serverAPI.sendRespond(protocol.Status.Response(Server.Ext.totalMemory, Server.Ext.freeMemory))
+    serverAPI.sendResponse(protocol.Status.Response(Server.Ext.totalMemory, Server.Ext.freeMemory))
     Server.Ext.gc()
   }
 
@@ -285,6 +285,6 @@ object Server {
   }
 
   def reportError(id: ISZ[String], msg: String, input: String): Unit = {
-    serverAPI.sendRespond(protocol.Report(id, message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
+    serverAPI.sendResponse(protocol.Report(id, message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
   }
 }

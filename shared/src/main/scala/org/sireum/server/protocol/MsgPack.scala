@@ -260,8 +260,6 @@ object MsgPack {
     def writeAnalysisCoverage(o: Analysis.Coverage): Unit = {
       writer.writeZ(Constants.AnalysisCoverage)
       writer.writeISZ(o.id, writer.writeString _)
-      writer.writeB(o.setCache)
-      writer.writeU64(o.cached)
       writer.writePosition(o.pos)
     }
 
@@ -305,6 +303,7 @@ object MsgPack {
     def writeLogikaVerifyState(o: Logika.Verify.State): Unit = {
       writer.writeZ(Constants.LogikaVerifyState)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeB(o.cached)
       writer.writeOption(o.posOpt, writer.writePosition _)
       writer.writeB(o.terminated)
       writer.writeISZ(o.labels, writer.writeString _)
@@ -314,6 +313,7 @@ object MsgPack {
     def writeLogikaVerifySmt2Query(o: Logika.Verify.Smt2Query): Unit = {
       writer.writeZ(Constants.LogikaVerifySmt2Query)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeB(o.cached)
       writer.writePosition(o.pos)
       writer.writeB(o.isSat)
       writer.writeZ(o.timeInMs)
@@ -328,6 +328,7 @@ object MsgPack {
     def writeLogikaVerifyInfo(o: Logika.Verify.Info): Unit = {
       writer.writeZ(Constants.LogikaVerifyInfo)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeB(o.cached)
       writer.writePosition(o.pos)
       writeLogikaVerifyInfoKindType(o.kind)
       writer.writeString(o.message)
@@ -812,10 +813,8 @@ object MsgPack {
         reader.expectZ(Constants.AnalysisCoverage)
       }
       val id = reader.readISZ(reader.readString _)
-      val setCache = reader.readB()
-      val cached = reader.readU64()
       val pos = reader.readPosition()
-      return Analysis.Coverage(id, setCache, cached, pos)
+      return Analysis.Coverage(id, pos)
     }
 
     def readAnalysisEnd(): Analysis.End = {
@@ -898,11 +897,12 @@ object MsgPack {
         reader.expectZ(Constants.LogikaVerifyState)
       }
       val id = reader.readISZ(reader.readString _)
+      val cached = reader.readB()
       val posOpt = reader.readOption(reader.readPosition _)
       val terminated = reader.readB()
       val labels = reader.readISZ(reader.readString _)
       val claims = reader.readString()
-      return Logika.Verify.State(id, posOpt, terminated, labels, claims)
+      return Logika.Verify.State(id, cached, posOpt, terminated, labels, claims)
     }
 
     def readLogikaVerifySmt2Query(): Logika.Verify.Smt2Query = {
@@ -915,6 +915,7 @@ object MsgPack {
         reader.expectZ(Constants.LogikaVerifySmt2Query)
       }
       val id = reader.readISZ(reader.readString _)
+      val cached = reader.readB()
       val pos = reader.readPosition()
       val isSat = reader.readB()
       val timeInMs = reader.readZ()
@@ -924,7 +925,7 @@ object MsgPack {
       val query = reader.readString()
       val info = reader.readString()
       val output = reader.readString()
-      return Logika.Verify.Smt2Query(id, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
+      return Logika.Verify.Smt2Query(id, cached, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def readLogikaVerifyInfo(): Logika.Verify.Info = {
@@ -937,10 +938,11 @@ object MsgPack {
         reader.expectZ(Constants.LogikaVerifyInfo)
       }
       val id = reader.readISZ(reader.readString _)
+      val cached = reader.readB()
       val pos = reader.readPosition()
       val kind = readLogikaVerifyInfoKindType()
       val message = reader.readString()
-      return Logika.Verify.Info(id, pos, kind, message)
+      return Logika.Verify.Info(id, cached, pos, kind, message)
     }
 
     def readLogikaVerifyInfoKindType(): Logika.Verify.Info.Kind.Type = {

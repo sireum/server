@@ -210,8 +210,6 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Analysis.Coverage""""),
         ("id", printISZ(T, o.id, printString _)),
-        ("setCache", printB(o.setCache)),
-        ("cached", printU64(o.cached)),
         ("pos", printPosition(o.pos))
       ))
     }
@@ -275,6 +273,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.State""""),
         ("id", printISZ(T, o.id, printString _)),
+        ("cached", printB(o.cached)),
         ("posOpt", printOption(F, o.posOpt, printPosition _)),
         ("terminated", printB(o.terminated)),
         ("labels", printISZ(T, o.labels, printString _)),
@@ -286,6 +285,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.Smt2Query""""),
         ("id", printISZ(T, o.id, printString _)),
+        ("cached", printB(o.cached)),
         ("pos", printPosition(o.pos)),
         ("isSat", printB(o.isSat)),
         ("timeInMs", printZ(o.timeInMs)),
@@ -302,6 +302,7 @@ object JSON {
       return printObject(ISZ(
         ("type", st""""Logika.Verify.Info""""),
         ("id", printISZ(T, o.id, printString _)),
+        ("cached", printB(o.cached)),
         ("pos", printPosition(o.pos)),
         ("kind", printLogikaVerifyInfoKindType(o.kind)),
         ("message", printString(o.message))
@@ -957,16 +958,10 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      parser.parseObjectKey("setCache")
-      val setCache = parser.parseB()
-      parser.parseObjectNext()
-      parser.parseObjectKey("cached")
-      val cached = parser.parseU64()
-      parser.parseObjectNext()
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
       parser.parseObjectNext()
-      return Analysis.Coverage(id, setCache, cached, pos)
+      return Analysis.Coverage(id, pos)
     }
 
     def parseAnalysisEnd(): Analysis.End = {
@@ -1101,6 +1096,9 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
+      parser.parseObjectKey("cached")
+      val cached = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("posOpt")
       val posOpt = parser.parseOption(parser.parsePosition _)
       parser.parseObjectNext()
@@ -1113,7 +1111,7 @@ object JSON {
       parser.parseObjectKey("claims")
       val claims = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.State(id, posOpt, terminated, labels, claims)
+      return Logika.Verify.State(id, cached, posOpt, terminated, labels, claims)
     }
 
     def parseLogikaVerifySmt2Query(): Logika.Verify.Smt2Query = {
@@ -1127,6 +1125,9 @@ object JSON {
       }
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("cached")
+      val cached = parser.parseB()
       parser.parseObjectNext()
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
@@ -1155,7 +1156,7 @@ object JSON {
       parser.parseObjectKey("output")
       val output = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.Smt2Query(id, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
+      return Logika.Verify.Smt2Query(id, cached, pos, isSat, timeInMs, title, kind, solverName, query, info, output)
     }
 
     def parseLogikaVerifyInfo(): Logika.Verify.Info = {
@@ -1170,6 +1171,9 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
+      parser.parseObjectKey("cached")
+      val cached = parser.parseB()
+      parser.parseObjectNext()
       parser.parseObjectKey("pos")
       val pos = parser.parsePosition()
       parser.parseObjectNext()
@@ -1179,7 +1183,7 @@ object JSON {
       parser.parseObjectKey("message")
       val message = parser.parseString()
       parser.parseObjectNext()
-      return Logika.Verify.Info(id, pos, kind, message)
+      return Logika.Verify.Info(id, cached, pos, kind, message)
     }
 
     def parseLogikaVerifyInfoKindType(): Logika.Verify.Info.Kind.Type = {

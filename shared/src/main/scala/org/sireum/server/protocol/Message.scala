@@ -41,16 +41,25 @@ import org.sireum.message.Message
 @datatype trait Response {
   @pure def id: ISZ[String]
   @pure def posOpt: Option[Position]
+  @pure def updateId(newId: ISZ[String]): Response
 }
 
 @datatype class Cancel(val id: ISZ[String]) extends Request
 
 @datatype class Timing(val id: ISZ[String], val desc: String, val timeInMs: Z) extends Response {
   @strictpure override def posOpt: Option[Position] = None()
+  @pure def updateId(newId: ISZ[String]): Response = {
+    val thiz = this
+    return thiz(id = newId)
+  }
 }
 
 @datatype class Report(val id: ISZ[String], val message: Message) extends Response {
   @strictpure override def posOpt: Option[Position] = message.posOpt
+  @pure def updateId(newId: ISZ[String]): Response = {
+    val thiz = this
+    return thiz(id = newId)
+  }
 }
 
 
@@ -63,6 +72,9 @@ object Version {
   @datatype class Response(val version: String) extends org.sireum.server.protocol.Response {
     @strictpure override def id: ISZ[String] = ISZ()
     @strictpure override def posOpt: Option[Position] = None()
+    @pure def updateId(newId: ISZ[String]): Response = {
+      return this
+    }
   }
 
 }
@@ -77,6 +89,9 @@ object Status {
   @datatype class Response(val totalMemory: Z, val freeMemory: Z) extends org.sireum.server.protocol.Response {
     @strictpure override def id: ISZ[String] = ISZ()
     @strictpure override def posOpt: Option[Position] = None()
+    @pure def updateId(newId: ISZ[String]): Response = {
+      return this
+    }
   }
 
 }
@@ -133,6 +148,10 @@ object Slang {
       @pure override def posOpt: Option[Position] = {
         return message.posOpt
       }
+      @pure def updateId(newId: ISZ[String]): Response = {
+        val thiz = this
+        return thiz(id = newId)
+      }
     }
 
   }
@@ -142,11 +161,19 @@ object Analysis {
 
   @datatype class Start(val id: ISZ[String], val currentTimeMillis: Z) extends Response {
     @strictpure override def posOpt: Option[Position] = None()
+    @pure def updateId(newId: ISZ[String]): Response = {
+      val thiz = this
+      return thiz(id = newId)
+    }
   }
 
-  @datatype class Coverage(val id: ISZ[String], val setCache: B, val cached: U64, val pos: Position) extends Response {
+  @datatype class Coverage(val id: ISZ[String], val pos: Position) extends Response {
     @pure override def posOpt: Option[Position] = {
       return Some(pos)
+    }
+    @pure def updateId(newId: ISZ[String]): Response = {
+      val thiz = this
+      return thiz(id = newId)
     }
   }
 
@@ -164,6 +191,10 @@ object Analysis {
                       val numOfErrors: Z,
                       val numOfWarnings: Z) extends Response {
     @strictpure override def posOpt: Option[Position] = None()
+    @pure def updateId(newId: ISZ[String]): Response = {
+      val thiz = this
+      return thiz(id = newId)
+    }
   }
 
   object Cache {
@@ -182,8 +213,10 @@ object Analysis {
 
     @datatype class Cleared(val msg: String) extends Response {
       @strictpure override def id: ISZ[String] = ISZ()
-
       @strictpure override def posOpt: Option[Position] = None()
+      @pure def updateId(newId: ISZ[String]): Response = {
+        return this
+      }
     }
   }
 
@@ -198,19 +231,33 @@ object Logika {
       @strictpure def id: ISZ[String] = ISZ()
     }
 
-    @datatype class State(val id: ISZ[String], val posOpt: Option[Position], val terminated: B, val labels: ISZ[String], val claims: String) extends Response
+    @datatype class State(val id: ISZ[String], val cached: B, val posOpt: Option[Position], val terminated: B,
+                          val labels: ISZ[String], val claims: String) extends Response {
+      @pure def updateId(newId: ISZ[String]): Response = {
+        val thiz = this
+        return thiz(id = newId, cached = T)
+      }
+    }
 
-    @datatype class Smt2Query(val id: ISZ[String], val pos: Position, val isSat: B, val timeInMs: Z, val title: String,
+    @datatype class Smt2Query(val id: ISZ[String], val cached: B, val pos: Position, val isSat: B, val timeInMs: Z, val title: String,
                               val kind: logika.Smt2Query.Result.Kind.Type, val solverName: String, val query: String,
                               val info: String, val output: String) extends Response {
       @pure override def posOpt: Option[Position] = {
         return Some(pos)
       }
+      @pure def updateId(newId: ISZ[String]): Response = {
+        val thiz = this
+        return thiz(id = newId, cached = T)
+      }
     }
 
-    @datatype class Info(val id: ISZ[String], val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response {
+    @datatype class Info(val id: ISZ[String], val cached: B, val pos: Position, val kind: Info.Kind.Type, val message: String) extends Response {
       @pure override def posOpt: Option[Position] = {
         return Some(pos)
+      }
+      @pure def updateId(newId: ISZ[String]): Response = {
+        val thiz = this
+        return thiz(id = newId, cached = T)
       }
     }
 
