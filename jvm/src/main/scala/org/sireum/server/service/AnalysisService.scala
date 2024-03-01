@@ -460,8 +460,7 @@ object AnalysisService {
                            _satMillis: AtomicLong = new AtomicLong(0),
                            val _messages: _root_.java.util.concurrent.ConcurrentLinkedQueue[Message] =
                            new _root_.java.util.concurrent.ConcurrentLinkedQueue,
-                           val _responses: _root_.java.util.concurrent.ConcurrentHashMap[Int, ISZ[Response]] =
-                           new _root_.java.util.concurrent.ConcurrentHashMap,
+                           var responses: ISZ[Response] = ISZ(),
                            parentOpt: scala.Option[ReporterImpl] = scala.None) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
 
@@ -475,23 +474,12 @@ object AnalysisService {
 
     override def numOfReports: Z = responses.size
 
-    def responseKey: Int = System.identityHashCode(Thread.currentThread)
-
-    def responses: ISZ[Response] = {
-      var rs = _responses.get(responseKey)
-      if (rs == null) {
-        rs = ISZ()
-        _responses.put(responseKey, rs)
-      }
-      rs
-    }
-
     def setResponses(rs: ISZ[Response]): Unit = {
-      _responses.put(responseKey, rs)
+      responses = rs
     }
 
     def sendResponse(r: Response): Unit = {
-      setResponses(responses :+ r)
+      synchronized(setResponses(responses :+ r))
       parentOpt match {
         case scala.Some(parent) => parent.sendResponse(r)
         case _ => _serverAPI.sendResponse(r)
@@ -502,7 +490,7 @@ object AnalysisService {
       new ReporterImpl(hint = hint, smt2query = smt2query, detailedInfo = detailedInfo,
         _serverAPI = _serverAPI, id = id, outputDirOpt = outputDirOpt, collectStats = collectStats,
         _numOfVCs = _numOfVCs, _numOfSats = _numOfSats, _vcMillis = _vcMillis, _satMillis = _satMillis,
-        _messages = _messages, _responses = new _root_.java.util.concurrent.ConcurrentHashMap, parentOpt = scala.Some(this))
+        _messages = _messages, responses = ISZ(), parentOpt = scala.Some(this))
     }
 
     override def numOfVCs: Z = _numOfVCs.get
@@ -649,7 +637,7 @@ object AnalysisService {
     }
 
     override def empty: logika.Logika.Reporter = {
-      return new ReporterImpl(hint, smt2query, detailedInfo, _serverAPI, id, outputDirOpt, collectStats)
+      return new ReporterImpl(hint, smt2query, detailedInfo, _serverAPI, id, outputDirOpt, collectStats, parentOpt = scala.Some(this))
     }
 
     override def messages: ISZ[Message] = {
