@@ -217,6 +217,7 @@ object Logika {
     object Info {
       @enum object Kind {
         "Verified"
+        "Error"
       }
     }
 

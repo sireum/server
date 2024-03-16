@@ -311,6 +311,7 @@ object JSON {
     @pure def printLogikaVerifyInfoKindType(o: Logika.Verify.Info.Kind.Type): ST = {
       val value: String = o match {
         case Logika.Verify.Info.Kind.Verified => "Verified"
+        case Logika.Verify.Info.Kind.Error => "Error"
       }
       return printObject(ISZ(
         ("type", printString("Logika.Verify.Info.Kind")),

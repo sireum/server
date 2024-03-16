@@ -560,6 +560,7 @@ object AnalysisService {
                         message: String): Unit = if (detailedInfo) {
       val k: Logika.Verify.Info.Kind.Type = kind match {
         case org.sireum.logika.Logika.Reporter.Info.Kind.Verified => Logika.Verify.Info.Kind.Verified
+        case org.sireum.logika.Logika.Reporter.Info.Kind.Error => Logika.Verify.Info.Kind.Error
       }
       serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
     }
