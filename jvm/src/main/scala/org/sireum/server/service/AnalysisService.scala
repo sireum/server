@@ -298,9 +298,9 @@ object AnalysisService {
                         val taskCache: java.util.concurrent.ConcurrentHashMap[logika.Logika.Cache.Key, logika.Logika.Cache.Value],
                         var uriMap: HashMap[String, HashMap[String, lang.FrontEnd.Input]],
                         var thMap: HashMap[String, lang.tipe.TypeHierarchy],
-                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, logika.State), SoftReference[(ISZ[logika.State], logika.Smt2, U64)]] =
+                        val transitionCache: java.util.Map[(Long, Long, logika.Logika.Cache.Transition, ISZ[String], logika.State), SoftReference[(ISZ[logika.State], logika.Smt2, U64)]] =
                         new java.util.concurrent.ConcurrentHashMap,
-                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, U64)]] =
+                        val expTransitionCache: java.util.Map[(Long, Long, lang.ast.AssignExp, ISZ[String], logika.State), SoftReference[(ISZ[(logika.State, logika.State.Value)], logika.Smt2, U64)]] =
                         new java.util.concurrent.ConcurrentHashMap,
                         val smt2Cache: java.util.Map[(Long, Long, ISZ[logika.State.Claim]), SoftReference[logika.Smt2Query.Result]] =
                         new java.util.concurrent.ConcurrentHashMap,
@@ -329,9 +329,9 @@ object AnalysisService {
     }
 
     def getTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                                   state: logika.State, smt2: logika.Smt2): Option[(ISZ[logika.State], U64)] = {
+                                   context: ISZ[String], state: logika.State, smt2: logika.Smt2): Option[(ISZ[logika.State], U64)] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val key = (thf.value, config.fingerprint.value, transition, state)
+      val key = (thf.value, config.fingerprint.value, transition, context, state)
       val rRef = transitionCache.get(key)
       var r = Option.none[(ISZ[logika.State], U64)]()
       if (rRef != null) {
@@ -347,18 +347,18 @@ object AnalysisService {
     }
 
     def setTransition(th: TypeHierarchy, config: logika.Config, transition: logika.Logika.Cache.Transition,
-                      state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2): U64 = {
+                      context: ISZ[String], state: logika.State, nextStates: ISZ[logika.State], smt2: logika.Smt2): U64 = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val cached = ops.StringOps(st"(${state.toST}, ${transition.toST})".render).sha3U64(T, T)
-      transitionCache.put((thf.value, config.fingerprint.value, transition, state),
-        new SoftReference((nextStates, smt2.minimize, cached)))
+      val key = (thf.value, config.fingerprint.value, transition, context, state)
+      val cached = ops.StringOps(st"(${key._1}, ${key._2}, ${key._3.toST}, ${(key._4, ".")}, ${key._5.toST})".render).sha3U64(T, T)
+      transitionCache.put(key, new SoftReference((nextStates, smt2.minimize, cached)))
       return cached
     }
 
-    def getAssignExpTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                                            smt2: logika.Smt2): Option[(ISZ[(logika.State, logika.State.Value)], U64)] = {
+    def getAssignExpTransitionAndUpdateSmt2(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp,
+                                            context: ISZ[String], state: logika.State, smt2: logika.Smt2): Option[(ISZ[(logika.State, logika.State.Value)], U64)] = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val key = (thf.value, config.fingerprint.value, exp, state)
+      val key = (thf.value, config.fingerprint.value, context, exp, state)
       val rRef = expTransitionCache.get(key)
       var r = Option.none[(ISZ[(logika.State, logika.State.Value)], U64)]()
       if (rRef != null) {
@@ -373,12 +373,12 @@ object AnalysisService {
       return r
     }
 
-    def setAssignExpTransition(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, state: logika.State,
-                               nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2): U64 = {
+    def setAssignExpTransition(th: TypeHierarchy, config: logika.Config, exp: lang.ast.AssignExp, context: ISZ[String],
+                               state: logika.State, nextStatesValues: ISZ[(logika.State, logika.State.Value)], smt2: logika.Smt2): U64 = {
       val thf: U64 = if (config.interp) th.fingerprintKeepMethodBody else th.fingerprintNoMethodBody
-      val cached = ops.StringOps(st"(${state.toST}, ${exp.prettyST})".render).sha3U64(T, T)
-      expTransitionCache.put((thf.value, config.fingerprint.value, exp, state),
-        new SoftReference((nextStatesValues, smt2.minimize, cached)))
+      val key = (thf.value, config.fingerprint.value, exp, context, state)
+      val cached = ops.StringOps(st"(${key._1}, ${key._2}, ${key._3.prettyST}, ${(key._4, ".")}, ${key._5.toST}, ${exp.prettyST})".render).sha3U64(T, T)
+      expTransitionCache.put(key, new SoftReference((nextStatesValues, smt2.minimize, cached)))
       return cached
     }
 

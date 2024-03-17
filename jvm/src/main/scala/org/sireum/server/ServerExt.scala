@@ -105,4 +105,6 @@ object ServerExt {
   def log(file: Os.Path, content: String): Unit = synchronized {
     file.writeAppend(content)
   }
+
+  def emptyCache(uriOpt: Option[String]): logika.Logika.Cache = AnalysisService.createCache(uriOpt)
 }

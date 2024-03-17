@@ -74,6 +74,8 @@ object Server {
     def timeStamp(isRequest: B): String = $
 
     def log(file: Os.Path, content: String): Unit = $
+
+    def emptyCache(uriOpt: Option[String]): logika.Logika.Cache = $
   }
 }
 
