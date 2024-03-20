@@ -147,7 +147,7 @@ object JSON {
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
         ("line", printZ(o.line)),
-        ("renumberProofSteps", printB(o.renumberProofSteps))
+        ("rewriteKindOpt", printOption(F, o.rewriteKindOpt, printSlangRewriteKindType _))
       ))
     }
 
@@ -160,7 +160,8 @@ object JSON {
         ("files", printHashSMap(T, o.files, printString _, printString _)),
         ("vfiles", printISZ(T, o.vfiles, printString _)),
         ("line", printZ(o.line)),
-        ("renumberProofStepsUriOpt", printOption(T, o.renumberProofStepsUriOpt, printString _))
+        ("rewriteKind", printSlangRewriteKindType(o.rewriteKind)),
+        ("rewriteUriOpt", printOption(T, o.rewriteUriOpt, printString _))
       ))
     }
 
@@ -169,6 +170,7 @@ object JSON {
         case Slang.Rewrite.Kind.InsertConstructorVals => "InsertConstructorVals"
         case Slang.Rewrite.Kind.RenumberProofSteps => "RenumberProofSteps"
         case Slang.Rewrite.Kind.ReplaceEnumSymbols => "ReplaceEnumSymbols"
+        case Slang.Rewrite.Kind.ExpandInduct => "ExpandInduct"
       }
       return printObject(ISZ(
         ("type", printString("Slang.Rewrite.Kind")),
@@ -814,10 +816,10 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      parser.parseObjectKey("renumberProofSteps")
-      val renumberProofSteps = parser.parseB()
+      parser.parseObjectKey("rewriteKindOpt")
+      val rewriteKindOpt = parser.parseOption(parseSlangRewriteKindType _)
       parser.parseObjectNext()
-      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, renumberProofSteps)
+      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, rewriteKindOpt)
     }
 
     def parseSlangCheckProject(): Slang.Check.Project = {
@@ -847,10 +849,13 @@ object JSON {
       parser.parseObjectKey("line")
       val line = parser.parseZ()
       parser.parseObjectNext()
-      parser.parseObjectKey("renumberProofStepsUriOpt")
-      val renumberProofStepsUriOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectKey("rewriteKind")
+      val rewriteKind = parseSlangRewriteKindType()
       parser.parseObjectNext()
-      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, renumberProofStepsUriOpt)
+      parser.parseObjectKey("rewriteUriOpt")
+      val rewriteUriOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectNext()
+      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, rewriteKind, rewriteUriOpt)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {

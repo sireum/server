@@ -98,7 +98,7 @@ object Slang {
                            val uriOpt: Option[String],
                            val content: String,
                            val line: Z,
-                           val renumberProofSteps: B) extends Check
+                           val rewriteKindOpt: Option[Rewrite.Kind.Type]) extends Check
 
 
     @datatype class Project(val isBackground: B,
@@ -107,7 +107,8 @@ object Slang {
                             val files: HashSMap[String, String],
                             val vfiles: ISZ[String],
                             val line: Z,
-                            val renumberProofStepsUriOpt: Option[String]) extends Check
+                            val rewriteKind: Rewrite.Kind.Type,
+                            val rewriteUriOpt: Option[String]) extends Check
 
   }
 
@@ -117,6 +118,7 @@ object Slang {
       "InsertConstructorVals"
       "RenumberProofSteps"
       "ReplaceEnumSymbols"
+      "ExpandInduct"
     }
 
     @datatype class Request(val id: ISZ[String],

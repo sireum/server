@@ -25,6 +25,8 @@
 package org.sireum.server.service
 
 import org.sireum._
+import org.sireum.lang.ast.MethodContract
+import org.sireum.lang.symbol.{Info, TypeInfo}
 import org.sireum.lang.tipe.TypeHierarchy
 import org.sireum.logika.{Smt2Config, Smt2Invoke}
 import org.sireum.message._
@@ -109,15 +111,23 @@ object AnalysisService {
           try {
             req match {
               case req: Slang.Check.Script =>
-                if (req.renumberProofSteps) {
+                if (req.rewriteKindOpt.nonEmpty) {
                   val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
                     serverAPI, req.id, None(), F)
                   lang.parser.Parser.parseTopUnit[lang.ast.TopUnit.Program](req.content, T, F, req.uriOpt, reporter) match {
                     case Some(program) if !reporter.hasError =>
-                      val (_, program2) = lang.FrontEnd.checkWorksheet(0, None(), program, reporter)
-                      val trans = lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
-                      trans.transformTopUnit(program2)
-                      renumberProofSteps(req, trans, req.content, reporter)
+                      val (th, program2) = lang.FrontEnd.checkWorksheet(0, None(), program, reporter)
+                      req.rewriteKindOpt.get match {
+                        case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
+                          val trans = lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
+                          trans.transformTopUnit(program2)
+                          renumberProofSteps(req, trans, req.content, reporter)
+                        case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
+                          val trans = lang.FrontEnd.InductExpander(th, MethodContract.Simple.empty, None(), HashMap.empty, Reporter.create)
+                          trans.transformTopUnit(program2)
+                          expandInduct(req, trans, req.content, reporter)
+                        case _ =>
+                      }
                     case _ =>
                   }
                 } else {
@@ -203,7 +213,7 @@ object AnalysisService {
         strictAliasing = T,
         followSymLink = F,
         all = F,
-        verify = req.vfiles.nonEmpty,
+        verify = req.vfiles.nonEmpty && req.rewriteUriOpt.isEmpty,
         disableOutput = F,
         verbose = serverAPI.isVerbose,
         sanityCheck = F,
@@ -216,35 +226,102 @@ object AnalysisService {
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
       cache.clearTaskCache()
-      req.renumberProofStepsUriOpt match {
+      req.rewriteUriOpt match {
         case Some(uri) =>
           var found = F
           for ((mid, map) <- cache.uriMap.entries if !found) {
             if (map.contains(uri)) {
               found = T
-              val trans = lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
               cache.thMap.get(mid) match {
                 case Some(th) =>
-                  for (info <- th.nameMap.values) {
+                  val trans: lang.ast.MTransformer = req.rewriteKind match {
+                    case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
+                      lang.ast.Util.ProofStepsNumberMapper(1, HashMap.empty, HashMap.empty, Reporter.create)
+                    case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
+                      lang.FrontEnd.InductExpander(th, MethodContract.Simple.empty, None(), HashMap.empty, Reporter.create)
+                    case _ => halt("Infeasible")
+                  }
+                  for (info <- th.nameMap.values if info.isInstanceOf[Info.Method]) {
                     info.posOpt match {
-                      case Some(pos) if pos.uriOpt == req.renumberProofStepsUriOpt =>
-                        info.mtransform(trans)
+                      case Some(pos) if pos.uriOpt == req.rewriteUriOpt => info.mtransform(trans)
                       case _ =>
                     }
                   }
+                  for (ti <- th.typeMap.values) {
+                    ti match {
+                      case ti: TypeInfo.Sig if ti.ast.posOpt.get.uriOpt == req.rewriteUriOpt =>
+                        for (info <- ti.methods.values) {
+                          info.mtransform(trans)
+                        }
+                      case ti: TypeInfo.Adt if ti.ast.posOpt.get.uriOpt == req.rewriteUriOpt =>
+                        for (info <- ti.methods.values) {
+                          info.mtransform(trans)
+                        }
+                      case _ =>
+                    }
+                  }
+                  req.rewriteKind match {
+                    case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
+                      renumberProofSteps(req, trans.asInstanceOf[lang.ast.Util.ProofStepsNumberMapper], map.get(uri).get.content, reporter)
+                    case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
+                      expandInduct(req, trans.asInstanceOf[lang.FrontEnd.InductExpander], map.get(uri).get.content, reporter)
+                    case _ =>
+                  }
                 case _ =>
               }
-              renumberProofSteps(req, trans, map.get(uri).get.content, reporter)
             }
           }
           if (!found) {
             serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
-              req.id, server.protocol.Slang.Rewrite.Kind.RenumberProofSteps, Message(message.Level.Error, None(), "Slang Rewrite",
+              req.id, req.rewriteKind, Message(message.Level.Error, None(), "Slang Rewrite",
                 s"Could not find file ${Os.uriToPath(uri)}"), None(), 0))
           }
         case _ =>
       }
       System.gc()
+    }
+
+    def expandInduct(req: Slang.Check, trans: lang.FrontEnd.InductExpander, text: String, reporter: Reporter): Unit = {
+      def expandInductResult(req: Slang.Check, n: Z, newText: String, reporter: Reporter): Unit = {
+        if (n != 0) {
+          if (reporter.hasWarning) {
+            var warnings = 0
+            for (m <- reporter.messages) {
+              if (m.level == message.Level.Warning) {
+                warnings = warnings + 1
+              }
+            }
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.ExpandInduct, Message(message.Level.Info, None(), "Slang Rewrite",
+                s"Expanded $n @induct with $warnings warning(s)"), Some(newText), n))
+          } else {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.ExpandInduct, Message(message.Level.Info, None(), "Slang Rewrite",
+                s"Successfully expanded $n @induct"), Some(newText), n))
+          }
+        } else {
+          if (reporter.hasError) {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.ExpandInduct, Message(message.Level.Error, None(), "Slang Rewrite",
+                "Cannot expand @induct for an ill-formed program"), None(), 0))
+          } else {
+            serverAPI.sendRespond(server.protocol.Slang.Rewrite.Response(
+              req.id, server.protocol.Slang.Rewrite.Kind.ExpandInduct, Message(message.Level.Info, None(), "Slang Rewrite",
+                "All @induct have been expanded"), None(), n))
+          }
+        }
+      }
+
+      reporter.reports(trans.reporter.messages)
+      val n = trans.map.size
+      if (n == 0 || reporter.hasError) {
+        expandInductResult(req, 0, text, reporter)
+      }
+      val content = conversions.String.toCis(text)
+      ops.StringOps.replace(content, trans.map) match {
+        case Either.Left(value) => expandInductResult(req, n, value, reporter)
+        case Either.Right(message) => halt(s"Internal error: $message")
+      }
     }
 
     def renumberProofSteps(req: Slang.Check, trans: lang.ast.Util.ProofStepsNumberMapper, text: String, reporter: Reporter): Unit = {

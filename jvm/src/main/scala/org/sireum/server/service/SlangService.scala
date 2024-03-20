@@ -37,7 +37,13 @@ import org.sireum.message.{Message, Reporter}
 
   def canHandle(request: server.protocol.Request): B = {
     request match {
-      case request: server.protocol.Slang.Rewrite.Request if request.kind != server.protocol.Slang.Rewrite.Kind.RenumberProofSteps => return T
+      case request: server.protocol.Slang.Rewrite.Request =>
+        request.kind match {
+          case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
+          case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
+          case _ => return T
+        }
+        return F
       case _ => return F
     }
   }
@@ -96,6 +102,7 @@ import org.sireum.message.{Message, Reporter}
             }
         }
       case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps => halt("Infeasible")
+      case server.protocol.Slang.Rewrite.Kind.ExpandInduct => halt("Infeasible")
     }
   }
 
