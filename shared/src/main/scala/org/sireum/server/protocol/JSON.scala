@@ -37,6 +37,7 @@ import org.sireum.server.protocol.Terminate
 import org.sireum.server.protocol.Response
 import org.sireum.server.protocol.Cancel
 import org.sireum.server.protocol.Timing
+import org.sireum.server.protocol.SocketPort
 import org.sireum.server.protocol.Report
 
 object JSON {
@@ -66,6 +67,7 @@ object JSON {
     @pure def printResponse(o: Response): ST = {
       o match {
         case o: Timing => return printTiming(o)
+        case o: SocketPort => return printSocketPort(o)
         case o: Report => return printReport(o)
         case o: Version.Response => return printVersionResponse(o)
         case o: Status.Response => return printStatusResponse(o)
@@ -93,6 +95,14 @@ object JSON {
         ("id", printISZ(T, o.id, printString _)),
         ("desc", printString(o.desc)),
         ("timeInMs", printZ(o.timeInMs))
+      ))
+    }
+
+    @pure def printSocketPort(o: SocketPort): ST = {
+      return printObject(ISZ(
+        ("type", st""""SocketPort""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("port", printZ(o.port))
       ))
     }
 
@@ -144,6 +154,7 @@ object JSON {
         ("isBackground", printB(o.isBackground)),
         ("logikaEnabled", printB(o.logikaEnabled)),
         ("id", printISZ(T, o.id, printString _)),
+        ("rootDirOpt", printOption(T, o.rootDirOpt, printString _)),
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
         ("line", printZ(o.line)),
@@ -156,7 +167,7 @@ object JSON {
         ("type", st""""Slang.Check.Project""""),
         ("isBackground", printB(o.isBackground)),
         ("id", printISZ(T, o.id, printString _)),
-        ("proyek", printString(o.proyek)),
+        ("rootDir", printString(o.rootDir)),
         ("files", printHashSMap(T, o.files, printString _, printString _)),
         ("vfiles", printISZ(T, o.vfiles, printString _)),
         ("line", printZ(o.line)),
@@ -651,9 +662,10 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.Coverage", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "SocketPort", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.Coverage", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
+        case "SocketPort" => val r = parseSocketPortT(T); return r
         case "Report" => val r = parseReportT(T); return r
         case "Version.Response" => val r = parseVersionResponseT(T); return r
         case "Status.Response" => val r = parseStatusResponseT(T); return r
@@ -703,6 +715,24 @@ object JSON {
       val timeInMs = parser.parseZ()
       parser.parseObjectNext()
       return Timing(id, desc, timeInMs)
+    }
+
+    def parseSocketPort(): SocketPort = {
+      val r = parseSocketPortT(F)
+      return r
+    }
+
+    def parseSocketPortT(typeParsed: B): SocketPort = {
+      if (!typeParsed) {
+        parser.parseObjectType("SocketPort")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("port")
+      val port = parser.parseZ()
+      parser.parseObjectNext()
+      return SocketPort(id, port)
     }
 
     def parseReport(): Report = {
@@ -807,6 +837,9 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
+      parser.parseObjectKey("rootDirOpt")
+      val rootDirOpt = parser.parseOption(parser.parseString _)
+      parser.parseObjectNext()
       parser.parseObjectKey("uriOpt")
       val uriOpt = parser.parseOption(parser.parseString _)
       parser.parseObjectNext()
@@ -819,7 +852,7 @@ object JSON {
       parser.parseObjectKey("rewriteKindOpt")
       val rewriteKindOpt = parser.parseOption(parseSlangRewriteKindType _)
       parser.parseObjectNext()
-      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, rewriteKindOpt)
+      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt)
     }
 
     def parseSlangCheckProject(): Slang.Check.Project = {
@@ -837,8 +870,8 @@ object JSON {
       parser.parseObjectKey("id")
       val id = parser.parseISZ(parser.parseString _)
       parser.parseObjectNext()
-      parser.parseObjectKey("proyek")
-      val proyek = parser.parseString()
+      parser.parseObjectKey("rootDir")
+      val rootDir = parser.parseString()
       parser.parseObjectNext()
       parser.parseObjectKey("files")
       val files = parser.parseHashSMap(parser.parseString _, parser.parseString _)
@@ -855,7 +888,7 @@ object JSON {
       parser.parseObjectKey("rewriteUriOpt")
       val rewriteUriOpt = parser.parseOption(parser.parseString _)
       parser.parseObjectNext()
-      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, rewriteKind, rewriteUriOpt)
+      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -1923,6 +1956,24 @@ object JSON {
       return r
     }
     val r = to(s, fTiming _)
+    return r
+  }
+
+  def fromSocketPort(o: SocketPort, isCompact: B): String = {
+    val st = Printer.printSocketPort(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSocketPort(s: String): Either[SocketPort, Json.ErrorMsg] = {
+    def fSocketPort(parser: Parser): SocketPort = {
+      val r = parser.parseSocketPort()
+      return r
+    }
+    val r = to(s, fSocketPort _)
     return r
   }
 

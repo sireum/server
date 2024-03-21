@@ -28,7 +28,9 @@ import org.sireum._
 import org.sireum.logika.{Smt2, Smt2Config, Smt2Invoke}
 import org.sireum.server.service.{AnalysisService, Service}
 
-import java.io.ByteArrayOutputStream
+import java.io.{BufferedWriter, ByteArrayOutputStream, InputStream, OutputStreamWriter}
+import java.net.{InetAddress, ServerSocket, Socket}
+import java.util.concurrent.LinkedBlockingQueue
 
 object ServerExt {
   val pauseTime: Long = 200
@@ -39,12 +41,63 @@ object ServerExt {
     case _ => "unsupported"
   }
   var prefix: Predef.String = ""
+  var serverSocket: ServerSocket = null
+  var socket: Socket = null
+  var ir: InputStream = null
+  var ow: BufferedWriter = null
+  val queue: LinkedBlockingQueue[server.protocol.Response] = new LinkedBlockingQueue
+  var thread: Thread = null
+
+  def init(isMsgPack: B, serverAPI: ServerAPI): Unit = {
+    if (serverSocket != null) {
+      return
+    }
+    serverSocket = new ServerSocket(0, 0, InetAddress.getLoopbackAddress)
+    writeDirectOutput(protocol.JSON.fromResponse(protocol.SocketPort(ISZ(), serverSocket.getLocalPort), T).value)
+    socket = serverSocket.accept()
+    ir = socket.getInputStream
+    ow = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream, "UTF-8"))
+    thread = new Thread {
+      override def run(): Unit = {
+        while (true) {
+          val r = queue.take()
+          if (isMsgPack) {
+            val respString = protocol.CustomMessagePack.fromResponse(r)
+            r match {
+              case _: protocol.Status.Response =>
+              case _ => serverAPI.log(F, respString)
+            }
+          } else {
+            val respString = protocol.JSON.fromResponse(r, T)
+            r match {
+              case _: protocol.Status.Response =>
+              case _ => serverAPI.log(F, respString)
+            }
+            writeDirectOutput(respString.value)
+          }
+        }
+      }
+    }
+    thread.setDaemon(T)
+    thread.start()
+  }
+
+  def destroy(): Unit = {
+    queue.clear()
+    if (socket != null) try socket.close() catch { case _: Throwable => }
+    if (serverSocket != null) try serverSocket.close() catch { case _: Throwable => }
+    if (ir != null) try ir.close() catch { case _: Throwable => }
+    if (ow != null) try ow.close() catch { case _: Throwable => }
+    ow = null
+    ir = null
+    serverSocket = null
+  }
 
   def readInput(): String = try {
+    val in = if (serverSocket != null && !serverSocket.isClosed && ir != null) ir else System.in
     val prefixSize = prefix.length
-
     val baos = new ByteArrayOutputStream
-    var b = System.in.read()
+    var b = in.read()
     var i = 0
     while (b >= 0) {
       if (b == '\n') {
@@ -55,7 +108,7 @@ object ServerExt {
         } else {
           while (b >= 0 && b != '\n') {
             baos.write(b)
-            b = System.in.read()
+            b = in.read()
           }
           return new Predef.String(baos.toByteArray, "UTF-8")
         }
@@ -66,14 +119,25 @@ object ServerExt {
         baos.write(b)
       }
       i = i + 1
-      b = System.in.read
+      b = in.read
     }
     return new Predef.String(baos.toByteArray, "UTF-8")
   } catch {
     case _: Throwable => throw new InterruptedException
   }
 
-  def writeOutput(s: String): Unit = this.synchronized {
+  def writeResponse(r: server.protocol.Response): Unit = {
+    queue.add(r)
+  }
+
+  def writeDirectOutput(s: Predef.String): Unit = {
+    if (ow != null) {
+      if (prefix.nonEmpty) ow.write(prefix)
+      ow.write(s)
+      ow.write('\n')
+      ow.flush()
+      return
+    }
     if (prefix.nonEmpty) System.out.print(prefix)
     System.out.println(s)
     System.out.flush()

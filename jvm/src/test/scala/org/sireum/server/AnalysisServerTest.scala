@@ -14,7 +14,7 @@ class AnalysisServerTest extends TestSuite {
   val tests = Tests {
 
     * - test(T, id => Seq(
-      Slang.Check.Script(F, T, id, None(),
+      Slang.Check.Script(F, T, id, None(), None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
@@ -29,7 +29,7 @@ class AnalysisServerTest extends TestSuite {
            |}""".stripMargin, 0, None())))
 
     * - test(T, id => Seq(
-      Slang.Check.Script(F, T, id, Some("script.cmd"),
+      Slang.Check.Script(F, T, id, None(), Some("script.cmd"),
         """::#! 2> /dev/null                                              #
            |@ 2>/dev/null # 2>nul & echo off & goto BOF                   #
            |if [ -f "$0.com" ] && [ "$0.com" -nt "$0" ]; then             #
@@ -56,21 +56,21 @@ class AnalysisServerTest extends TestSuite {
            |assert(T)""".stripMargin, 0, None())))
 
     * - test(T, id => Seq(
-      Slang.Check.Script(F, T, id, None(),
+      Slang.Check.Script(F, T, id, None(), None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(F)""".stripMargin, 0, None())))
 
     * - test(T, id => Seq(
-      Slang.Check.Script(F, T, id, None(),
+      Slang.Check.Script(F, T, id, None(), None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |
            |assert(T)""".stripMargin, 0, None())))
 
     * - test(F, id => Seq(
-      Slang.Check.Script(F, T, id, None(),
+      Slang.Check.Script(F, T, id, None(), None(),
         s"""// #Sireum #Logika
            |import org.sireum._
            |

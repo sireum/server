@@ -49,19 +49,16 @@ object AnalysisService {
     override def run(): Unit = {
       def check(req: Slang.Check, f: ReporterImpl => (B, B)): Unit = {
         idMap.put(req.id, this)
-        val outputDirOpt: Option[Os.Path] = req match {
-          case req: Slang.Check.Project =>
-            val p = Os.path(req.proyek) / "out" / "logika"
-            (p / "smt2").mkdirAll()
-            val dirs = (p / "smt2").list
-            val max = 5
-            if (dirs.size >= max) {
-              val sdirs = ops.ISZOps(dirs).sortWith((p1: Os.Path, p2: Os.Path) => p1.lastModified < p2.lastModified)
-              for (i <- 0 until dirs.size - max + 1) {
-                sdirs(i).removeAll()
-              }
+        val outputDirOpt: Option[Os.Path] = req.rootDirOpt match {
+          case Some(rootDir) =>
+            val p = Os.path(rootDir) / "out" / "logika"
+            def dir(name: String): Unit = {
+              (p / name).removeAll()
+              (p / name).mkdirAll()
             }
-            Some(Os.path(req.proyek) / "out" / "logika")
+            dir("smt2")
+            dir("hint")
+            Some(p)
           case _ => None()
         }
         val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
@@ -125,7 +122,7 @@ object AnalysisService {
                         case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
                           val trans = lang.FrontEnd.InductExpander(th, MethodContract.Simple.empty, None(), HashMap.empty, Reporter.create)
                           trans.transformTopUnit(program2)
-                          expandInduct(req, trans, req.content, reporter)
+                          expandInduct(req, req.uriOpt, trans, req.content, reporter)
                         case _ =>
                       }
                     case _ =>
@@ -163,7 +160,7 @@ object AnalysisService {
     }
 
     def checkProgram(req: Slang.Check.Project, reporter: ReporterImpl): Unit = {
-      val key = req.proyek.value.intern
+      val key = req.rootDir.value.intern
       val root = org.sireum.Os.path(key)
       var cache = proyekCache.get(key)
       if (cache == null) {
@@ -264,7 +261,7 @@ object AnalysisService {
                     case server.protocol.Slang.Rewrite.Kind.RenumberProofSteps =>
                       renumberProofSteps(req, trans.asInstanceOf[lang.ast.Util.ProofStepsNumberMapper], map.get(uri).get.content, reporter)
                     case server.protocol.Slang.Rewrite.Kind.ExpandInduct =>
-                      expandInduct(req, trans.asInstanceOf[lang.FrontEnd.InductExpander], map.get(uri).get.content, reporter)
+                      expandInduct(req, req.rewriteUriOpt, trans.asInstanceOf[lang.FrontEnd.InductExpander], map.get(uri).get.content, reporter)
                     case _ =>
                   }
                 case _ =>
@@ -281,7 +278,7 @@ object AnalysisService {
       System.gc()
     }
 
-    def expandInduct(req: Slang.Check, trans: lang.FrontEnd.InductExpander, text: String, reporter: Reporter): Unit = {
+    def expandInduct(req: Slang.Check, uriOpt: Option[String], trans: lang.FrontEnd.InductExpander, text: String, reporter: Reporter): Unit = {
       def expandInductResult(req: Slang.Check, n: Z, newText: String, reporter: Reporter): Unit = {
         if (n != 0) {
           if (reporter.hasWarning) {
@@ -319,7 +316,19 @@ object AnalysisService {
       }
       val content = conversions.String.toCis(text)
       ops.StringOps.replace(content, trans.map) match {
-        case Either.Left(value) => expandInductResult(req, n, value, reporter)
+        case Either.Left(value) =>
+          lang.parser.Parser.parseTopUnit[lang.ast.TopUnit.Program](value,
+            req.isInstanceOf[server.protocol.Slang.Check.Script], F, uriOpt, Reporter.create) match {
+            case Some(topUnit) =>
+              lang.ast.Util.reformatProof(value, topUnit) match {
+                case Some((value2, _)) =>
+                  expandInductResult(req, n, value2, reporter)
+                  return
+                case _ =>
+              }
+            case _ =>
+          }
+          expandInductResult(req, n, value, reporter)
         case Either.Right(message) => halt(s"Internal error: $message")
       }
     }
@@ -529,6 +538,8 @@ object AnalysisService {
                            new _root_.java.util.concurrent.ConcurrentLinkedQueue) extends logika.Logika.Reporter {
     import org.sireum.$internal.CollectionCompat.Converters._
 
+    val maxSize: Z = 2 * 1024
+
     private var isClonable: scala.Boolean = true
     private var isOwned: scala.Boolean = false
     var _ignore: B = F
@@ -630,8 +641,22 @@ object AnalysisService {
           case _ =>
         }
       }
-      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.ok, labels, claims))
+      val msg: String = outputDirOpt match {
+        case Some(outputDir) if claims.size > maxSize =>
+          val d = outputDir / "hint"
+          d.mkdirAll()
+          val pos = posOpt.get
+          val filename = s"state-${pos.beginLine}-${pos.beginColumn}-${extension.Time.currentNanos}.txt"
+          val f = d / conversions.String.fromCis(for (c <- conversions.String.toCis(filename)) yield replaceChar(c))
+          f.writeOver(claims)
+          s"@${f.canon}"
+        case _ => claims
+      }
+      serverAPI.sendRespond(Logika.Verify.State(id, posOpt, !s.ok, labels, msg))
     }
+
+    @strictpure def replaceChar(c: C): C =
+      if (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c.value == '.')) c else '-'
 
     override def inform(pos: Position, kind: org.sireum.logika.Logika.Reporter.Info.Kind.Type,
                         message: String): Unit = if (detailedInfo) {
@@ -639,7 +664,17 @@ object AnalysisService {
         case org.sireum.logika.Logika.Reporter.Info.Kind.Verified => Logika.Verify.Info.Kind.Verified
         case org.sireum.logika.Logika.Reporter.Info.Kind.Error => Logika.Verify.Info.Kind.Error
       }
-      serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, message))
+      val msg: String = outputDirOpt match {
+        case Some(outputDir) if message.size > maxSize =>
+          val d = outputDir / "hint"
+          d.mkdirAll()
+          val filename = s"inform-${pos.beginLine}-${pos.beginColumn}-${extension.Time.currentNanos}.txt"
+          val f = d / conversions.String.fromCis(for (c <- conversions.String.toCis(filename)) yield replaceChar(c))
+          f.writeOver(message)
+          s"@${f.canon}"
+        case _ => message
+      }
+      serverAPI.sendRespond(Logika.Verify.Info(id, pos, k, msg))
     }
 
     override def query(pos: Position, title: String, isSat: B, time: Z, forceReport: B, detailElided: B,
@@ -655,15 +690,13 @@ object AnalysisService {
       }
       if (smt2query || forceReport) {
         val query: String = outputDirOpt match {
-          case Some(outputDir) if !detailElided =>
-            val d = outputDir / "smt2" / st"${(id, "-")}".render
+          case Some(outputDir) if !detailElided && r.query.size > maxSize =>
+            val d = outputDir / "smt2"
             d.mkdirAll()
-            @strictpure def replaceChar(c: C): C =
-              if (('0' <= c && c <= '9') || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c.value == '.')) c else '-'
-            val filename = s"$title-${extension.Time.currentMillis}.smt2"
+            val filename = s"$title-${extension.Time.currentNanos}.smt2"
             val f = d / conversions.String.fromCis(for (c <- conversions.String.toCis(filename)) yield replaceChar(c))
             f.writeOver(r.query)
-            f.canon.string
+            s"@${f.canon}"
           case _ => r.query
         }
         serverAPI.sendRespond(Logika.Verify.Smt2Query(id, pos, isSat, time, title, r.kind, r.solverName, query, r.info, r.output))

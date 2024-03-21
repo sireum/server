@@ -36,6 +36,7 @@ import org.sireum.server.protocol.Terminate
 import org.sireum.server.protocol.Response
 import org.sireum.server.protocol.Cancel
 import org.sireum.server.protocol.Timing
+import org.sireum.server.protocol.SocketPort
 import org.sireum.server.protocol.Report
 
 object MsgPack {
@@ -48,73 +49,75 @@ object MsgPack {
 
     val Timing: Z = -30
 
-    val Report: Z = -29
+    val SocketPort: Z = -29
 
-    val VersionRequest: Z = -28
+    val Report: Z = -28
 
-    val VersionResponse: Z = -27
+    val VersionRequest: Z = -27
 
-    val StatusRequest: Z = -26
+    val VersionResponse: Z = -26
 
-    val StatusResponse: Z = -25
+    val StatusRequest: Z = -25
 
-    val SlangCheckScript: Z = -24
+    val StatusResponse: Z = -24
 
-    val SlangCheckProject: Z = -23
+    val SlangCheckScript: Z = -23
 
-    val SlangRewriteRequest: Z = -22
+    val SlangCheckProject: Z = -22
 
-    val SlangRewriteResponse: Z = -21
+    val SlangRewriteRequest: Z = -21
 
-    val AnalysisStart: Z = -20
+    val SlangRewriteResponse: Z = -20
 
-    val AnalysisCoverage: Z = -19
+    val AnalysisStart: Z = -19
 
-    val AnalysisEnd: Z = -18
+    val AnalysisCoverage: Z = -18
 
-    val AnalysisCacheClear: Z = -17
+    val AnalysisEnd: Z = -17
 
-    val AnalysisCacheCleared: Z = -16
+    val AnalysisCacheClear: Z = -16
 
-    val LogikaVerifyConfig: Z = -15
+    val AnalysisCacheCleared: Z = -15
 
-    val LogikaVerifyState: Z = -14
+    val LogikaVerifyConfig: Z = -14
 
-    val LogikaVerifySmt2Query: Z = -13
+    val LogikaVerifyState: Z = -13
 
-    val LogikaVerifyInfo: Z = -12
+    val LogikaVerifySmt2Query: Z = -12
 
-    val orgsireumlogikaConfig: Z = -11
+    val LogikaVerifyInfo: Z = -11
 
-    val orgsireumlogikaSmt2Config: Z = -10
+    val orgsireumlogikaConfig: Z = -10
 
-    val orgsireumlogikaLoopId: Z = -9
+    val orgsireumlogikaSmt2Config: Z = -9
 
-    val _logikaSmt2QueryResult: Z = -8
+    val orgsireumlogikaLoopId: Z = -8
 
-    val _langastTypedName: Z = -7
+    val _logikaSmt2QueryResult: Z = -7
 
-    val _langastTypedTuple: Z = -6
+    val _langastTypedName: Z = -6
 
-    val _langastTypedFun: Z = -5
+    val _langastTypedTuple: Z = -5
 
-    val _langastTypedTypeVar: Z = -4
+    val _langastTypedFun: Z = -4
 
-    val _langastTypedPackage: Z = -3
+    val _langastTypedTypeVar: Z = -3
 
-    val _langastTypedObject: Z = -2
+    val _langastTypedPackage: Z = -2
 
-    val _langastTypedEnum: Z = -1
+    val _langastTypedObject: Z = -1
 
-    val _langastTypedMethod: Z = 0
+    val _langastTypedEnum: Z = 0
 
-    val _langastTypedMethods: Z = 1
+    val _langastTypedMethod: Z = 1
 
-    val _langastTypedFact: Z = 2
+    val _langastTypedMethods: Z = 2
 
-    val _langastTypedTheorem: Z = 3
+    val _langastTypedFact: Z = 3
 
-    val _langastTypedInv: Z = 4
+    val _langastTypedTheorem: Z = 4
+
+    val _langastTypedInv: Z = 5
 
   }
 
@@ -149,6 +152,7 @@ object MsgPack {
     def writeResponse(o: Response): Unit = {
       o match {
         case o: Timing => writeTiming(o)
+        case o: SocketPort => writeSocketPort(o)
         case o: Report => writeReport(o)
         case o: Version.Response => writeVersionResponse(o)
         case o: Status.Response => writeStatusResponse(o)
@@ -173,6 +177,12 @@ object MsgPack {
       writer.writeISZ(o.id, writer.writeString _)
       writer.writeString(o.desc)
       writer.writeZ(o.timeInMs)
+    }
+
+    def writeSocketPort(o: SocketPort): Unit = {
+      writer.writeZ(Constants.SocketPort)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writeZ(o.port)
     }
 
     def writeReport(o: Report): Unit = {
@@ -212,6 +222,7 @@ object MsgPack {
       writer.writeB(o.isBackground)
       writer.writeB(o.logikaEnabled)
       writer.writeISZ(o.id, writer.writeString _)
+      writer.writeOption(o.rootDirOpt, writer.writeString _)
       writer.writeOption(o.uriOpt, writer.writeString _)
       writer.writeString(o.content)
       writer.writeZ(o.line)
@@ -222,7 +233,7 @@ object MsgPack {
       writer.writeZ(Constants.SlangCheckProject)
       writer.writeB(o.isBackground)
       writer.writeISZ(o.id, writer.writeString _)
-      writer.writeString(o.proyek)
+      writer.writeString(o.rootDir)
       writer.writeHashSMap(o.files, writer.writeString _, writer.writeString _)
       writer.writeISZ(o.vfiles, writer.writeString _)
       writer.writeZ(o.line)
@@ -588,6 +599,7 @@ object MsgPack {
       val t = reader.readZ()
       t match {
         case Constants.Timing => val r = readTimingT(T); return r
+        case Constants.SocketPort => val r = readSocketPortT(T); return r
         case Constants.Report => val r = readReportT(T); return r
         case Constants.VersionResponse => val r = readVersionResponseT(T); return r
         case Constants.StatusResponse => val r = readStatusResponseT(T); return r
@@ -632,6 +644,20 @@ object MsgPack {
       val desc = reader.readString()
       val timeInMs = reader.readZ()
       return Timing(id, desc, timeInMs)
+    }
+
+    def readSocketPort(): SocketPort = {
+      val r = readSocketPortT(F)
+      return r
+    }
+
+    def readSocketPortT(typeParsed: B): SocketPort = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.SocketPort)
+      }
+      val id = reader.readISZ(reader.readString _)
+      val port = reader.readZ()
+      return SocketPort(id, port)
     }
 
     def readReport(): Report = {
@@ -724,11 +750,12 @@ object MsgPack {
       val isBackground = reader.readB()
       val logikaEnabled = reader.readB()
       val id = reader.readISZ(reader.readString _)
+      val rootDirOpt = reader.readOption(reader.readString _)
       val uriOpt = reader.readOption(reader.readString _)
       val content = reader.readString()
       val line = reader.readZ()
       val rewriteKindOpt = reader.readOption(readSlangRewriteKindType _)
-      return Slang.Check.Script(isBackground, logikaEnabled, id, uriOpt, content, line, rewriteKindOpt)
+      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt)
     }
 
     def readSlangCheckProject(): Slang.Check.Project = {
@@ -742,13 +769,13 @@ object MsgPack {
       }
       val isBackground = reader.readB()
       val id = reader.readISZ(reader.readString _)
-      val proyek = reader.readString()
+      val rootDir = reader.readString()
       val files = reader.readHashSMap(reader.readString _, reader.readString _)
       val vfiles = reader.readISZ(reader.readString _)
       val line = reader.readZ()
       val rewriteKind = readSlangRewriteKindType()
       val rewriteUriOpt = reader.readOption(reader.readString _)
-      return Slang.Check.Project(isBackground, id, proyek, files, vfiles, line, rewriteKind, rewriteUriOpt)
+      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt)
     }
 
     def readSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -1368,6 +1395,21 @@ object MsgPack {
       return r
     }
     val r = to(data, fTiming _)
+    return r
+  }
+
+  def fromSocketPort(o: SocketPort, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeSocketPort(o)
+    return w.result
+  }
+
+  def toSocketPort(data: ISZ[U8]): Either[SocketPort, MessagePack.ErrorMsg] = {
+    def fSocketPort(reader: Reader): SocketPort = {
+      val r = reader.readSocketPort()
+      return r
+    }
+    val r = to(data, fSocketPort _)
     return r
   }
 

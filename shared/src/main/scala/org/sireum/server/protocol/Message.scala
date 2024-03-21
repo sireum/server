@@ -49,6 +49,10 @@ import org.sireum.message.Message
   @strictpure override def posOpt: Option[Position] = None()
 }
 
+@datatype class SocketPort(val id: ISZ[String], val port: Z) extends Response {
+  @strictpure override def posOpt: Option[Position] = None()
+}
+
 @datatype class Report(val id: ISZ[String], val message: Message) extends Response {
   @strictpure override def posOpt: Option[Position] = message.posOpt
 }
@@ -85,9 +89,9 @@ object Status {
 object Slang {
 
   @datatype trait Check extends Request {
-    def isBackground: B
-
-    def line: Z
+    @pure def isBackground: B
+    @pure def rootDirOpt: Option[String]
+    @pure def line: Z
   }
 
   object Check {
@@ -95,6 +99,7 @@ object Slang {
     @datatype class Script(val isBackground: B,
                            val logikaEnabled: B,
                            val id: ISZ[String],
+                           val rootDirOpt: Option[String],
                            val uriOpt: Option[String],
                            val content: String,
                            val line: Z,
@@ -103,12 +108,14 @@ object Slang {
 
     @datatype class Project(val isBackground: B,
                             val id: ISZ[String],
-                            val proyek: String,
+                            val rootDir: String,
                             val files: HashSMap[String, String],
                             val vfiles: ISZ[String],
                             val line: Z,
                             val rewriteKind: Rewrite.Kind.Type,
-                            val rewriteUriOpt: Option[String]) extends Check
+                            val rewriteUriOpt: Option[String]) extends Check {
+      @strictpure def rootDirOpt: Option[String] = Some(rootDir)
+    }
 
   }
 

@@ -53,13 +53,18 @@ object Server {
       sireumHome,
       defaultVersions
     )
+    Server.Ext.init(isMsgPack, server.serverAPI)
     return server.run()
   }
 
   @ext("ServerExt") object Ext {
+    def init(isMsgPack: B, serverAPI: ServerAPI): Unit = $
+
+    def destroy(): Unit = $
+
     def readInput(): String = $
 
-    def writeOutput(s: String): Unit = $
+    def writeResponse(r: server.protocol.Response): Unit = $
 
     def pause(): Unit = $
 
@@ -136,12 +141,7 @@ object Server {
                               val sireumHome: Os.Path,
                               val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
-    val respString = protocol.JSON.fromResponse(resp, T)
-    resp match {
-      case _: protocol.Status.Response =>
-      case _ => log(F, respString)
-    }
-    Server.Ext.writeOutput(respString)
+    Server.Ext.writeResponse(resp)
   }
 }
 
@@ -154,12 +154,7 @@ object Server {
                                  val sireumHome: Os.Path,
                                  val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
   def sendRespond(resp: protocol.Response): Unit = {
-    val respString = protocol.CustomMessagePack.fromResponse(resp)
-    resp match {
-      case _: protocol.Status.Response =>
-      case _ => log(F, respString)
-    }
-    Server.Ext.writeOutput(respString)
+    Server.Ext.writeResponse(resp)
   }
 }
 
@@ -193,6 +188,7 @@ object Server {
       serverAPI.log(F, s"Finalizing service: ${services(i).id} ...")
       services(i).finalise()
     }
+    Server.Ext.destroy()
     serverAPI.log(F, s"Shutdown ...")
     return 0
   }
