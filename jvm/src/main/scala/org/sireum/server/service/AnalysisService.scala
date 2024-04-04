@@ -609,7 +609,7 @@ object AnalysisService {
           try {
             val (es, _) = logika.Util.claimsToExps(plugins, pos, context, s.claims, th, atLinesFresh, atRewrite)
             claims =
-              st"""{
+              st"""{ // State claims at line ${pos.beginLine}
                   |  ${(for (e <- es) yield e.prettyST, ";\n")}
                   |}""".render
           } catch {
@@ -625,7 +625,7 @@ object AnalysisService {
       if (claims.size == 0) {
         val sts = logika.State.Claim.claimsSTs(s.claims, logika.Util.ClaimDefs.empty)
         claims =
-          st"""{
+          st"""{${if (posOpt.nonEmpty) st"// State claims at line ${posOpt.get.beginLine}" else ""}
                |  ${(sts, ",\n")}
                |}
                |
