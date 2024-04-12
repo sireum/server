@@ -458,6 +458,7 @@ object JSON {
         ("info", printString(o.info)),
         ("output", printString(o.output)),
         ("timeMillis", printZ(o.timeMillis)),
+        ("totalTimeMillis", printZ(o.totalTimeMillis)),
         ("cached", printB(o.cached))
       ))
     }
@@ -1536,10 +1537,13 @@ object JSON {
       parser.parseObjectKey("timeMillis")
       val timeMillis = parser.parseZ()
       parser.parseObjectNext()
+      parser.parseObjectKey("totalTimeMillis")
+      val totalTimeMillis = parser.parseZ()
+      parser.parseObjectNext()
       parser.parseObjectKey("cached")
       val cached = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, totalTimeMillis, cached)
     }
 
     def parse_langastPurityType(): org.sireum.lang.ast.Purity.Type = {

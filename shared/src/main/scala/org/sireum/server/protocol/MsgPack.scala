@@ -434,6 +434,7 @@ object MsgPack {
       writer.writeString(o.info)
       writer.writeString(o.output)
       writer.writeZ(o.timeMillis)
+      writer.writeZ(o.totalTimeMillis)
       writer.writeB(o.cached)
     }
 
@@ -1097,8 +1098,9 @@ object MsgPack {
       val info = reader.readString()
       val output = reader.readString()
       val timeMillis = reader.readZ()
+      val totalTimeMillis = reader.readZ()
       val cached = reader.readB()
-      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, cached)
+      return org.sireum.logika.Smt2Query.Result(kind, solverName, query, info, output, timeMillis, totalTimeMillis, cached)
     }
 
     def read_langastPurityType(): org.sireum.lang.ast.Purity.Type = {
