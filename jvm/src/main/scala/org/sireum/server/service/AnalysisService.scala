@@ -926,6 +926,7 @@ final class AnalysisService(numOfThreads: Z) extends Service {
           for (smt2Config <- smt2Configs if nameExePathMap.contains(smt2Config.name)) yield
             smt2Config(exe = nameExePathMap.get(smt2Config.name).get)))
       case req: Slang.Check => AnalysisService.checkQueue.add(req)
+      case req: SysMLv2.Check.Files => AnalysisService.checkQueue.add(req)
       case req: Cache.Clear =>
         import org.sireum.$internal.CollectionCompat.Converters._
         val prefix = req.kind match {
