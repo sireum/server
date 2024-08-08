@@ -50,6 +50,7 @@ object JSON {
         case o: Cancel => return printCancel(o)
         case o: Version.Request => return printVersionRequest(o)
         case o: Status.Request => return printStatusRequest(o)
+        case o: SysMLv2.Check.Files => return printSysMLv2CheckFiles(o)
         case o: Slang.Check.Script => return printSlangCheckScript(o)
         case o: Slang.Check.Project => return printSlangCheckProject(o)
         case o: Slang.Rewrite.Request => return printSlangRewriteRequest(o)
@@ -138,6 +139,19 @@ object JSON {
         ("type", st""""Status.Response""""),
         ("totalMemory", printZ(o.totalMemory)),
         ("freeMemory", printZ(o.freeMemory))
+      ))
+    }
+
+    @pure def printSysMLv2CheckFiles(o: SysMLv2.Check.Files): ST = {
+      return printObject(ISZ(
+        ("type", st""""SysMLv2.Check.Files""""),
+        ("isBackground", printB(o.isBackground)),
+        ("logikaEnabled", printB(o.logikaEnabled)),
+        ("id", printISZ(T, o.id, printString _)),
+        ("rootDir", printString(o.rootDir)),
+        ("files", printHashSMap(T, o.files, printString _, printString _)),
+        ("vfiles", printISZ(T, o.vfiles, printString _)),
+        ("line", printZ(o.line))
       ))
     }
 
@@ -635,12 +649,13 @@ object JSON {
     }
 
     def parseRequest(): Request = {
-      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Status.Request", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Analysis.Cache.Clear", "Logika.Verify.Config"))
+      val t = parser.parseObjectTypes(ISZ("Terminate", "Cancel", "Version.Request", "Status.Request", "SysMLv2.Check.Files", "Slang.Check.Script", "Slang.Check.Project", "Slang.Rewrite.Request", "Analysis.Cache.Clear", "Logika.Verify.Config"))
       t.native match {
         case "Terminate" => val r = parseTerminateT(T); return r
         case "Cancel" => val r = parseCancelT(T); return r
         case "Version.Request" => val r = parseVersionRequestT(T); return r
         case "Status.Request" => val r = parseStatusRequestT(T); return r
+        case "SysMLv2.Check.Files" => val r = parseSysMLv2CheckFilesT(T); return r
         case "Slang.Check.Script" => val r = parseSlangCheckScriptT(T); return r
         case "Slang.Check.Project" => val r = parseSlangCheckProjectT(T); return r
         case "Slang.Rewrite.Request" => val r = parseSlangRewriteRequestT(T); return r
@@ -809,6 +824,39 @@ object JSON {
       val freeMemory = parser.parseZ()
       parser.parseObjectNext()
       return Status.Response(totalMemory, freeMemory)
+    }
+
+    def parseSysMLv2CheckFiles(): SysMLv2.Check.Files = {
+      val r = parseSysMLv2CheckFilesT(F)
+      return r
+    }
+
+    def parseSysMLv2CheckFilesT(typeParsed: B): SysMLv2.Check.Files = {
+      if (!typeParsed) {
+        parser.parseObjectType("SysMLv2.Check.Files")
+      }
+      parser.parseObjectKey("isBackground")
+      val isBackground = parser.parseB()
+      parser.parseObjectNext()
+      parser.parseObjectKey("logikaEnabled")
+      val logikaEnabled = parser.parseB()
+      parser.parseObjectNext()
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("rootDir")
+      val rootDir = parser.parseString()
+      parser.parseObjectNext()
+      parser.parseObjectKey("files")
+      val files = parser.parseHashSMap(parser.parseString _, parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("vfiles")
+      val vfiles = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("line")
+      val line = parser.parseZ()
+      parser.parseObjectNext()
+      return SysMLv2.Check.Files(isBackground, logikaEnabled, id, rootDir, files, vfiles, line)
     }
 
     def parseSlangCheck(): Slang.Check = {
@@ -2068,6 +2116,24 @@ object JSON {
       return r
     }
     val r = to(s, fStatusResponse _)
+    return r
+  }
+
+  def fromSysMLv2CheckFiles(o: SysMLv2.Check.Files, isCompact: B): String = {
+    val st = Printer.printSysMLv2CheckFiles(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toSysMLv2CheckFiles(s: String): Either[SysMLv2.Check.Files, Json.ErrorMsg] = {
+    def fSysMLv2CheckFiles(parser: Parser): SysMLv2.Check.Files = {
+      val r = parser.parseSysMLv2CheckFiles()
+      return r
+    }
+    val r = to(s, fSysMLv2CheckFiles _)
     return r
   }
 

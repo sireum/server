@@ -61,63 +61,65 @@ object MsgPack {
 
     val StatusResponse: Z = -24
 
-    val SlangCheckScript: Z = -23
+    val SysMLv2CheckFiles: Z = -23
 
-    val SlangCheckProject: Z = -22
+    val SlangCheckScript: Z = -22
 
-    val SlangRewriteRequest: Z = -21
+    val SlangCheckProject: Z = -21
 
-    val SlangRewriteResponse: Z = -20
+    val SlangRewriteRequest: Z = -20
 
-    val AnalysisStart: Z = -19
+    val SlangRewriteResponse: Z = -19
 
-    val AnalysisCoverage: Z = -18
+    val AnalysisStart: Z = -18
 
-    val AnalysisEnd: Z = -17
+    val AnalysisCoverage: Z = -17
 
-    val AnalysisCacheClear: Z = -16
+    val AnalysisEnd: Z = -16
 
-    val AnalysisCacheCleared: Z = -15
+    val AnalysisCacheClear: Z = -15
 
-    val LogikaVerifyConfig: Z = -14
+    val AnalysisCacheCleared: Z = -14
 
-    val LogikaVerifyState: Z = -13
+    val LogikaVerifyConfig: Z = -13
 
-    val LogikaVerifySmt2Query: Z = -12
+    val LogikaVerifyState: Z = -12
 
-    val LogikaVerifyInfo: Z = -11
+    val LogikaVerifySmt2Query: Z = -11
 
-    val orgsireumlogikaConfig: Z = -10
+    val LogikaVerifyInfo: Z = -10
 
-    val orgsireumlogikaSmt2Config: Z = -9
+    val orgsireumlogikaConfig: Z = -9
 
-    val orgsireumlogikaLoopId: Z = -8
+    val orgsireumlogikaSmt2Config: Z = -8
 
-    val _logikaSmt2QueryResult: Z = -7
+    val orgsireumlogikaLoopId: Z = -7
 
-    val _langastTypedName: Z = -6
+    val _logikaSmt2QueryResult: Z = -6
 
-    val _langastTypedTuple: Z = -5
+    val _langastTypedName: Z = -5
 
-    val _langastTypedFun: Z = -4
+    val _langastTypedTuple: Z = -4
 
-    val _langastTypedTypeVar: Z = -3
+    val _langastTypedFun: Z = -3
 
-    val _langastTypedPackage: Z = -2
+    val _langastTypedTypeVar: Z = -2
 
-    val _langastTypedObject: Z = -1
+    val _langastTypedPackage: Z = -1
 
-    val _langastTypedEnum: Z = 0
+    val _langastTypedObject: Z = 0
 
-    val _langastTypedMethod: Z = 1
+    val _langastTypedEnum: Z = 1
 
-    val _langastTypedMethods: Z = 2
+    val _langastTypedMethod: Z = 2
 
-    val _langastTypedFact: Z = 3
+    val _langastTypedMethods: Z = 3
 
-    val _langastTypedTheorem: Z = 4
+    val _langastTypedFact: Z = 4
 
-    val _langastTypedInv: Z = 5
+    val _langastTypedTheorem: Z = 5
+
+    val _langastTypedInv: Z = 6
 
   }
 
@@ -137,6 +139,7 @@ object MsgPack {
         case o: Cancel => writeCancel(o)
         case o: Version.Request => writeVersionRequest(o)
         case o: Status.Request => writeStatusRequest(o)
+        case o: SysMLv2.Check.Files => writeSysMLv2CheckFiles(o)
         case o: Slang.Check.Script => writeSlangCheckScript(o)
         case o: Slang.Check.Project => writeSlangCheckProject(o)
         case o: Slang.Rewrite.Request => writeSlangRewriteRequest(o)
@@ -208,6 +211,17 @@ object MsgPack {
       writer.writeZ(Constants.StatusResponse)
       writer.writeZ(o.totalMemory)
       writer.writeZ(o.freeMemory)
+    }
+
+    def writeSysMLv2CheckFiles(o: SysMLv2.Check.Files): Unit = {
+      writer.writeZ(Constants.SysMLv2CheckFiles)
+      writer.writeB(o.isBackground)
+      writer.writeB(o.logikaEnabled)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writeString(o.rootDir)
+      writer.writeHashSMap(o.files, writer.writeString _, writer.writeString _)
+      writer.writeISZ(o.vfiles, writer.writeString _)
+      writer.writeZ(o.line)
     }
 
     def writeSlangCheck(o: Slang.Check): Unit = {
@@ -571,6 +585,7 @@ object MsgPack {
         case Constants.Cancel => val r = readCancelT(T); return r
         case Constants.VersionRequest => val r = readVersionRequestT(T); return r
         case Constants.StatusRequest => val r = readStatusRequestT(T); return r
+        case Constants.SysMLv2CheckFiles => val r = readSysMLv2CheckFilesT(T); return r
         case Constants.SlangCheckScript => val r = readSlangCheckScriptT(T); return r
         case Constants.SlangCheckProject => val r = readSlangCheckProjectT(T); return r
         case Constants.SlangRewriteRequest => val r = readSlangRewriteRequestT(T); return r
@@ -724,6 +739,25 @@ object MsgPack {
       val totalMemory = reader.readZ()
       val freeMemory = reader.readZ()
       return Status.Response(totalMemory, freeMemory)
+    }
+
+    def readSysMLv2CheckFiles(): SysMLv2.Check.Files = {
+      val r = readSysMLv2CheckFilesT(F)
+      return r
+    }
+
+    def readSysMLv2CheckFilesT(typeParsed: B): SysMLv2.Check.Files = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.SysMLv2CheckFiles)
+      }
+      val isBackground = reader.readB()
+      val logikaEnabled = reader.readB()
+      val id = reader.readISZ(reader.readString _)
+      val rootDir = reader.readString()
+      val files = reader.readHashSMap(reader.readString _, reader.readString _)
+      val vfiles = reader.readISZ(reader.readString _)
+      val line = reader.readZ()
+      return SysMLv2.Check.Files(isBackground, logikaEnabled, id, rootDir, files, vfiles, line)
     }
 
     def readSlangCheck(): Slang.Check = {
@@ -1487,6 +1521,21 @@ object MsgPack {
       return r
     }
     val r = to(data, fStatusResponse _)
+    return r
+  }
+
+  def fromSysMLv2CheckFiles(o: SysMLv2.Check.Files, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeSysMLv2CheckFiles(o)
+    return w.result
+  }
+
+  def toSysMLv2CheckFiles(data: ISZ[U8]): Either[SysMLv2.Check.Files, MessagePack.ErrorMsg] = {
+    def fSysMLv2CheckFiles(reader: Reader): SysMLv2.Check.Files = {
+      val r = reader.readSysMLv2CheckFiles()
+      return r
+    }
+    val r = to(data, fSysMLv2CheckFiles _)
     return r
   }
 

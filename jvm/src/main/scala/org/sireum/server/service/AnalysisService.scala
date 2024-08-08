@@ -47,9 +47,9 @@ object AnalysisService {
   class Thread(serverAPI: server.ServerAPI,
                terminated: _root_.java.util.concurrent.atomic.AtomicBoolean) extends _root_.java.lang.Thread {
     override def run(): Unit = {
-      def check(req: Slang.Check, f: ReporterImpl => (B, B)): Unit = {
-        idMap.put(req.id, this)
-        val outputDirOpt: Option[Os.Path] = req.rootDirOpt match {
+      def check(reqId: ISZ[String], rootDirOpt: Option[String], isBackground: B, f: ReporterImpl => (B, B)): Unit = {
+        idMap.put(reqId, this)
+        val outputDirOpt: Option[Os.Path] = rootDirOpt match {
           case Some(rootDir) =>
             val p = Os.path(rootDir) / "out" / "logika"
             def dir(name: String): Unit = {
@@ -62,11 +62,11 @@ object AnalysisService {
           case _ => None()
         }
         val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
-          serverAPI, req.id, outputDirOpt, F)
+          serverAPI, reqId, outputDirOpt, F)
         var cancelled = false
         var hasLogika = false
         val startTime = extension.Time.currentMillis
-        serverAPI.sendRespond(server.protocol.Analysis.Start(req.id, startTime))
+        serverAPI.sendRespond(server.protocol.Analysis.Start(reqId, startTime))
         serverAPI.reportStatus()
         try {
           val p = f(reporter)
@@ -77,13 +77,13 @@ object AnalysisService {
             cancelled = true
             val baos = new ByteArrayOutputStream()
             t.printStackTrace(new java.io.PrintStream(baos))
-            serverAPI.sendRespond(Report(req.id, Message(Level.InternalError, None(), "logika",
+            serverAPI.sendRespond(Report(reqId, Message(Level.InternalError, None(), "logika",
               s"""Internal error occurred:
                  |${new Predef.String(baos.toByteArray, "UTF-8")}""".stripMargin)))
         } finally {
           serverAPI.sendRespond(server.protocol.Analysis.End(
-            isBackground = req.isBackground,
-            id = req.id,
+            isBackground = isBackground,
+            id = reqId,
             wasCancelled = cancelled,
             hasLogika = hasLogika,
             isIllFormed = reporter.isIllFormed,
@@ -107,6 +107,15 @@ object AnalysisService {
         if (req != null) {
           try {
             req match {
+              case req: SysMLv2.Check.Files =>
+                check(req.id, Some(req.rootDir), req.isBackground, (reporter: ReporterImpl) => {
+                  var cancelled = true
+                  extension.Cancel.handleCancellable { () =>
+                    checkSysMLv2Files(serverAPI.sireumHome, req, reporter)
+                    cancelled = false
+                  }
+                  (F, cancelled)
+                })
               case req: Slang.Check.Script =>
                 if (req.rewriteKindOpt.nonEmpty) {
                   val reporter = new ReporterImpl(_defaultConfig.logPc, _defaultConfig.logVc, _defaultConfig.detailedInfo,
@@ -128,7 +137,7 @@ object AnalysisService {
                     case _ =>
                   }
                 } else {
-                  check(req, (reporter: ReporterImpl) => {
+                  check(req.id, req.rootDirOpt, req.isBackground, (reporter: ReporterImpl) => {
                     val (hasSireum, compactFirstLine, _) = org.sireum.lang.parser.SlangParser.detectSlang(req.uriOpt, req.content)
                     val hasLogika = req.uriOpt.map(_.value.endsWith(".logika")).getOrElseEager(F) ||
                       (req.uriOpt.map(_.value.endsWith(".sc")).getOrElseEager(T) &&
@@ -142,7 +151,7 @@ object AnalysisService {
                   })
                 }
               case req: Slang.Check.Project =>
-                check(req, (reporter: ReporterImpl) => {
+                check(req.id, req.rootDirOpt, req.isBackground, (reporter: ReporterImpl) => {
                   var cancelled = true
                   extension.Cancel.handleCancellable { () =>
                     checkProgram(req, reporter)
@@ -150,6 +159,8 @@ object AnalysisService {
                   }
                   (req.vfiles.nonEmpty, cancelled)
                 })
+              case _ => serverAPI.sendRespond(server.protocol.Report(req.id,
+                message.Message(message.Level.InternalError, None(), "Analysis Service", s"Infeasible request: $req")))
             }
           } finally {
             idMap.remove(req.id)
@@ -793,7 +804,7 @@ object AnalysisService {
     }
   }
 
-  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Slang.Check]()
+  val checkQueue = new _root_.java.util.concurrent.LinkedBlockingQueue[Request]()
   val idMap = new _root_.java.util.concurrent.ConcurrentHashMap[ISZ[String], Thread]()
 
   var _defaultConfig: logika.Config = Logika.Verify.defaultConfig
@@ -814,6 +825,11 @@ object AnalysisService {
 
   var scriptCache: FileCache = createCache(None())
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
+
+  def checkSysMLv2Files(sireumHome: Os.Path, req: SysMLv2.Check.Files, reporter: ReporterImpl): Unit = {
+    // TODO: implement type checking & verication
+    System.gc()
+  }
 
   def checkScript(sireumHome: Os.Path, req: Slang.Check.Script, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
     if (scriptCache.uriOpt != req.uriOpt) {
@@ -883,6 +899,7 @@ final class AnalysisService(numOfThreads: Z) extends Service {
         return AnalysisService.checkQueue.removeIf(_.id == req.id) || AnalysisService.idMap.containsKey(req.id)
       case _: Logika.Verify.Config => return T
       case _: Slang.Check => return T
+      case _: SysMLv2.Check.Files => return T
       case _: Cache.Clear => return T
       case _ => return F
     }

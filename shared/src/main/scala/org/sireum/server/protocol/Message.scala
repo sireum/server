@@ -85,6 +85,21 @@ object Status {
 
 }
 
+object SysMLv2 {
+
+  object Check {
+
+    @datatype class Files(val isBackground: B,
+                          val logikaEnabled: B,
+                          val id: ISZ[String],
+                          val rootDir: String,
+                          val files: HashSMap[String, String],
+                          val vfiles: ISZ[String],
+                          val line: Z) extends Request
+
+  }
+
+}
 
 object Slang {
 
