@@ -32,6 +32,8 @@ val phantom = "hamr-phantom"
 
 val proyek = "proyek"
 
+val sysml = "hamr-sysml-frontend"
+
 val parser = "parser"
 
 val server = "server"
@@ -43,7 +45,7 @@ val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseDir = homeDir,
   sharedDeps = sharedId(infoflow),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(transpilers, tools, codegen, phantom, proyek, parser),
+  jvmDeps = ISZ(transpilers, tools, codegen, phantom, sysml, proyek, parser),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",
