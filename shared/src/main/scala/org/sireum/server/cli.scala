@@ -40,7 +40,7 @@ object cli {
     usageDescOpt = None(),
     opts = ISZ(
       Opt(name = "message", longKey = "message", shortKey = Some('m'),
-        tpe = Type.Choice("ServerMessage", None(), ISZ("msgpack", "json")),
+        tpe = Type.Choice("ServerMessage", None(), ISZ("json", "msgpack")),
         description = "Message format"),
       Opt(name = "log", longKey = "log", shortKey = Some('l'),
         tpe = Type.Flag(F),

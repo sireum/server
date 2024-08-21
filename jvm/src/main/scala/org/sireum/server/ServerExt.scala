@@ -53,7 +53,11 @@ object ServerExt {
       return
     }
     serverSocket = new ServerSocket(0, 0, InetAddress.getLoopbackAddress)
-    writeDirectOutput(protocol.JSON.fromResponse(protocol.SocketPort(ISZ(), serverSocket.getLocalPort), T).value)
+    val serverTxt = serverAPI.sireumHome / ".server.txt"
+    val current = Class.forName("java.lang.ProcessHandle").getMethod("current").invoke(null)
+    val pid = Class.forName("java.lang.ProcessHandle").getMethod("pid").invoke(current)
+    serverTxt.writeOver(s"$pid:${serverSocket.getLocalPort}")
+    serverTxt.removeOnExit()
     socket = serverSocket.accept()
     ir = socket.getInputStream
     ow = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream, "UTF-8"))
@@ -94,7 +98,7 @@ object ServerExt {
   }
 
   def readInput(): String = try {
-    val in = if (serverSocket != null && !serverSocket.isClosed && ir != null) ir else System.in
+    val in = if (serverSocket != null && !serverSocket.isClosed && ir != null) ir else return ""
     val prefixSize = prefix.length
     val baos = new ByteArrayOutputStream
     var b = in.read()

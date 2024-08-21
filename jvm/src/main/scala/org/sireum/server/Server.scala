@@ -247,6 +247,9 @@ object Server {
 
   def retrieveRequest(): Option[protocol.Request] = {
     val input = Server.Ext.readInput()
+    if (input.size == 0) {
+      return None()
+    }
     var shouldLog: B = F
     //println(s"'$input'")
     val r: Option[protocol.Request] = if (isMsgPack) {
