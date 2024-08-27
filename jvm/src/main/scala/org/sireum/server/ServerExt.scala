@@ -54,8 +54,8 @@ object ServerExt {
     }
     serverSocket = new ServerSocket(0, 0, InetAddress.getLoopbackAddress)
     val serverTxt = serverAPI.sireumHome / ".server.txt"
-    val current = Class.forName("java.lang.ProcessHandle").getMethod("current").invoke(null)
-    val pid = Class.forName("java.lang.ProcessHandle").getMethod("pid").invoke(current)
+    val current = java.lang.ProcessHandle.current
+    val pid = current.pid
     serverTxt.writeOver(s"$pid:${serverSocket.getLocalPort}")
     serverTxt.removeOnExit()
     socket = serverSocket.accept()
