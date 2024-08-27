@@ -827,7 +827,14 @@ object AnalysisService {
   val proyekCache: _root_.java.util.concurrent.ConcurrentHashMap[Predef.String, FileCache] = new _root_.java.util.concurrent.ConcurrentHashMap
 
   def checkSysMLv2Files(sireumHome: Os.Path, req: SysMLv2.Check.Files, reporter: ReporterImpl): Unit = {
-    // TODO: implement type checking & verication
+    import org.sireum.hamr.sysml.FrontEnd
+
+    val root = Os.path(req.rootDir)
+    val sysmlFiles = Os.Path.walk(path = root, includeDir = T, followLink = T, pred = p => p.isFile && p.ext == string"sysml")
+    val inputs = for (f <- sysmlFiles) yield if (req.files.contains(f.value)) FrontEnd.Input(req.files.get(f.value).get, Some(f.toUri)) else FrontEnd.Input(f.read, Some(f.toUri))
+
+    FrontEnd.typeCheck(par = 0, inputs = inputs, reporter = reporter)
+
     System.gc()
   }
 
