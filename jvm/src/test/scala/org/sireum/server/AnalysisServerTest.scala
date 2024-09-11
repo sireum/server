@@ -36,7 +36,7 @@ class AnalysisServerTest extends TestSuite {
            |  exec "$0.com" "$@"                                          #
            |fi                                                            #
            |rm -f "$0.com"                                                #
-           |if [ -z ${SIREUM_HOME} ]; then                                #
+           |if [ -z "${SIREUM_HOME}" ]; then                              #
            |  echo "Please set SIREUM_HOME env var"                       #
            |  exit -1                                                     #
            |fi                                                            #
