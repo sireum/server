@@ -188,7 +188,8 @@ object AnalysisService {
                   javaHome = serverAPI.javaHome,
                   scalaHome = serverAPI.scalaHome,
                   sireumHome = serverAPI.sireumHome,
-                  cacheOpt = None()
+                  cacheOpt = None(),
+                  proxy = Coursier.Proxy.empty
                 )
                 cache = createCache(org.sireum.Some(org.sireum.Os.path(key).toUri), prj, Some(dm))
               case _ =>
