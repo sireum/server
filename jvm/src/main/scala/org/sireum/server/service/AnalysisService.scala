@@ -856,14 +856,7 @@ object AnalysisService {
       (th: lang.tipe.TypeHierarchy) => logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins),
         th, reporter),
       if (config.smt2Caching) scriptCache else logika.NoTransitionSmt2Cache.create,
-      reporter, hasLogika, plugins, par => {
-        if (th == null) {
-          val p = lang.FrontEnd.checkedLibraryReporterPar(par)
-          th = p._1.typeHierarchy
-          rep = p._2
-        }
-        (th, rep)
-      }, req.line, ISZ(), ISZ())
+      reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
     scriptCache.clearTaskCache()
     System.gc()
   }
