@@ -40,6 +40,8 @@ val sysml = "hamr-sysml-frontend"
 
 val parser = "parser"
 
+val anvil = "anvil"
+
 val server = "server"
 
 val homeDir = Os.slashDir.up.canon
@@ -49,7 +51,7 @@ val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseDir = homeDir,
   sharedDeps = sharedId(infoflow),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(transpilersC, transpilersRust, tools, codegen, phantom, sysml, proyek, parser, frontend),
+  jvmDeps = ISZ(transpilersC, transpilersRust, tools, codegen, phantom, sysml, proyek, parser, frontend, anvil),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",
