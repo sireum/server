@@ -204,6 +204,7 @@ object AnalysisService {
       }
 
       val mapBox = MBox2(cache.uriMap, cache.thMap)
+      val verify = req.vfiles.nonEmpty && req.rewriteUriOpt.isEmpty
       Analysis.run(
         root = root,
         outDirName = "out",
@@ -222,7 +223,7 @@ object AnalysisService {
         strictAliasing = T,
         followSymLink = F,
         all = F,
-        verify = req.vfiles.nonEmpty && req.rewriteUriOpt.isEmpty,
+        verify = verify,
         disableOutput = F,
         verbose = serverAPI.isVerbose,
         sanityCheck = F,
@@ -232,6 +233,9 @@ object AnalysisService {
         skipTypes = ISZ(),
         reporter = reporter
       )
+      if (!verify && reporter.hasError) {
+        reporter.illFormed()
+      }
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
       cache.clearTaskCache()
