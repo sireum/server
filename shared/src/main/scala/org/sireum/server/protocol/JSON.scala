@@ -75,6 +75,7 @@ object JSON {
         case o: Slang.Rewrite.Response => return printSlangRewriteResponse(o)
         case o: Analysis.Start => return printAnalysisStart(o)
         case o: Analysis.Coverage => return printAnalysisCoverage(o)
+        case o: Analysis.ResolvedAst => return printAnalysisResolvedAst(o)
         case o: Analysis.End => return printAnalysisEnd(o)
         case o: Analysis.Cache.Cleared => return printAnalysisCacheCleared(o)
         case o: Logika.Verify.State => return printLogikaVerifyState(o)
@@ -172,7 +173,8 @@ object JSON {
         ("uriOpt", printOption(T, o.uriOpt, printString _)),
         ("content", printString(o.content)),
         ("line", printZ(o.line)),
-        ("rewriteKindOpt", printOption(F, o.rewriteKindOpt, printSlangRewriteKindType _))
+        ("rewriteKindOpt", printOption(F, o.rewriteKindOpt, printSlangRewriteKindType _)),
+        ("returnAST", printB(o.returnAST))
       ))
     }
 
@@ -186,7 +188,8 @@ object JSON {
         ("vfiles", printISZ(T, o.vfiles, printString _)),
         ("line", printZ(o.line)),
         ("rewriteKind", printSlangRewriteKindType(o.rewriteKind)),
-        ("rewriteUriOpt", printOption(T, o.rewriteUriOpt, printString _))
+        ("rewriteUriOpt", printOption(T, o.rewriteUriOpt, printString _)),
+        ("returnAST", printB(o.returnAST))
       ))
     }
 
@@ -240,6 +243,14 @@ object JSON {
         ("setCache", printB(o.setCache)),
         ("cached", printU64(o.cached)),
         ("pos", printPosition(o.pos))
+      ))
+    }
+
+    @pure def printAnalysisResolvedAst(o: Analysis.ResolvedAst): ST = {
+      return printObject(ISZ(
+        ("type", st""""Analysis.ResolvedAst""""),
+        ("id", printISZ(T, o.id, printString _)),
+        ("path", printString(o.path))
       ))
     }
 
@@ -678,7 +689,7 @@ object JSON {
     }
 
     def parseResponse(): Response = {
-      val t = parser.parseObjectTypes(ISZ("Timing", "SocketPort", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.Coverage", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
+      val t = parser.parseObjectTypes(ISZ("Timing", "SocketPort", "Report", "Version.Response", "Status.Response", "Slang.Rewrite.Response", "Analysis.Start", "Analysis.Coverage", "Analysis.ResolvedAst", "Analysis.End", "Analysis.Cache.Cleared", "Logika.Verify.State", "Logika.Verify.Smt2Query", "Logika.Verify.Info"))
       t.native match {
         case "Timing" => val r = parseTimingT(T); return r
         case "SocketPort" => val r = parseSocketPortT(T); return r
@@ -688,6 +699,7 @@ object JSON {
         case "Slang.Rewrite.Response" => val r = parseSlangRewriteResponseT(T); return r
         case "Analysis.Start" => val r = parseAnalysisStartT(T); return r
         case "Analysis.Coverage" => val r = parseAnalysisCoverageT(T); return r
+        case "Analysis.ResolvedAst" => val r = parseAnalysisResolvedAstT(T); return r
         case "Analysis.End" => val r = parseAnalysisEndT(T); return r
         case "Analysis.Cache.Cleared" => val r = parseAnalysisCacheClearedT(T); return r
         case "Logika.Verify.State" => val r = parseLogikaVerifyStateT(T); return r
@@ -901,7 +913,10 @@ object JSON {
       parser.parseObjectKey("rewriteKindOpt")
       val rewriteKindOpt = parser.parseOption(parseSlangRewriteKindType _)
       parser.parseObjectNext()
-      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt)
+      parser.parseObjectKey("returnAST")
+      val returnAST = parser.parseB()
+      parser.parseObjectNext()
+      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt, returnAST)
     }
 
     def parseSlangCheckProject(): Slang.Check.Project = {
@@ -937,7 +952,10 @@ object JSON {
       parser.parseObjectKey("rewriteUriOpt")
       val rewriteUriOpt = parser.parseOption(parser.parseString _)
       parser.parseObjectNext()
-      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt)
+      parser.parseObjectKey("returnAST")
+      val returnAST = parser.parseB()
+      parser.parseObjectNext()
+      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt, returnAST)
     }
 
     def parseSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -1055,6 +1073,24 @@ object JSON {
       val pos = parser.parsePosition()
       parser.parseObjectNext()
       return Analysis.Coverage(id, setCache, cached, pos)
+    }
+
+    def parseAnalysisResolvedAst(): Analysis.ResolvedAst = {
+      val r = parseAnalysisResolvedAstT(F)
+      return r
+    }
+
+    def parseAnalysisResolvedAstT(typeParsed: B): Analysis.ResolvedAst = {
+      if (!typeParsed) {
+        parser.parseObjectType("Analysis.ResolvedAst")
+      }
+      parser.parseObjectKey("id")
+      val id = parser.parseISZ(parser.parseString _)
+      parser.parseObjectNext()
+      parser.parseObjectKey("path")
+      val path = parser.parseString()
+      parser.parseObjectNext()
+      return Analysis.ResolvedAst(id, path)
     }
 
     def parseAnalysisEnd(): Analysis.End = {
@@ -2260,6 +2296,24 @@ object JSON {
       return r
     }
     val r = to(s, fAnalysisCoverage _)
+    return r
+  }
+
+  def fromAnalysisResolvedAst(o: Analysis.ResolvedAst, isCompact: B): String = {
+    val st = Printer.printAnalysisResolvedAst(o)
+    if (isCompact) {
+      return st.renderCompact
+    } else {
+      return st.render
+    }
+  }
+
+  def toAnalysisResolvedAst(s: String): Either[Analysis.ResolvedAst, Json.ErrorMsg] = {
+    def fAnalysisResolvedAst(parser: Parser): Analysis.ResolvedAst = {
+      val r = parser.parseAnalysisResolvedAst()
+      return r
+    }
+    val r = to(s, fAnalysisResolvedAst _)
     return r
   }
 

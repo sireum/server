@@ -118,7 +118,8 @@ object Slang {
                            val uriOpt: Option[String],
                            val content: String,
                            val line: Z,
-                           val rewriteKindOpt: Option[Rewrite.Kind.Type]) extends Check
+                           val rewriteKindOpt: Option[Rewrite.Kind.Type],
+                           val returnAST: B) extends Check
 
 
     @datatype class Project(val isBackground: B,
@@ -128,7 +129,8 @@ object Slang {
                             val vfiles: ISZ[String],
                             val line: Z,
                             val rewriteKind: Rewrite.Kind.Type,
-                            val rewriteUriOpt: Option[String]) extends Check {
+                            val rewriteUriOpt: Option[String],
+                            val returnAST: B) extends Check {
       @strictpure def rootDirOpt: Option[String] = Some(rootDir)
     }
 
@@ -171,6 +173,12 @@ object Analysis {
   @datatype class Coverage(val id: ISZ[String], val setCache: B, val cached: U64, val pos: Position) extends Response {
     @pure override def posOpt: Option[Position] = {
       return Some(pos)
+    }
+  }
+
+  @datatype class ResolvedAst(val id: ISZ[String], val path: String) extends Response {
+    @pure override def posOpt: Option[Position] = {
+      return None()
     }
   }
 

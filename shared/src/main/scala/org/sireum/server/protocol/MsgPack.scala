@@ -75,51 +75,53 @@ object MsgPack {
 
     val AnalysisCoverage: Z = -17
 
-    val AnalysisEnd: Z = -16
+    val AnalysisResolvedAst: Z = -16
 
-    val AnalysisCacheClear: Z = -15
+    val AnalysisEnd: Z = -15
 
-    val AnalysisCacheCleared: Z = -14
+    val AnalysisCacheClear: Z = -14
 
-    val LogikaVerifyConfig: Z = -13
+    val AnalysisCacheCleared: Z = -13
 
-    val LogikaVerifyState: Z = -12
+    val LogikaVerifyConfig: Z = -12
 
-    val LogikaVerifySmt2Query: Z = -11
+    val LogikaVerifyState: Z = -11
 
-    val LogikaVerifyInfo: Z = -10
+    val LogikaVerifySmt2Query: Z = -10
 
-    val orgsireumlogikaConfig: Z = -9
+    val LogikaVerifyInfo: Z = -9
 
-    val orgsireumlogikaSmt2Config: Z = -8
+    val orgsireumlogikaConfig: Z = -8
 
-    val orgsireumlogikaLoopId: Z = -7
+    val orgsireumlogikaSmt2Config: Z = -7
 
-    val _logikaSmt2QueryResult: Z = -6
+    val orgsireumlogikaLoopId: Z = -6
 
-    val _langastTypedName: Z = -5
+    val _logikaSmt2QueryResult: Z = -5
 
-    val _langastTypedTuple: Z = -4
+    val _langastTypedName: Z = -4
 
-    val _langastTypedFun: Z = -3
+    val _langastTypedTuple: Z = -3
 
-    val _langastTypedTypeVar: Z = -2
+    val _langastTypedFun: Z = -2
 
-    val _langastTypedPackage: Z = -1
+    val _langastTypedTypeVar: Z = -1
 
-    val _langastTypedObject: Z = 0
+    val _langastTypedPackage: Z = 0
 
-    val _langastTypedEnum: Z = 1
+    val _langastTypedObject: Z = 1
 
-    val _langastTypedMethod: Z = 2
+    val _langastTypedEnum: Z = 2
 
-    val _langastTypedMethods: Z = 3
+    val _langastTypedMethod: Z = 3
 
-    val _langastTypedFact: Z = 4
+    val _langastTypedMethods: Z = 4
 
-    val _langastTypedTheorem: Z = 5
+    val _langastTypedFact: Z = 5
 
-    val _langastTypedInv: Z = 6
+    val _langastTypedTheorem: Z = 6
+
+    val _langastTypedInv: Z = 7
 
   }
 
@@ -162,6 +164,7 @@ object MsgPack {
         case o: Slang.Rewrite.Response => writeSlangRewriteResponse(o)
         case o: Analysis.Start => writeAnalysisStart(o)
         case o: Analysis.Coverage => writeAnalysisCoverage(o)
+        case o: Analysis.ResolvedAst => writeAnalysisResolvedAst(o)
         case o: Analysis.End => writeAnalysisEnd(o)
         case o: Analysis.Cache.Cleared => writeAnalysisCacheCleared(o)
         case o: Logika.Verify.State => writeLogikaVerifyState(o)
@@ -241,6 +244,7 @@ object MsgPack {
       writer.writeString(o.content)
       writer.writeZ(o.line)
       writer.writeOption(o.rewriteKindOpt, writeSlangRewriteKindType _)
+      writer.writeB(o.returnAST)
     }
 
     def writeSlangCheckProject(o: Slang.Check.Project): Unit = {
@@ -253,6 +257,7 @@ object MsgPack {
       writer.writeZ(o.line)
       writeSlangRewriteKindType(o.rewriteKind)
       writer.writeOption(o.rewriteUriOpt, writer.writeString _)
+      writer.writeB(o.returnAST)
     }
 
     def writeSlangRewriteKindType(o: Slang.Rewrite.Kind.Type): Unit = {
@@ -289,6 +294,12 @@ object MsgPack {
       writer.writeB(o.setCache)
       writer.writeU64(o.cached)
       writer.writePosition(o.pos)
+    }
+
+    def writeAnalysisResolvedAst(o: Analysis.ResolvedAst): Unit = {
+      writer.writeZ(Constants.AnalysisResolvedAst)
+      writer.writeISZ(o.id, writer.writeString _)
+      writer.writeString(o.path)
     }
 
     def writeAnalysisEnd(o: Analysis.End): Unit = {
@@ -622,6 +633,7 @@ object MsgPack {
         case Constants.SlangRewriteResponse => val r = readSlangRewriteResponseT(T); return r
         case Constants.AnalysisStart => val r = readAnalysisStartT(T); return r
         case Constants.AnalysisCoverage => val r = readAnalysisCoverageT(T); return r
+        case Constants.AnalysisResolvedAst => val r = readAnalysisResolvedAstT(T); return r
         case Constants.AnalysisEnd => val r = readAnalysisEndT(T); return r
         case Constants.AnalysisCacheCleared => val r = readAnalysisCacheClearedT(T); return r
         case Constants.LogikaVerifyState => val r = readLogikaVerifyStateT(T); return r
@@ -790,7 +802,8 @@ object MsgPack {
       val content = reader.readString()
       val line = reader.readZ()
       val rewriteKindOpt = reader.readOption(readSlangRewriteKindType _)
-      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt)
+      val returnAST = reader.readB()
+      return Slang.Check.Script(isBackground, logikaEnabled, id, rootDirOpt, uriOpt, content, line, rewriteKindOpt, returnAST)
     }
 
     def readSlangCheckProject(): Slang.Check.Project = {
@@ -810,7 +823,8 @@ object MsgPack {
       val line = reader.readZ()
       val rewriteKind = readSlangRewriteKindType()
       val rewriteUriOpt = reader.readOption(reader.readString _)
-      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt)
+      val returnAST = reader.readB()
+      return Slang.Check.Project(isBackground, id, rootDir, files, vfiles, line, rewriteKind, rewriteUriOpt, returnAST)
     }
 
     def readSlangRewriteKindType(): Slang.Rewrite.Kind.Type = {
@@ -880,6 +894,20 @@ object MsgPack {
       val cached = reader.readU64()
       val pos = reader.readPosition()
       return Analysis.Coverage(id, setCache, cached, pos)
+    }
+
+    def readAnalysisResolvedAst(): Analysis.ResolvedAst = {
+      val r = readAnalysisResolvedAstT(F)
+      return r
+    }
+
+    def readAnalysisResolvedAstT(typeParsed: B): Analysis.ResolvedAst = {
+      if (!typeParsed) {
+        reader.expectZ(Constants.AnalysisResolvedAst)
+      }
+      val id = reader.readISZ(reader.readString _)
+      val path = reader.readString()
+      return Analysis.ResolvedAst(id, path)
     }
 
     def readAnalysisEnd(): Analysis.End = {
@@ -1641,6 +1669,21 @@ object MsgPack {
       return r
     }
     val r = to(data, fAnalysisCoverage _)
+    return r
+  }
+
+  def fromAnalysisResolvedAst(o: Analysis.ResolvedAst, pooling: B): ISZ[U8] = {
+    val w = Writer.Default(MessagePack.writer(pooling))
+    w.writeAnalysisResolvedAst(o)
+    return w.result
+  }
+
+  def toAnalysisResolvedAst(data: ISZ[U8]): Either[Analysis.ResolvedAst, MessagePack.ErrorMsg] = {
+    def fAnalysisResolvedAst(reader: Reader): Analysis.ResolvedAst = {
+      val r = reader.readAnalysisResolvedAst()
+      return r
+    }
+    val r = to(data, fAnalysisResolvedAst _)
     return r
   }
 

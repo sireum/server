@@ -144,7 +144,7 @@ object AnalysisService {
                         req.logikaEnabled && hasSireum && (compactFirstLine.contains("#Logika") || defaultConfig.interp))
                     var cancelled = true
                     extension.Cancel.handleCancellable { () =>
-                      checkScript(serverAPI.sireumHome, req, reporter, hasLogika)
+                      checkScript(serverAPI, req, reporter, hasLogika)
                       cancelled = false
                     }
                     (hasLogika, cancelled)
@@ -239,6 +239,46 @@ object AnalysisService {
       cache.uriMap = mapBox.value1
       cache.thMap = mapBox.value2
       cache.clearTaskCache()
+      if (req.returnAST && !reporter.hasError && req.files.nonEmpty) {
+        val (path, content) = req.files.entries(0)
+        val uri = Os.path(path).toUri
+        var found = F
+        for ((mid, map) <- cache.uriMap.entries if !found) {
+          map.get(uri) match {
+            case Some(_) =>
+              found = T
+              val program = lang.parser.Parser.parseTopUnit[lang.ast.TopUnit.Program](content, F, F, Some(uri), reporter).get
+              val th = cache.thMap.get(mid).get
+              val stmts = program.body.stmts
+              var newStmts = ISZ[lang.ast.Stmt]()
+              val packageName: ISZ[String] = for (id <- program.packageName.ids) yield id.value
+              for (stmt <- stmts) {
+                val newStmt: lang.ast.Stmt = stmt match {
+                  case stmt: lang.ast.Stmt.Sig => th.typeMap.get(packageName :+ stmt.id.value).get.asInstanceOf[TypeInfo.Sig].ast
+                  case stmt: lang.ast.Stmt.Adt => th.typeMap.get(packageName :+ stmt.id.value).get.asInstanceOf[TypeInfo.Adt].ast
+                  case stmt: lang.ast.Stmt.Object => th.nameMap.get(packageName :+ stmt.id.value).get.asInstanceOf[Info.Object].ast
+                  case stmt: lang.ast.Stmt.Enum => stmt
+                  case stmt: lang.ast.Stmt.SubZ => th.typeMap.get(packageName :+ stmt.id.value).get.asInstanceOf[TypeInfo.SubZ].ast
+                  case stmt: lang.ast.Stmt.TypeAlias => th.typeMap.get(packageName :+ stmt.id.value).get.asInstanceOf[TypeInfo.TypeAlias].ast
+                  case stmt: lang.ast.Stmt.Fact => th.nameMap.get(packageName :+ stmt.id.value).get.asInstanceOf[Info.Fact].ast
+                  case stmt: lang.ast.Stmt.Theorem => th.nameMap.get(packageName :+ stmt.id.value).get.asInstanceOf[Info.Theorem].ast
+                  case _ =>
+                    reporter.internalError(None(), "AST Viewer", s"Unexpected statement: ${stmt}")
+                    stmt
+                }
+                newStmts = newStmts :+ newStmt
+              }
+              val resolvedProgram = program(body = program.body(stmts = newStmts))
+              val f = Os.tempFix("ast", ".json")
+              f.writeOver(lang.tipe.JSON.from_astTopUnit(resolvedProgram, T))
+              serverAPI.sendRespond(server.protocol.Analysis.ResolvedAst(req.id, f.value))
+            case _ =>
+          }
+        }
+        if (!found) {
+          serverAPI.sendRespond(server.protocol.Analysis.ResolvedAst(req.id, ""))
+        }
+      }
       req.rewriteUriOpt match {
         case Some(uri) =>
           var found = F
@@ -846,7 +886,8 @@ object AnalysisService {
 
   var (th, rep): (TypeHierarchy, message.Reporter) = (null, null)
 
-  def checkScript(sireumHome: Os.Path, req: Slang.Check.Script, reporter: ReporterImpl, hasLogika: Boolean): Unit = {
+  def checkScript(serverAPI: server.ServerAPI, req: Slang.Check.Script, reporter: ReporterImpl,
+                  hasLogika: Boolean): Unit = {
     if (scriptCache.uriOpt != req.uriOpt) {
       scriptCache = createCache(req.uriOpt)
     }
@@ -856,12 +897,22 @@ object AnalysisService {
     }
     val plugins = logika.Logika.defaultPlugins ++
       (if (_infoFlow) logika.infoflow.InfoFlowPlugins.defaultPlugins else ISZ[logika.plugin.Plugin]())
-    val nameExePathMap = logika.Smt2Invoke.nameExePathMap(sireumHome)
-    logika.Logika.checkScript(req.uriOpt, req.content, config, nameExePathMap, Os.numOfProcessors,
+    val nameExePathMap = logika.Smt2Invoke.nameExePathMap(serverAPI.sireumHome)
+    val topUnitOpt = logika.Logika.checkScript(req.uriOpt, req.content, config, nameExePathMap, Os.numOfProcessors,
       (th: lang.tipe.TypeHierarchy) => logika.Smt2Impl.create(defaultConfig, logika.plugin.Plugin.claimPlugins(plugins),
         th, reporter),
       if (config.smt2Caching) scriptCache else logika.NoTransitionSmt2Cache.create,
       reporter, hasLogika, plugins, req.line, ISZ(), ISZ())
+    topUnitOpt match {
+      case Some(topUnit) if req.returnAST && !reporter.hasError =>
+        val f = Os.tempFix("ast", ".json")
+        f.writeOver(lang.tipe.JSON.from_astTopUnit(topUnit, T))
+        serverAPI.sendRespond(server.protocol.Analysis.ResolvedAst(req.id, f.value))
+      case _ =>
+        if (req.returnAST) {
+          serverAPI.sendRespond(server.protocol.Analysis.ResolvedAst(req.id, ""))
+        }
+    }
     scriptCache.clearTaskCache()
     System.gc()
   }
