@@ -420,6 +420,8 @@ object MsgPack {
       writer.writeZ(o.rwMax)
       writer.writeB(o.rwPar)
       writer.writeB(o.rwEvalTrace)
+      writer.writeZ(o.branchParPredNum)
+      writer.writeZ(o.branchParPredComp)
     }
 
     def write_logikaConfigBranchParType(o: org.sireum.logika.Config.BranchPar.Type): Unit = {
@@ -1093,7 +1095,9 @@ object MsgPack {
       val rwMax = reader.readZ()
       val rwPar = reader.readB()
       val rwEvalTrace = reader.readB()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite, searchPc, rwTrace, rwMax, rwPar, rwEvalTrace)
+      val branchParPredNum = reader.readZ()
+      val branchParPredComp = reader.readZ()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite, searchPc, rwTrace, rwMax, rwPar, rwEvalTrace, branchParPredNum, branchParPredComp)
     }
 
     def read_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {

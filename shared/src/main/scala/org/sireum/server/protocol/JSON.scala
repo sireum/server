@@ -403,7 +403,9 @@ object JSON {
         ("rwTrace", printB(o.rwTrace)),
         ("rwMax", printZ(o.rwMax)),
         ("rwPar", printB(o.rwPar)),
-        ("rwEvalTrace", printB(o.rwEvalTrace))
+        ("rwEvalTrace", printB(o.rwEvalTrace)),
+        ("branchParPredNum", printZ(o.branchParPredNum)),
+        ("branchParPredComp", printZ(o.branchParPredComp))
       ))
     }
 
@@ -1468,7 +1470,13 @@ object JSON {
       parser.parseObjectKey("rwEvalTrace")
       val rwEvalTrace = parser.parseB()
       parser.parseObjectNext()
-      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite, searchPc, rwTrace, rwMax, rwPar, rwEvalTrace)
+      parser.parseObjectKey("branchParPredNum")
+      val branchParPredNum = parser.parseZ()
+      parser.parseObjectNext()
+      parser.parseObjectKey("branchParPredComp")
+      val branchParPredComp = parser.parseZ()
+      parser.parseObjectNext()
+      return org.sireum.logika.Config(smt2Configs, parCores, sat, rlimit, timeoutInMs, charBitWidth, intBitWidth, useReal, logPc, logRawPc, logVc, logVcDirOpt, dontSplitPfq, splitAll, splitIf, splitMatch, splitContract, simplifiedQuery, checkInfeasiblePatternMatch, fpRoundingMode, smt2Caching, smt2Seq, branchPar, atLinesFresh, interp, loopBound, callBound, interpContracts, elideEncoding, rawInscription, strictPureMode, transitionCache, patternExhaustive, pureFun, detailedInfo, satTimeout, isAuto, background, atRewrite, searchPc, rwTrace, rwMax, rwPar, rwEvalTrace, branchParPredNum, branchParPredComp)
     }
 
     def parse_logikaConfigBranchParType(): org.sireum.logika.Config.BranchPar.Type = {

@@ -297,7 +297,9 @@ object Logika {
       rwTrace = T,
       rwMax = 100,
       rwPar = T,
-      rwEvalTrace = T
+      rwEvalTrace = T,
+      branchParPredNum = 2,
+      branchParPredComp = 10
     )
 
   }
