@@ -298,8 +298,8 @@ object Logika {
       rwMax = 100,
       rwPar = T,
       rwEvalTrace = T,
-      branchParPredNum = 2,
-      branchParPredComp = 10
+      branchParPredNum = 3,
+      branchParPredComp = 16
     )
 
   }
