@@ -35,6 +35,13 @@ object Server {
   val maxLogFileSize: Z = 1024 * 1024
   val maxLogLineSize: Z = 256 - Server.Ext.timeStamp(T).size - Os.lineSep.size
 
+  val apeMessage: String = "Please configure Linux binfmt, see: https://sireum.org/getting-started/#using-notes"
+
+  def checkLinuxAPE(sireumHome: Os.Path): B = {
+    return (Os.isLinux || Os.isLinuxArm) ___>:
+      Os.proc(ISZ((sireumHome / "bin" / "z3" / "bin" / "z3.com").string, "-h")).run().ok
+  }
+
   def run(version: String, isMsgPack: B, numOfLogikaWorkers: Z, cacheInput: B, cacheType: B, log: B, verbose: B,
           javaHome: Os.Path, scalaHome: Os.Path, sireumHome: Os.Path, defaultVersions: ISZ[(String, String)]): Z = {
     val server = Server(
@@ -54,6 +61,11 @@ object Server {
       defaultVersions
     )
     Server.Ext.init(isMsgPack, server.serverAPI)
+    if (!checkLinuxAPE(sireumHome)) {
+      server.serverAPI.sendRespond(
+        protocol.Report(ISZ(), message.Message(message.Level.Error, None(), "Sireum", apeMessage))
+      )
+    }
     return server.run()
   }
 
