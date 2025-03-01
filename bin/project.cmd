@@ -20,6 +20,8 @@ import org.sireum._
 import org.sireum.project.ProjectUtil._
 import org.sireum.project.Project
 
+val eval = "slang-eval"
+
 val frontend = "slang-frontend"
 
 val transpilersC = "transpilers-c"
@@ -49,9 +51,9 @@ val homeDir = Os.slashDir.up.canon
 val (serverShared, serverJvm) = moduleSharedJvmPub(
   baseId = server,
   baseDir = homeDir,
-  sharedDeps = sharedId(infoflow),
+  sharedDeps = sharedId(infoflow) ++ sharedId(eval),
   sharedIvyDeps = ISZ(),
-  jvmDeps = ISZ(transpilersC, transpilersRust, tools, codegen, phantom, sysml, proyek, parser, frontend, anvil),
+  jvmDeps = ISZ(transpilersC, transpilersRust, tools, codegen, phantom, sysml, proyek, parser, anvil, eval),
   jvmIvyDeps = ISZ(),
   pubOpt = pub(
     desc = "Sireum Server",
