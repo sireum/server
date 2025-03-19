@@ -66,15 +66,15 @@ object ServerExt {
         while (true) {
           val r = queue.take()
           if (isMsgPack) {
-            val respString = protocol.CustomMessagePack.fromResponse(r)
+            val respString = server.protocol.CustomMessagePack.fromResponse(r)
             r match {
-              case _: protocol.Status.Response =>
+              case _: server.protocol.Status.Response =>
               case _ => serverAPI.log(F, respString)
             }
           } else {
-            val respString = protocol.JSON.fromResponse(r, T)
+            val respString = server.protocol.JSON.fromResponse(r, T)
             r match {
-              case _: protocol.Status.Response =>
+              case _: server.protocol.Status.Response =>
               case _ => serverAPI.log(F, respString)
             }
             writeDirectOutput(respString.value)

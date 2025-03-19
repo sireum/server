@@ -133,7 +133,7 @@ class AnalysisServerTest extends TestSuite {
         writeRequest(req)
       }
 
-      def readResponse(): Either[protocol.Response, _] = {
+      def readResponse(): Either[server.protocol.Response, _] = {
         val baos = new ByteArrayOutputStream
         val startWaitTime = System.currentTimeMillis
         while (true) {
@@ -187,7 +187,7 @@ class AnalysisServerTest extends TestSuite {
             }
         }
       }
-      writeRequest(protocol.Terminate())
+      writeRequest(server.protocol.Terminate())
       t.synchronized(t.join())
     } catch {
       case t: Throwable =>

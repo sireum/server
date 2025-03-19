@@ -63,7 +63,7 @@ object Server {
     Server.Ext.init(isMsgPack, server.serverAPI)
     if (!checkLinuxAPE(sireumHome)) {
       server.serverAPI.sendRespond(
-        protocol.Report(ISZ(), message.Message(message.Level.Error, None(), "Sireum", apeMessage))
+        org.sireum.server.protocol.Report(ISZ(), message.Message(message.Level.Error, None(), "Sireum", apeMessage))
       )
     }
     return server.run()
@@ -76,7 +76,7 @@ object Server {
 
     def readInput(): String = $
 
-    def writeResponse(r: server.protocol.Response): Unit = $
+    def writeResponse(r: org.sireum.server.protocol.Response): Unit = $
 
     def pause(): Unit = $
 
@@ -117,7 +117,7 @@ object Server {
 
   def defaultVersions: ISZ[(String, String)]
 
-  def sendRespond(resp: protocol.Response): Unit
+  def sendRespond(resp: org.sireum.server.protocol.Response): Unit
 
   def totalMemory: Z = {
     return Server.Ext.totalMemory
@@ -128,7 +128,7 @@ object Server {
   }
 
   def reportStatus(): Unit = {
-    sendRespond(protocol.Status.Response(totalMemory, freeMemory))
+    sendRespond(org.sireum.server.protocol.Status.Response(totalMemory, freeMemory))
   }
 
   def log(isRequest: B, text: String): Unit = {
@@ -152,7 +152,7 @@ object Server {
                               val scalaHome: Os.Path,
                               val sireumHome: Os.Path,
                               val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
-  def sendRespond(resp: protocol.Response): Unit = {
+  def sendRespond(resp: org.sireum.server.protocol.Response): Unit = {
     Server.Ext.writeResponse(resp)
   }
 }
@@ -165,7 +165,7 @@ object Server {
                                  val scalaHome: Os.Path,
                                  val sireumHome: Os.Path,
                                  val defaultVersions: ISZ[(String, String)]) extends ServerAPI {
-  def sendRespond(resp: protocol.Response): Unit = {
+  def sendRespond(resp: org.sireum.server.protocol.Response): Unit = {
     Server.Ext.writeResponse(resp)
   }
 }
@@ -210,15 +210,15 @@ object Server {
   }
 
   def serve(): B = {
-    val req: protocol.Request = retrieveRequest() match {
+    val req: org.sireum.server.protocol.Request = retrieveRequest() match {
       case Some(r) => r
       case _ => return T
     }
     req match {
-      case _: protocol.Terminate => return F
-      case _: protocol.Version.Request => handleVersion()
-      case _: protocol.Status.Request => handleStatus()
-      case _: protocol.Cancel =>
+      case _: org.sireum.server.protocol.Terminate => return F
+      case _: org.sireum.server.protocol.Version.Request => handleVersion()
+      case _: org.sireum.server.protocol.Status.Request => handleStatus()
+      case _: org.sireum.server.protocol.Cancel =>
         var found = F
         val maxTries = 3
         var tries = 0
@@ -241,7 +241,7 @@ object Server {
           service.handle(serverAPI, req)
         }
         if (!found) {
-          serverAPI.sendRespond(protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
+          serverAPI.sendRespond(org.sireum.server.protocol.Report(req.id, message.Message(message.Level.InternalError, None(),
             "server", s"Unimplemented request handler for: $req")))
         }
     }
@@ -249,26 +249,26 @@ object Server {
   }
 
   def handleVersion(): Unit = {
-    serverAPI.sendRespond(protocol.Version.Response(version))
+    serverAPI.sendRespond(org.sireum.server.protocol.Version.Response(version))
   }
 
   def handleStatus(): Unit = {
-    serverAPI.sendRespond(protocol.Status.Response(Server.Ext.totalMemory, Server.Ext.freeMemory))
+    serverAPI.sendRespond(org.sireum.server.protocol.Status.Response(Server.Ext.totalMemory, Server.Ext.freeMemory))
     Server.Ext.gc()
   }
 
-  def retrieveRequest(): Option[protocol.Request] = {
+  def retrieveRequest(): Option[org.sireum.server.protocol.Request] = {
     val input = Server.Ext.readInput()
     if (input.size == 0) {
       return None()
     }
     var shouldLog: B = F
     //println(s"'$input'")
-    val r: Option[protocol.Request] = if (isMsgPack) {
+    val r: Option[org.sireum.server.protocol.Request] = if (isMsgPack) {
       CustomMessagePack.toRequest(input) match {
         case Either.Left(req) =>
           req match {
-            case _: protocol.Status.Request =>
+            case _: org.sireum.server.protocol.Status.Request =>
             case _ => shouldLog = T
           }
           Some(req)
@@ -281,7 +281,7 @@ object Server {
       JSON.toRequest(input) match {
         case Either.Left(req) =>
           req match {
-            case _: protocol.Status.Request =>
+            case _: org.sireum.server.protocol.Status.Request =>
             case _ => shouldLog = T
           }
           Some(req)
@@ -298,6 +298,6 @@ object Server {
   }
 
   def reportError(id: ISZ[String], msg: String, input: String): Unit = {
-    serverAPI.sendRespond(protocol.Report(id, message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
+    serverAPI.sendRespond(org.sireum.server.protocol.Report(id, message.Message(message.Level.Error, None(), "Server", s"$msg: '$input'")))
   }
 }
