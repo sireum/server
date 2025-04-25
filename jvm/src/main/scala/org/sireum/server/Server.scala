@@ -38,7 +38,7 @@ object Server {
   val apeMessage: String = "Please configure Linux binfmt, see: https://sireum.org/getting-started/#using-notes"
 
   def checkLinuxAPE(sireumHome: Os.Path): B = {
-    return (Os.isLinux || Os.isLinuxArm) ___>:
+    return Os.isLinux ___>:
       Os.proc(ISZ((sireumHome / "bin" / "z3" / "bin" / "z3.com").string, "-h")).run().ok
   }
 
