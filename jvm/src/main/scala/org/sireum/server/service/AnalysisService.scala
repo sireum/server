@@ -879,7 +879,7 @@ object AnalysisService {
     val sysmlFiles = Os.Path.walk(path = root, includeDir = T, followLink = T, pred = p => p.isFile && p.ext == string"sysml")
     val inputs = for (f <- sysmlFiles) yield if (req.files.contains(f.value)) FrontEnd.Input(req.files.get(f.value).get, Some(f.toUri)) else FrontEnd.Input(f.read, Some(f.toUri))
 
-    FrontEnd.typeCheck(par = 0, inputs = inputs, reporter = reporter)
+    FrontEnd.typeCheck(par = 0, inputs = inputs, store = Map.empty, reporter = reporter)
 
     System.gc()
   }
